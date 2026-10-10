@@ -14,7 +14,7 @@ async function login(
   await page.locator("input[type=password]").fill(password);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(
-    role === "global" ? /\/plataforma\/agencias$/ : /\/app\/[^/]+\/conversas$/,
+    role === "global" ? /\/plataforma\/gestao$/ : /\/app\/[^/]+\/conversas$/,
   );
   await expect(
     page.getByRole("heading", { name: "Escolha seu espaço de trabalho" }),
@@ -41,7 +41,7 @@ test("Global enters platform administration even after visiting a client", async
     "Market Analysis",
   );
   await page.goto("/contexts");
-  await expect(page).toHaveURL(/\/plataforma\/agencias$/);
+  await expect(page).toHaveURL(/\/plataforma\/gestao$/);
   await expect(page.locator(".scope-switch strong")).toHaveText(
     "Market Analysis",
   );

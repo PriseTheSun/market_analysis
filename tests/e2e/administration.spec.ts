@@ -8,19 +8,17 @@ async function signIn(page: Page, role: string) {
   await page.locator("input[type=password]").fill("MarketGlobal#2027");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(
-    role === "global" ? /\/plataforma\/agencias$/ : /\/app\/[^/]+\/conversas$/,
+    role === "global" ? /\/plataforma\/gestao$/ : /\/app\/[^/]+\/conversas$/,
   );
 }
-test("Global creates agency and provisioning tenant, then disables both through scoped dialogs", async ({
+test("Global manages agencies and clients in one route with archive and restoration", async ({
   page,
 }) => {
   const suffix = Date.now(),
     agency = "Agência E2E " + suffix,
-    tenant = "Tenant E2E " + suffix;
+    client = "Cliente E2E " + suffix;
   await signIn(page, "global");
-  await page
-    .getByRole("link", { name: "Administração global", exact: true })
-    .click();
+  await page.getByRole("tab", { name: "Agências", exact: true }).click();
   await page
     .getByRole("button", { name: "Criar agência", exact: true })
     .click();
@@ -29,14 +27,16 @@ test("Global creates agency and provisioning tenant, then disables both through 
   await dialog
     .getByRole("textbox", { name: "Identificador", exact: true })
     .fill("e2e-" + suffix);
-  await dialog.getByRole("button", { name: "Confirmar", exact: true }).click();
+  await dialog
+    .getByRole("button", { name: "Criar agência", exact: true })
+    .click();
   await expect(dialog).toHaveCount(0);
-  await page.getByRole("link", { name: "Clientes", exact: true }).click();
+  await page.getByRole("tab", { name: "Clientes", exact: true }).click();
   await page
     .getByRole("button", { name: "Criar cliente", exact: true })
     .click();
   dialog = page.getByRole("dialog");
-  await dialog.getByRole("textbox", { name: "Nome", exact: true }).fill(tenant);
+  await dialog.getByRole("textbox", { name: "Nome", exact: true }).fill(client);
   await dialog
     .getByRole("textbox", { name: "Identificador", exact: true })
     .fill("client-" + suffix);
@@ -44,40 +44,53 @@ test("Global creates agency and provisioning tenant, then disables both through 
     .getByRole("combobox", { name: "Agência", exact: true })
     .selectOption({ label: agency });
   await dialog
-    .getByRole("textbox", { name: "E-mail do Admin responsável", exact: true })
-    .fill("bootstrap-" + suffix + "@example.test");
-  await dialog.getByRole("button", { name: "Confirmar", exact: true }).click();
+    .getByRole("combobox", { name: "Admin responsável", exact: true })
+    .selectOption({ label: "Admin · admin@marketanalysis.com" });
+  await dialog
+    .getByRole("button", { name: "Criar cliente", exact: true })
+    .click();
   await expect(dialog).toHaveCount(0);
-  await page.getByRole("textbox", { name: "Buscar", exact: true }).fill(tenant);
-  let row = page.getByRole("row").filter({ hasText: tenant });
+  await page.getByRole("textbox", { name: "Buscar", exact: true }).fill(client);
+  const row = page.getByRole("row").filter({ hasText: client });
+  await row.getByRole("button", { name: `Ações de ${client}` }).click();
+  await page.getByRole("menuitem", { name: "Editar", exact: true }).click();
+  await dialog
+    .getByRole("textbox", { name: "Nome", exact: true })
+    .fill(client + " atualizado");
+  await dialog
+    .getByRole("button", { name: "Salvar alterações", exact: true })
+    .click();
+  await expect(dialog).toHaveCount(0);
+  await expect(row).toContainText(client + " atualizado");
+  async function archive(name: string) {
+    await page
+      .getByRole("button", { name: `Ações de ${name}`, exact: true })
+      .click();
+    await page.getByRole("menuitem", { name: "Excluir", exact: true }).click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Confirmar exclusão", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  }
+  await archive(client + " atualizado");
+  await expect(row).toHaveCount(0);
+  await page.getByRole("checkbox", { name: "Mostrar arquivados" }).check();
+  await page
+    .getByRole("button", { name: `Ações de ${client} atualizado`, exact: true })
+    .click();
+  await page.getByRole("menuitem", { name: "Restaurar", exact: true }).click();
+  await dialog.getByRole("button", { name: "Restaurar", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await page.getByRole("checkbox", { name: "Mostrar arquivados" }).uncheck();
   await expect(row).toBeVisible();
-  await page.reload();
-  await page.getByRole("textbox", { name: "Buscar", exact: true }).fill(tenant);
-  await row.getByRole("button", { name: `Ações de ${tenant}` }).click();
-  await page.getByRole("menuitem", { name: "Alterar", exact: true }).click();
-  await page
-    .getByRole("dialog")
-    .getByRole("combobox", { name: "Status", exact: true })
-    .selectOption("disabled");
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Confirmar", exact: true })
-    .click();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
-  await page.getByRole("link", { name: "Agências", exact: true }).click();
+  await archive(client + " atualizado");
+  await page.getByRole("tab", { name: "Agências", exact: true }).click();
   await page.getByRole("textbox", { name: "Buscar", exact: true }).fill(agency);
-  row = page.getByRole("row").filter({ hasText: agency });
-  await row.getByRole("button", { name: `Ações de ${agency}` }).click();
-  await page.getByRole("menuitem", { name: "Alterar", exact: true }).click();
-  await page
-    .getByRole("dialog")
-    .getByRole("combobox", { name: "Status", exact: true })
-    .selectOption("false");
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Confirmar", exact: true })
-    .click();
-  await expect(row.getByText("Inativo", { exact: true })).toBeVisible();
+  await archive(agency);
+  await expect(page.getByRole("row").filter({ hasText: agency })).toHaveCount(
+    0,
+  );
 });
 test("Super Admin enters agency and tenant management without platform mutation controls", async ({
   page,

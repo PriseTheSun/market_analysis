@@ -45,7 +45,7 @@ describe("direct workspace entry", () => {
           [{ id: "agency", name: "Agência" }],
           lastTenant,
         ),
-      ).toBe("/platform/agencies");
+      ).toBe("/platform/management");
     },
   );
   it("returns to the remembered tenant only while it remains authorized", () => {
@@ -67,7 +67,7 @@ describe("direct workspace entry", () => {
         [],
         "aurora",
       ),
-    ).toBe("/platform/agencies");
+    ).toBe("/platform/management");
     expect(
       workspaceDestination(
         user,

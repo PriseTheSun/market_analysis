@@ -60,6 +60,7 @@ model User {
   progress OnboardingProgress[]
   files StoredFile[]
   @@index([active, platformRole])
+  archivedAt DateTime? @db.Timestamptz
 }
 model Agency {
   id String @id @default(uuid()) @db.Uuid
@@ -71,6 +72,7 @@ model Agency {
   updatedAt DateTime @updatedAt @db.Timestamptz
   members AgencyMembership[]
   tenants Tenant[]
+  archivedAt DateTime? @db.Timestamptz
 }
 model AgencyMembership {
   id String @id @default(uuid()) @db.Uuid
@@ -104,6 +106,7 @@ model Tenant {
   @@unique([agencyId,slug])
   @@unique([agencyId,id])
   @@index([agencyId,status])
+  archivedAt DateTime? @db.Timestamptz
 }
 model TenantMembership {
   id String @id @default(uuid()) @db.Uuid

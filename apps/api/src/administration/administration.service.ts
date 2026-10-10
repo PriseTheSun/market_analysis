@@ -44,6 +44,7 @@ export class AdministrationService {
       const tenants = await tx.tenant.findMany({
         where: {
           status: "active",
+          archivedAt: null,
           agency: { active: true },
           ...(current.platformRole === "GLOBAL"
             ? {}
@@ -104,6 +105,7 @@ export class AdministrationService {
       if (platformOnly && current.platformRole !== "GLOBAL")
         throw new AppError(403, "FORBIDDEN");
       const where = {
+        archivedAt: null,
         OR: [
           { name: { contains: p.search, mode: "insensitive" as const } },
           { slug: { contains: p.search, mode: "insensitive" as const } },
@@ -155,7 +157,7 @@ export class AdministrationService {
     return this.db.global(
       actor,
       async (tx, current) => {
-        if (!(await tx.agency.findUnique({ where: { id } })))
+        if (!(await tx.agency.findFirst({ where: { id, archivedAt: null } })))
           throw new AppError(404, "NOT_FOUND");
         const value = await tx.agency.update({ where: { id }, data });
         await this.db.assertResponsibilities(tx);
@@ -174,6 +176,7 @@ export class AdministrationService {
       else if (current.platformRole !== "GLOBAL")
         throw new AppError(403, "FORBIDDEN");
       const where = {
+        archivedAt: null,
         ...(agencyId ? { agencyId } : {}),
         name: { contains: p.search, mode: "insensitive" as const },
       };
@@ -246,8 +249,8 @@ export class AdministrationService {
     return this.db.global(
       actor,
       async (tx, current) => {
-        const t = await tx.tenant.findUnique({
-          where: { id },
+        const t = await tx.tenant.findFirst({
+          where: { id, archivedAt: null },
           include: { agency: true },
         });
         if (!t) throw new AppError(404, "NOT_FOUND");
@@ -274,7 +277,9 @@ export class AdministrationService {
     return this.db.global(
       actor,
       async (tx, current) => {
-        const agency = await tx.agency.findUnique({ where: { id } });
+        const agency = await tx.agency.findFirst({
+          where: { id, archivedAt: null },
+        });
         const user = await tx.user.findFirst({
           where: { email: data.email, active: true },
         });
@@ -307,6 +312,7 @@ export class AdministrationService {
   users(actor: Actor, p: Pagination) {
     return this.db.global(actor, async (tx) => {
       const where = {
+        archivedAt: null,
         OR: [
           { name: { contains: p.search, mode: "insensitive" as const } },
           { email: { contains: p.search, mode: "insensitive" as const } },
@@ -333,7 +339,9 @@ export class AdministrationService {
     return this.db.global(
       actor,
       async (tx, current) => {
-        const user = await tx.user.findUnique({ where: { id } });
+        const user = await tx.user.findFirst({
+          where: { id, archivedAt: null },
+        });
         if (!user) throw new AppError(404, "NOT_FOUND");
         const result = await tx.user.update({
           where: { id },

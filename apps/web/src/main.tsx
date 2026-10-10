@@ -1,6 +1,12 @@
 import React, { lazy, Suspense } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useParams,
+  useLocation,
+} from "react-router-dom";
 import { appRoutePatterns, type AppRouteTemplate } from "@market/contracts";
 import {
   LocalizedAddress,
@@ -30,14 +36,11 @@ const FilesPage = lazy(() =>
 const Members = lazy(() =>
   import("./pages/admin").then((m) => ({ default: m.Members })),
 );
-const Agencies = lazy(() =>
-  import("./pages/admin").then((m) => ({ default: m.Agencies })),
+const Management = lazy(() =>
+  import("./pages/management").then((m) => ({ default: m.Management })),
 );
 const Clients = lazy(() =>
   import("./pages/admin").then((m) => ({ default: m.Clients })),
-);
-const UsersPage = lazy(() =>
-  import("./pages/admin").then((m) => ({ default: m.UsersPage })),
 );
 const Requests = lazy(() =>
   import("./pages/requests").then((m) => ({ default: m.Requests })),
@@ -63,6 +66,14 @@ function NotFound() {
 function WorkspaceRedirect() {
   const { tenantId } = useParams();
   return <Navigate to={`/app/${tenantId}/chat`} replace />;
+}
+function ManagementRedirect({ tab }: { tab: string }) {
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  query.set("tab", tab);
+  return (
+    <Navigate to={`/platform/management?${query}${location.hash}`} replace />
+  );
 }
 function route(template: AppRouteTemplate, element: React.ReactNode) {
   return appRoutePatterns(template).map((path) => (
@@ -111,11 +122,18 @@ function App() {
                   {route("/app/:tenantId/audit", <Audit />)}
                   {route(
                     "/platform",
-                    <Navigate to="/platform/agencies" replace />,
+                    <Navigate to="/platform/management" replace />,
                   )}
-                  {route("/platform/agencies", <Agencies />)}
-                  {route("/platform/clients", <Clients />)}
-                  {route("/platform/users", <UsersPage />)}
+                  {route("/platform/management", <Management />)}
+                  {route(
+                    "/platform/agencies",
+                    <ManagementRedirect tab="agencies" />,
+                  )}
+                  {route(
+                    "/platform/clients",
+                    <ManagementRedirect tab="clients" />,
+                  )}
+                  {route("/platform/users", <ManagementRedirect tab="users" />)}
                   {route("/platform/requests", <Requests />)}
                   {route("/platform/notifications", <Notifications />)}
                   {route("/platform/preferences", <Preferences />)}

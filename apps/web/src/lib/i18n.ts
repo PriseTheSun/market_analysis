@@ -2,6 +2,282 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import type { Locale } from "@market/contracts";
 const copy: Record<string, [string, string, string]> = {
+  "role.GLOBAL": ["Global", "Global", "Global"],
+  "role.SUPER_ADMIN": ["Super Admin", "Super Admin", "Super Admin"],
+  "role.ADMIN": ["Admin", "Admin", "Admin"],
+  "role.USER": ["User", "User", "User"],
+  "management.title": [
+    "Central de gestão",
+    "Management center",
+    "Centro de gestión",
+  ],
+  "management.description": [
+    "Gerencie usuários, permissões, agências e clientes.",
+    "Manage users, permissions, agencies and clients.",
+    "Gestiona usuarios, permisos, agencias y clientes.",
+  ],
+  "management.users": ["Usuários", "Users", "Usuarios"],
+  "management.permissions": ["Permissões", "Permissions", "Permisos"],
+  "management.agencies": ["Agências", "Agencies", "Agencias"],
+  "management.clients": ["Clientes", "Clients", "Clientes"],
+  "management.user": ["Usuário", "User", "Usuario"],
+  "management.userName": ["Nome do usuário", "User name", "Nombre del usuario"],
+  "management.permission": ["Permissão", "Permission", "Permiso"],
+  "management.scope": ["Escopo de acesso", "Access scope", "Ámbito de acceso"],
+  "management.searchUsers": [
+    "Buscar por nome ou e-mail",
+    "Search by name or email",
+    "Buscar por nombre o correo",
+  ],
+  "management.allAgencies": [
+    "Todas as agências",
+    "All agencies",
+    "Todas las agencias",
+  ],
+  "management.create.users": ["Criar usuário", "Create user", "Crear usuario"],
+  "management.create.permissions": [
+    "Criar permissão",
+    "Create permission",
+    "Crear permiso",
+  ],
+  "management.create.agencies": [
+    "Criar agência",
+    "Create agency",
+    "Crear agencia",
+  ],
+  "management.create.clients": [
+    "Criar cliente",
+    "Create client",
+    "Crear cliente",
+  ],
+  "management.edit.users": ["Editar usuário", "Edit user", "Editar usuario"],
+  "management.edit.permissions": [
+    "Editar permissão",
+    "Edit permission",
+    "Editar permiso",
+  ],
+  "management.edit.agencies": [
+    "Editar agência",
+    "Edit agency",
+    "Editar agencia",
+  ],
+  "management.edit.clients": [
+    "Editar cliente",
+    "Edit client",
+    "Editar cliente",
+  ],
+  "management.hint.users": [
+    "Atualize os dados e o acesso ao cliente.",
+    "Update personal details and client access.",
+    "Actualiza los datos y el acceso al cliente.",
+  ],
+  "management.hint.permissions": [
+    "Gerencie o perfil e o escopo deste acesso.",
+    "Manage the role and scope of this access.",
+    "Gestiona el perfil y el ámbito de este acceso.",
+  ],
+  "management.hint.agencies": [
+    "Gerencie os dados e a disponibilidade da agência.",
+    "Manage agency details and availability.",
+    "Gestiona los datos y la disponibilidad de la agencia.",
+  ],
+  "management.hint.clients": [
+    "Gerencie o cliente e seu administrador responsável.",
+    "Manage the client and its responsible administrator.",
+    "Gestiona el cliente y su administrador responsable.",
+  ],
+  "management.details.users": [
+    "Dados do usuário",
+    "User details",
+    "Datos del usuario",
+  ],
+  "management.details.agencies": [
+    "Dados da agência",
+    "Agency details",
+    "Datos de la agencia",
+  ],
+  "management.details.clients": [
+    "Dados do cliente",
+    "Client details",
+    "Datos del cliente",
+  ],
+  "management.email": ["E-mail", "Email", "Correo electrónico"],
+  "management.clientLink": [
+    "Vínculo com cliente",
+    "Client access",
+    "Vínculo con el cliente",
+  ],
+  "management.agencyClient": [
+    "Cliente da agência",
+    "Agency client",
+    "Cliente de la agencia",
+  ],
+  "management.clientHint": [
+    "Clientes da agência selecionada.",
+    "Clients of the selected agency.",
+    "Clientes de la agencia seleccionada.",
+  ],
+  "management.accessRole": [
+    "Permissão de acesso",
+    "Access permission",
+    "Permiso de acceso",
+  ],
+  "management.roleHint": [
+    "Esta permissão vale para o cliente selecionado.",
+    "This permission applies to the selected client.",
+    "Este permiso se aplica al cliente seleccionado.",
+  ],
+  "management.removeLink": [
+    "Remover vínculo",
+    "Remove access",
+    "Eliminar vínculo",
+  ],
+  "management.addLink": [
+    "Vincular cliente",
+    "Add client access",
+    "Vincular cliente",
+  ],
+  "management.newLink": ["Novo vínculo", "New access", "Nuevo vínculo"],
+  "management.selectAgency": [
+    "Selecione a agência",
+    "Select an agency",
+    "Selecciona una agencia",
+  ],
+  "management.selectClient": [
+    "Selecione o cliente",
+    "Select a client",
+    "Selecciona un cliente",
+  ],
+  "management.selectUser": [
+    "Selecione o usuário",
+    "Select a user",
+    "Selecciona un usuario",
+  ],
+  "management.clientAgency": [
+    "Agência e responsável",
+    "Agency and administrator",
+    "Agencia y responsable",
+  ],
+  "management.responsibleAdmin": [
+    "Admin responsável",
+    "Responsible Admin",
+    "Admin responsable",
+  ],
+  "management.keepAdmin": [
+    "Manter os responsáveis atuais",
+    "Keep current administrators",
+    "Mantener los responsables actuales",
+  ],
+  "management.adminHint": [
+    "O usuário selecionado receberá acesso Admin a este cliente.",
+    "The selected user receives Admin access to this client.",
+    "El usuario seleccionado recibirá acceso Admin a este cliente.",
+  ],
+  "management.createUserHint": [
+    "Cadastre o usuário e defina seu acesso aos clientes.",
+    "Create the user and set their client access.",
+    "Crea el usuario y define su acceso a los clientes.",
+  ],
+  "management.setupEmail": [
+    "O usuário receberá por e-mail um link para definir sua senha, válido por 24 horas.",
+    "The user will receive an email link to set their password, valid for 24 hours.",
+    "El usuario recibirá un enlace por correo para definir su contraseña, válido por 24 horas.",
+  ],
+  "management.scopeHint.GLOBAL": [
+    "Global administra toda a plataforma e acessa todas as agências e clientes.",
+    "Global manages the entire platform and can access all agencies and clients.",
+    "Global administra toda la plataforma y accede a todas las agencias y clientes.",
+  ],
+  "management.scopeHint.AGENCY": [
+    "Super Admin administra os clientes da agência selecionada.",
+    "Super Admin manages clients of the selected agency.",
+    "Super Admin administra los clientes de la agencia seleccionada.",
+  ],
+  "management.scopeHint.CLIENT": [
+    "Admin gerencia membros e arquivos; User utiliza as próprias conversas neste cliente.",
+    "Admin manages members and files; User accesses their own conversations within this client.",
+    "Admin gestiona miembros y archivos; User utiliza sus propias conversaciones en este cliente.",
+  ],
+  "management.edit": ["Editar", "Edit", "Editar"],
+  "management.delete": ["Excluir", "Delete", "Eliminar"],
+  "management.restore": ["Restaurar", "Restore", "Restaurar"],
+  "management.save": ["Salvar alterações", "Save changes", "Guardar cambios"],
+  "management.confirmDelete": [
+    "Confirmar exclusão",
+    "Confirm deletion",
+    "Confirmar eliminación",
+  ],
+  "management.delete.users": [
+    "Excluir usuário",
+    "Delete user",
+    "Eliminar usuario",
+  ],
+  "management.delete.permissions": [
+    "Excluir permissão",
+    "Delete permission",
+    "Eliminar permiso",
+  ],
+  "management.delete.agencies": [
+    "Excluir agência",
+    "Delete agency",
+    "Eliminar agencia",
+  ],
+  "management.delete.clients": [
+    "Excluir cliente",
+    "Delete client",
+    "Eliminar cliente",
+  ],
+  "management.archiveHint.users": [
+    "O usuário será arquivado e perderá o acesso. O histórico será preservado e a conta poderá ser restaurada.",
+    "The user will be archived and lose access. History is preserved and the account can be restored.",
+    "El usuario se archivará y perderá el acceso. Se preservará el historial y se podrá restaurar la cuenta.",
+  ],
+  "management.archiveHint.agencies": [
+    "A agência será arquivada e seus clientes ficarão indisponíveis para operar até a restauração. O histórico será preservado.",
+    "The agency will be archived and its clients unavailable until restoration. History is preserved.",
+    "La agencia se archivará y sus clientes no estarán disponibles hasta su restauración. Se preservará el historial.",
+  ],
+  "management.archiveHint.clients": [
+    "O cliente será arquivado e ficará indisponível para operar. Conversas e arquivos serão preservados para restauração.",
+    "The client will be archived and unavailable. Conversations and files are preserved for restoration.",
+    "El cliente se archivará y no estará disponible. Las conversaciones y archivos se preservarán para su restauración.",
+  ],
+  "management.revokeHint": [
+    "Este vínculo de acesso será removido. Outros acessos do usuário serão mantidos.",
+    "This access assignment will be removed. The user’s other access is preserved.",
+    "Se eliminará este vínculo de acceso. Se mantendrán los demás accesos del usuario.",
+  ],
+  "management.restoreHint": [
+    "A restauração reativa este cadastro e os acessos associados. As regras de responsáveis continuam sendo verificadas.",
+    "Restoring reactivates this record and associated access. Required administrator rules still apply.",
+    "La restauración reactiva este registro y sus accesos. Se siguen verificando las reglas de responsables.",
+  ],
+  "management.showArchived": [
+    "Mostrar arquivados",
+    "Show archived",
+    "Mostrar archivados",
+  ],
+  "management.empty": [
+    "Nenhum registro encontrado",
+    "No records found",
+    "No se encontraron registros",
+  ],
+  "management.emptyHint": [
+    "Ajuste a busca ou os filtros, ou crie um novo registro.",
+    "Adjust your search or filters, or create a record.",
+    "Ajusta la búsqueda o los filtros, o crea un registro.",
+  ],
+  "management.count": [
+    "{{count}} registros nesta visualização.",
+    "{{count}} records in this view.",
+    "{{count}} registros en esta vista.",
+  ],
+  "management.checkFields": [
+    "Revise os campos destacados.",
+    "Review the highlighted fields.",
+    "Revisa los campos destacados.",
+  ],
+
   "auth.headline": [
     "Dados que revelam. Decisões que transformam.",
     "Data that reveals. Decisions that transform.",

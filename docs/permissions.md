@@ -14,7 +14,7 @@
 
 Global é atributo da identidade. Super Admin é vínculo de agência. Admin/User são vínculos de tenant; uma pessoa pode ter papéis diferentes em dois tenants. A política usa o contexto da requisição, não o maior papel da pessoa. Conta e vínculos são revalidados em cada operação; streams revalidam em heartbeat de 2 s, com teste de revogação abaixo de 5 s.
 
-A agência é derivada do tenant no servidor. Nome de organização no formulário público nunca concede acesso. Aprovar cria convite e entrega, sem sessão ou vínculo ativo antecipado. Uma identidade existente deve autenticar com o e-mail convidado; o aceite preserva senha e outros vínculos. Tenants novos ficam em provisioning até o primeiro Admin aceitar. Convite antigo não reativa tenant disabled.
+A agência é derivada do tenant no servidor. Nome de agência ou cliente no formulário público nunca concede acesso. Aprovar cria convite e entrega, sem sessão ou vínculo ativo antecipado. Uma identidade existente deve autenticar com o e-mail convidado; o aceite preserva senha e outros vínculos. Tenants novos ficam em provisioning até o primeiro Admin aceitar. Convite antigo não reativa tenant disabled.
 
 Alterações do grafo de acesso usam lock transacional compartilhado e validam que reste um Global ativo e um Admin com conta/vínculo ativos para cada tenant ativo, inclusive ao desativar uma conta com vários vínculos.
 
@@ -23,3 +23,9 @@ PostgreSQL aplica RLS com FORCE ao conteúdo por tenant. O pool runtime não é 
 Notificações têm destinatário e escopo; escopo nulo exige Global. A consulta reavalia permissões e omite antigos eventos administrativos de arquivo/pedido/convite se a pessoa passar a User. Contagens e marcação usam os mesmos filtros. Um link S3 já emitido não pode ser revogado individualmente e permanece válido até a expiração de 60 s.
 
 As contas demo abrangentes servem para demonstrar navegação. A prova negativa usa agências A/B e tenants A1/A2/B1 restritos nos testes, incluindo papel Admin em A1 e User em A2.
+
+## Central de gestão
+
+Os endpoints `/platform/management/*` exigem Global, inclusive leitura de listas e opções. Os formulários validam Agência → Cliente no servidor e não aceitam perfis arbitrários. Salvar dados do usuário afeta seus vínculos diretos com clientes; Global e Super Admin são administrados separadamente na aba Permissões. A criação de cliente na central associa um Admin existente e o ativa na mesma transação; o fluxo anterior de convite/bootstrap continua com suas regras de provisioning.
+
+O arquivamento mantém as entidades e os vínculos, marca usuário/agência como inativos ou cliente como disabled, e registra auditoria. Arquivar usuário revoga sessões e tokens de senha. Edição legada não reativa registros arquivados; restauração é explícita e revalida os responsáveis. Trocar o e-mail invalida sessões, tokens de senha e convites pendentes para o endereço anterior. Nenhuma dessas operações remove conversas ou eventos de auditoria.

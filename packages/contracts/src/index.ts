@@ -1,5 +1,6 @@
 import { z } from "zod";
 export * from "./routes.js";
+export * from "./management.js";
 
 export const locales = ["pt-BR", "en", "es"] as const;
 export const localeSchema = z.enum(locales);

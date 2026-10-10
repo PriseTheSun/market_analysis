@@ -13,6 +13,7 @@ import type { Context, Page, PublicUser } from "@market/contracts";
 import { canonicalAppPath } from "@market/contracts";
 import {
   Bell,
+  LayoutGrid,
   MessageSquare,
   Files,
   Users,
@@ -205,7 +206,7 @@ function WorkspaceSwitcher({
             <>
               <Dropdown.Item asChild>
                 <Link
-                  to="/platform/agencies"
+                  to="/platform/management"
                   aria-current={!tenant && !agencyId ? "page" : undefined}
                 >
                   <ShieldCheck aria-hidden="true" />
@@ -534,7 +535,7 @@ function ScopedShell({
         ...(user.platformRole === "GLOBAL"
           ? [
               {
-                to: "/platform/agencies",
+                to: "/platform/management",
                 label: "shell.platform",
                 icon: ShieldCheck,
               },
@@ -559,16 +560,10 @@ function ScopedShell({
         ]
       : [
           {
-            to: "/platform/agencies",
-            label: "shell.agencies",
-            icon: Building2,
+            to: "/platform/management",
+            label: "management.title",
+            icon: LayoutGrid,
           },
-          {
-            to: "/platform/clients",
-            label: "shell.clients",
-            icon: Layers,
-          },
-          { to: "/platform/users", label: "shell.users", icon: Users },
           {
             to: "/platform/requests",
             label: "shell.requests",
@@ -837,7 +832,7 @@ export function PageHeading({
     ? `/app/${tenant.id}/chat`
     : agencyId
       ? `/agencies/${agencyId}`
-      : "/platform/agencies";
+      : "/platform/management";
   return (
     <>
       <nav className="platform-breadcrumb" aria-label={t("shell.breadcrumb")}>

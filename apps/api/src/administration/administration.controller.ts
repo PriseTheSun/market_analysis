@@ -1,3 +1,5 @@
+import { ManagementService } from "./management.service.js";
+import { ManagementController } from "./management.controller.js";
 import {
   Body,
   Controller,
@@ -214,8 +216,8 @@ export class AdministrationController {
 }
 @Module({
   imports: [AuthModule],
-  controllers: [AdministrationController],
-  providers: [AdministrationService],
+  controllers: [AdministrationController, ManagementController],
+  providers: [AdministrationService, ManagementService],
   exports: [AdministrationService],
 })
 export class AdministrationModule {}

@@ -1,9 +1,11 @@
 # Market Analysis
 
-Plataforma de trabalho para agências e suas organizações. A primeira entrega oferece acesso controlado, administração por agência e organização, arquivos privados e conversas pessoais. Não promete indicadores de mercado, RAG ou análise automática de arquivos. O chat local demonstra o fluxo com respostas determinísticas e indicação visível.
+Plataforma de trabalho para agências e seus clientes: acesso controlado, arquivos privados e conversas pessoais. A hierarquia é Agência → Cliente, como Publicis → Nivea. O chat local demonstra o fluxo com respostas determinísticas; não oferece indicadores de mercado ou análise automática de arquivos.
 
-O usuário forneceu o briefing completo, referências de login e solicitação e cinco assets. O OpenSpec aprovado é a autoridade funcional e visual. Sua aplicação foi explicitamente solicitada. Formulários simples, ações azuis, Montserrat local, português/inglês/espanhol, tema claro inicial e tema escuro manual. As telas internas priorizam operações reais e isolamento de dados, sem métricas inventadas. As referências fixam composição; o texto do briefing prevalece sobre cores e tamanhos divergentes.
+As referências fornecidas pelo usuário orientam composição e interações, preservando o design compartilhado do sistema: Montserrat local, azul da marca, sidebar compacta com animação, ações em reticências, 12 registros por página, português/inglês/espanhol e temas claro/escuro. Os requisitos atuais da conversa complementam a primeira entrega OpenSpec.
 
-Global administra a plataforma; Super Admin atua na agência; Admin gerencia membros e arquivos da organização; User acessa suas conversas e controles pessoais. O nome da organização em um pedido público não autoriza acesso.
+Global entra na Central de gestão (`/plataforma/gestao`), com abas Usuários, Permissões, Agências e Clientes. Criação e edição usam painéis laterais. As permissões gerenciam vínculos dos perfis existentes, sem perfis personalizados: Global na plataforma, Super Admin na agência e Admin/User no cliente. Uma pessoa pode atuar em vários clientes com papéis distintos. O seletor de workspace lista as agências autorizadas e seus clientes.
 
-A nomenclatura da interface é Organizações / Organizations / Organizaciones. As URLs de navegação seguem o idioma definido para a conta (ou a preferência local/navegador antes do login). Trocar o idioma mantém a página atual e seus dados em edição; endereços antigos continuam acessíveis por redirecionamento.
+Excluir um usuário, agência ou cliente significa arquivar, bloquear acesso e preservar histórico e auditoria, com restauração pela mesma central. A remoção de uma permissão revoga apenas aquele vínculo. As proteções do último Global e do Admin responsável permanecem obrigatórias. Novos usuários definem sua senha por link de e-mail; novos clientes exigem um Admin ativo.
+
+Solicitações de acesso continuam em sua própria rota. Nome de agência ou cliente informado no formulário público não concede acesso. As URLs seguem o idioma da conta; rotas antigas redirecionam para a aba equivalente na central.

@@ -79,3 +79,48 @@ Evidências: [Contas](output/accounts-requests-tables/accounts.jpg), [Solicitaç
 **final result: passed**. Cabeçalho compartilhado com sino, switch de modo escuro e idioma na ordem solicitada. Controles compactos, alinhados e com cores do tema. Tema e idioma persistiram após reload; alternância pelo teclado conferida. Mobile de 390 e 320 px mantém o cabeçalho de 64 px sem overflow horizontal. Tema claro e PT-BR restaurados após a conferência.
 
 Evidências: [controles](output/header-preferences/controls.jpg), [claro/PT-BR](output/header-preferences/light-pt.jpg), [escuro/EN](output/header-preferences/dark-en.jpg) e [mobile](output/header-preferences/mobile.jpg). Build/TypeScript, lint e formatação aprovados; suíte E2E completa não reexecutada.
+
+## Atualização — Central de gestão
+
+**final result: passed**.
+
+### Referência e evidência
+
+Fonte: [imagem fornecida](docs/references/management-center.png), 1672 × 940 px. Implementação: [edição de usuário](output/management-center/desktop-editor.jpg), captura Chrome de 1672 × 940 px, viewport CSS 1672 × 940, enquadramento explícito 1:1, sem chrome do navegador. Rota `/plataforma/gestao`, sessão Global, tema claro, PT-BR, aba Usuários e painel lateral aberto. As duas imagens foram abertas juntas para a comparação final. Os nomes e vínculos são os dados reais da aplicação; a fonte contém quatro pessoas ilustrativas. A seleção aparece na quarta linha na implementação.
+
+Outras evidências: [listagem desktop](output/management-center/desktop-list.jpg), [listagem mobile](output/management-center/mobile-list.jpg), [formulário mobile](output/management-center/mobile-editor.jpg) e [aviso de arquivamento](output/management-center/archive-confirmation.jpg). Mobile em 390 × 844 CSS/px, com enquadramento explícito 1:1. O recorte do aviso corresponde ao painel de 474 × 876 px. Os controles e textos da referência foram legíveis na imagem original em resolução integral; não foi necessário outro recorte da fonte para avaliar tipografia, ícones e alinhamento dos campos.
+
+### Achados corrigidos e comparação final
+
+- **P2, tabela sem a superfície compartilhada:** a primeira conferência revelou ausência da borda e fundo branco da referência. O contêiner passou a usar `table-scroll`, com os mesmos tokens do restante do sistema. A nova captura confirma a borda, divisórias, superfície branca e seleção azul.
+- **P2, dimensões e ritmo:** o painel inicial tinha 460 px e as abas estavam 10 px abaixo da referência. Painel ajustado para 474 px e margem das abas reduzida, preservando sidebar/cabeçalho existentes. Captura final confirma painel em x=1198, cabeçalho de 64 px e início da tabela em aproximadamente y=350.
+- **P2, quebra de texto no celular:** a primeira tabela comprimia nomes/e-mails em fragmentos. Largura mínima de 680 px com rolagem horizontal contida corrigiu a leitura; o formulário ocupa a tela inteira e mantém as ações no rodapé. Documento sem overflow horizontal externo.
+- Nenhum P0/P1/P2 aberto nas superfícies verificadas. Antialiasing e pequenas diferenças de densidade em relação ao mockup são P3, aceitos para preservar o sistema visual já aplicado.
+
+### Cinco superfícies de fidelidade
+
+- **Tipografia:** Montserrat Variable local confirmada no DOM; títulos, labels, tabela e botões seguem a escala compartilhada. Nomes/e-mails reais podem quebrar linha; não foram substituídos pelos dados ilustrativos da fonte.
+- **Espaçamento/layout:** sidebar 215 px, logo 128 × 36 px e cabeçalho 64 px preservados. Painel 474 px, tabela com linhas de 80 px, toolbar alinhada e paginação de 12 registros. Status e múltiplos vínculos acrescentam conteúdo ao formulário; a rolagem interna deixa remoção/exclusão acessíveis sem deslocar o rodapé.
+- **Cores/tokens:** superfícies, texto, bordas, seleção, azul de ação e mensagens semânticas usam os tokens existentes. Tema/idioma à direita do sino e avatar sem seta mantêm os ajustes anteriores solicitados pelo usuário.
+- **Assets/ícones:** logo SVG fornecido e biblioteca Lucide reutilizados, sem ilustrações geradas ou reprodução rasterizada da interface. Iniciais refletem usuários reais, conforme o componente de identidade existente.
+- **Texto/conteúdo:** abas Usuários/Permissões/Agências/Clientes; formulário de criação e edição com textos próprios. Exclusão explica arquivamento, bloqueio e restauração. Permissões descreve os quatro perfis atuais; não há editor de perfis personalizados.
+
+### Interações e verificações
+
+Chrome: entrada Global diretamente na central; quatro abas; navegação entre abas com seta; busca; 12 linhas por página; rota antiga de Agências redirecionando para `?tab=agencies`; formulários de usuário, agência, cliente e permissão; erro de campos obrigatórios; alternância de escopo Global/Cliente; agência Demo B oferecendo somente Atlas/Cobalto; cancelamento sem salvar; aviso de arquivamento; mobile com painel de 390 × 844 e ações fixas. Nenhum erro/aviso capturado no console da aba de revisão.
+
+API local: 7 testes da central passaram (CRUD, atribuição/edição/revogação de perfis atuais, e-mail de definição de senha, bloqueio/restauração, preservação de vínculos e histórico, rejeição de agência/cliente incompatíveis, acesso exclusivo de Global e proteção do último Admin). Mais 18 testes existentes de isolamento/agências passaram. Os cadastros novos dos testes são fixtures locais e foram arquivados; não foram alteradas credenciais das contas demo. Migração aditiva aplicada no banco local.
+
+Verificação final: 36 testes unitários, lint, build dos contratos/API/frontend e `git diff --check` aprovados. O aviso conhecido de chunk inicial acima de 500 kB permanece. Os testes E2E foram adaptados à central, mas a suíte Playwright completa não foi reexecutada; os fluxos visuais acima foram conferidos via CUA. Não houve nova revisão integral com leitor de tela nem de todas as traduções/tema escuro. Publicação externa não faz parte desta entrega.
+
+### Checklist da entrega
+
+- [x] Central única com quatro abas e painéis funcionais.
+- [x] Perfis atuais e vínculos por agência/cliente.
+- [x] Arquivamento/restauração e proteções transacionais.
+- [x] Rotas anteriores redirecionadas, login Global atualizado.
+- [x] Comparação visual desktop, mobile e documentação.
+
+## Ajuste — nome e e-mail na edição de permissão
+
+**final result: passed**. O seletor “Nome do usuário” apresenta apenas o nome. O e-mail aparece em campo separado, somente leitura, preenchido pela conta selecionada. Conferência visual do painel com Admin, preservando layout e demais campos; nenhuma permissão foi salva durante a revisão. Evidência: [campos separados](output/management-center/permission-fields.jpg). TypeScript, ESLint, formatação e `git diff --check` aprovados para o ajuste.

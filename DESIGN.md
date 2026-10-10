@@ -392,3 +392,12 @@ Global visualiza todas as agências no seletor, inclusive as sem clientes e as i
 Ao selecionar uma agência, o menu permanece aberto e exibe seus clientes em uma lista recuada, com nome, identificação de cliente e indicador da seleção atual. A escolha explícita está disponível com qualquer quantidade de clientes, incluindo dois ou mais. “Acessar agência” aparece somente para Global e Super Admin autorizados. Agências sem clientes operáveis exibem uma mensagem; Administração global permanece uma opção separada para Global. Ao reabrir, a agência atual aparece expandida. As opções são atualizadas ao abrir o menu.
 
 Validação: 32 testes unitários (incluindo três clientes na mesma agência, permissões e 205 agências distribuídas em três páginas), build e lint. No Chrome, conferidos lista completa, expansão, agência sem clientes, seleção de Horizonte por teclado, retorno ao Global e menu em 390 px. Evidências em `output/workspace-agencies/`.
+
+
+## Central de gestão
+
+`/plataforma/gestao` reúne Usuários, Permissões, Agências e Clientes em abas. Usa o shell compartilhado (sidebar 215/80 px, logo 128 × 36 px e cabeçalho 64 px), tabela com superfície/borda do sistema, seleção azul, ações em reticências e paginação de 12 registros. Referência: `docs/references/management-center.png`.
+
+O painel lateral tem 474 px em desktop, começa abaixo do cabeçalho e mantém ações fixas no rodapé. Em telas até 1350 px, um backdrop separa o formulário; até 700 px, o painel ocupa a tela inteira. Tabelas mantêm largura legível e rolagem horizontal contida no mobile. As abas aceitam setas/Home/End, o formulário usa foco contido e Escape, e as transições respeitam movimento reduzido.
+
+As cores, família tipográfica, logotipo fornecido e ícones Lucide existentes foram reutilizados. Os controles de tema/idioma do cabeçalho e o avatar sem seta foram preservados. Estado/status, múltiplos vínculos e arquivamento estendem a referência para os dados reais da aplicação.
