@@ -184,7 +184,13 @@ function WorkspaceSwitcher({
           <span>
             <small>
               {tenant?.agencyName ??
-                t(agencyId ? "admin.agency" : "shell.platform")}
+                t(
+                  agencyId
+                    ? "admin.agency"
+                    : user.platformRole === "GLOBAL"
+                      ? "shell.platform"
+                      : "shell.agencyArea",
+                )}
             </small>
             <strong>{tenant?.name ?? agency?.name ?? "Market Analysis"}</strong>
           </span>
@@ -202,7 +208,8 @@ function WorkspaceSwitcher({
           <Dropdown.Label className="workspace-label">
             {t("shell.switch")}
           </Dropdown.Label>
-          {user.platformRole === "GLOBAL" && (
+          {(user.platformRole === "GLOBAL" ||
+            groups.some((group) => group.canManage)) && (
             <>
               <Dropdown.Item asChild>
                 <Link
@@ -210,7 +217,13 @@ function WorkspaceSwitcher({
                   aria-current={!tenant && !agencyId ? "page" : undefined}
                 >
                   <ShieldCheck aria-hidden="true" />
-                  <span>{t("shell.platform")}</span>
+                  <span>
+                    {t(
+                      user.platformRole === "GLOBAL"
+                        ? "shell.platform"
+                        : "management.title",
+                    )}
+                  </span>
                   {!tenant && !agencyId && (
                     <Check className="workspace-current" aria-hidden="true" />
                   )}
@@ -424,7 +437,10 @@ export function Shell() {
   const { session } = useSession();
   const user = session!.user;
   const q = useContexts(user.id);
-  const agencyQuery = useAgencies(user.id, !!agencyId);
+  const agencyQuery = useAgencies(
+    user.id,
+    !!agencyId || user.platformRole !== "GLOBAL",
+  );
   const location = useLocation();
   if (q.isPending) return <Loading />;
   if (q.isError) return <ErrorState error={q.error} />;
@@ -436,11 +452,28 @@ export function Shell() {
         <Link to="/app">Market Analysis</Link>
       </div>
     );
-  if (
-    canonicalAppPath(location.pathname).startsWith("/platform") &&
-    user.platformRole !== "GLOBAL"
-  )
-    return <Navigate to="/app" replace />;
+  const platformPath = canonicalAppPath(location.pathname);
+  const isManagementRoute = [
+    "/platform/management",
+    "/platform/agencies",
+    "/platform/clients",
+    "/platform/users",
+  ].includes(platformPath);
+  const canManage =
+    user.platformRole === "GLOBAL" ||
+    !!agencyQuery.data?.some((agency) => agency.active !== false);
+  if (platformPath.startsWith("/platform") && user.platformRole !== "GLOBAL") {
+    if (!isManagementRoute) return <Navigate to="/app" replace />;
+    if (agencyQuery.isPending) return <Loading />;
+    if (agencyQuery.isError)
+      return (
+        <ErrorState
+          error={agencyQuery.error}
+          retry={() => void agencyQuery.refetch()}
+        />
+      );
+    if (!canManage) return <Navigate to="/app" replace />;
+  }
   if (agencyId && agencyQuery.isPending) return <Loading />;
   if (
     agencyId &&
@@ -453,6 +486,7 @@ export function Shell() {
       tenant={tenant}
       user={user}
       contexts={q.data}
+      canManage={canManage}
     />
   );
 }
@@ -460,10 +494,12 @@ function ScopedShell({
   tenant,
   user,
   contexts,
+  canManage,
 }: {
   tenant?: Context;
   user: PublicUser;
   contexts: Context[];
+  canManage: boolean;
 }) {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
@@ -549,6 +585,15 @@ function ScopedShell({
                 },
               ]
             : []),
+        ...(canManage && user.platformRole !== "GLOBAL"
+          ? [
+              {
+                to: "/platform/management",
+                label: "management.title",
+                icon: LayoutGrid,
+              },
+            ]
+          : []),
       ]
     : agencyId
       ? [
@@ -557,31 +602,49 @@ function ScopedShell({
             label: "shell.clients",
             icon: Layers,
           },
+          ...(canManage
+            ? [
+                {
+                  to: "/platform/management",
+                  label: "management.title",
+                  icon: LayoutGrid,
+                },
+              ]
+            : []),
         ]
-      : [
-          {
-            to: "/platform/management",
-            label: "management.title",
-            icon: LayoutGrid,
-          },
-          {
-            to: "/platform/requests",
-            label: "shell.requests",
-            icon: ClipboardList,
-          },
-          {
-            to: "/platform/notifications",
-            label: "shell.notifications",
-            icon: Bell,
-          },
-          {
-            to: "/platform/preferences",
-            label: "shell.preferences",
-            icon: Settings,
-          },
-        ];
+      : user.platformRole !== "GLOBAL"
+        ? [
+            {
+              to: "/platform/management",
+              label: "management.title",
+              icon: LayoutGrid,
+            },
+          ]
+        : [
+            {
+              to: "/platform/management",
+              label: "management.title",
+              icon: LayoutGrid,
+            },
+            {
+              to: "/platform/requests",
+              label: "shell.requests",
+              icon: ClipboardList,
+            },
+            {
+              to: "/platform/notifications",
+              label: "shell.notifications",
+              icon: Bell,
+            },
+            {
+              to: "/platform/preferences",
+              label: "shell.preferences",
+              icon: Settings,
+            },
+          ];
   const preferencesTenant =
-    tenant ?? contexts.find((context) => context.agencyId === agencyId);
+    tenant ??
+    contexts.find((context) => !agencyId || context.agencyId === agencyId);
   const preferencesPath = tenant
     ? `/app/${tenant.id}/preferences`
     : user.platformRole === "GLOBAL"
@@ -603,7 +666,11 @@ function ScopedShell({
       <p className="platform-nav-label">
         {tenant
           ? tenant.name
-          : t(agencyId ? "shell.agencyArea" : "shell.platformLabel")}
+          : t(
+              agencyId || user.platformRole !== "GLOBAL"
+                ? "shell.agencyArea"
+                : "shell.platformLabel",
+            )}
       </p>
       <nav aria-label="Market Analysis">
         {nav
@@ -638,7 +705,8 @@ function ScopedShell({
           role={
             user.platformRole === "GLOBAL"
               ? t("shell.platform")
-              : (tenant?.role ?? t("shell.agencyArea"))
+              : (tenant?.role ??
+                t(canManage ? "role.SUPER_ADMIN" : "shell.agencyArea"))
           }
           preferencesPath={preferencesPath}
           inDrawer={inDrawer}
@@ -711,7 +779,9 @@ function ScopedShell({
                 />
               </div>
               <div className="header-tools">
-                {!agencyId && <NotificationBell />}
+                {!agencyId && (tenant || user.platformRole === "GLOBAL") && (
+                  <NotificationBell />
+                )}
                 <ThemeToggle />
                 <Language />
               </div>
@@ -826,7 +896,7 @@ export function PageHeading({
   children?: ReactNode;
 }) {
   const { t } = useTranslation();
-  const { tenant } = useScope();
+  const { tenant, user } = useScope();
   const { agencyId } = useParams();
   const home = tenant
     ? `/app/${tenant.id}/chat`
@@ -840,7 +910,11 @@ export function PageHeading({
           <li>
             <Link to={home}>
               {tenant?.name ??
-                t(agencyId ? "shell.agencyArea" : "shell.platform")}
+                t(
+                  agencyId || user.platformRole !== "GLOBAL"
+                    ? "shell.agencyArea"
+                    : "shell.platform",
+                )}
             </Link>
           </li>
           <li aria-hidden="true">/</li>

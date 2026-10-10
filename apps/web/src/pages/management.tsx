@@ -13,6 +13,7 @@ import {
   Pencil,
   Trash2,
   RotateCcw,
+  Archive,
   Link2,
   X,
 } from "lucide-react";
@@ -53,7 +54,7 @@ import "./management.css";
 
 type RecordItem =
   ManagementUser | ManagementAgency | ManagementClient | ManagementPermission;
-const tabs = [
+const managementTabs = [
   { key: "users", icon: Users },
   { key: "permissions", icon: ShieldCheck },
   { key: "agencies", icon: Building2 },
@@ -68,8 +69,13 @@ const summary = (names: string[]) => [...new Set(names)].join(", ") || "—";
 export function Management() {
   const { t } = useTranslation(),
     scope = useScope();
+  const tabs =
+    scope.user.platformRole === "GLOBAL"
+      ? managementTabs
+      : managementTabs.filter((tab) => tab.key === "permissions");
   const [params, setParams] = useSearchParams();
-  const tab = tabs.find((x) => x.key === params.get("tab"))?.key ?? "users";
+  const tab =
+    tabs.find((x) => x.key === params.get("tab"))?.key ?? tabs[0]!.key;
   const [search, setSearch] = useState("");
   const [agency, setAgency] = useState("");
   const [view, setView] = useState<"current" | "archived">("current");
@@ -121,6 +127,24 @@ export function Management() {
     setPage(1);
     setEdit(undefined);
   };
+  function statusCell(
+    item: ManagementUser | ManagementAgency | ManagementClient,
+  ) {
+    return (
+      <td data-label={t("common.status")}>
+        {archived(item) ? (
+          <span className="record-status is-inactive">
+            <Archive className="management-archive-icon" aria-hidden="true" />
+            {t("management.archived")}
+          </span>
+        ) : "active" in item ? (
+          <ActiveStatus active={item.active} />
+        ) : (
+          <Badge status={item.status} />
+        )}
+      </td>
+    );
+  }
   function cells(item: RecordItem) {
     if (tab === "users") {
       const user = item as ManagementUser;
@@ -133,11 +157,6 @@ export function Management() {
             >
               <RecordIdentity name={user.name} detail={user.email} />
             </button>
-            {!user.active && (
-              <span className="management-inactive">
-                {t("common.inactive")}
-              </span>
-            )}
           </td>
           <td data-label={t("admin.agency")}>
             {summary(user.tenants.map((m) => m.tenant.agency.name))}
@@ -145,6 +164,7 @@ export function Management() {
           <td data-label={t("admin.client")}>
             {summary(user.tenants.map((m) => m.tenant.name))}
           </td>
+          {statusCell(user)}
         </>
       );
     }
@@ -195,9 +215,7 @@ export function Management() {
               <RecordIdentity name={agency.name} detail={agency.slug} />
             </button>
           </td>
-          <td data-label={t("common.status")}>
-            <ActiveStatus active={agency.active} />
-          </td>
+          {statusCell(agency)}
         </>
       );
     }
@@ -213,15 +231,13 @@ export function Management() {
           </button>
         </td>
         <td data-label={t("admin.agency")}>{client.agency.name}</td>
-        <td data-label={t("common.status")}>
-          <Badge status={client.status} />
-        </td>
+        {statusCell(client)}
       </>
     );
   }
   const columns =
     tab === "users"
-      ? ["management.user", "admin.agency", "admin.client"]
+      ? ["management.user", "admin.agency", "admin.client", "common.status"]
       : tab === "permissions"
         ? ["management.user", "management.permission", "management.scope"]
         : tab === "agencies"
@@ -231,7 +247,11 @@ export function Management() {
     <main className={`page management-page${edit ? " has-editor" : ""}`}>
       <PageHeading
         title={t("management.title")}
-        description={t("management.description")}
+        description={t(
+          scope.user.platformRole === "GLOBAL"
+            ? "management.description"
+            : "management.permissionsDescription",
+        )}
       />
       <div
         className="management-tabs"
@@ -291,7 +311,7 @@ export function Management() {
             }}
           />
           {tab !== "agencies" && (
-            <label className="management-agency-filter">
+            <label className="management-filter">
               <Building2 aria-hidden="true" />
               <select
                 aria-label={t("admin.agency")}
@@ -307,6 +327,24 @@ export function Management() {
                     {a.name}
                   </option>
                 ))}
+              </select>
+            </label>
+          )}
+          {tab !== "permissions" && (
+            <label className="management-filter management-view-filter">
+              <Archive aria-hidden="true" />
+              <select
+                aria-label={t("management.recordView")}
+                value={view}
+                onChange={(e) => {
+                  setView(e.target.value as "current" | "archived");
+                  setPage(1);
+                }}
+              >
+                <option value="current">{t("management.notArchived")}</option>
+                <option value="archived">
+                  {t("management.archivedRecords")}
+                </option>
               </select>
             </label>
           )}
@@ -328,6 +366,7 @@ export function Management() {
           <div className="table-scroll">
             <table
               className="record-table management-table"
+              data-kind={tab}
               aria-label={t(`management.${tab}`)}
             >
               <thead>
@@ -386,19 +425,6 @@ export function Management() {
             <p>
               {t("management.count", { count: list.data?.items.length ?? 0 })}
             </p>
-            {tab !== "permissions" && (
-              <label className="management-archive-filter">
-                <input
-                  type="checkbox"
-                  checked={view === "archived"}
-                  onChange={(e) => {
-                    setView(e.target.checked ? "archived" : "current");
-                    setPage(1);
-                  }}
-                />
-                {t("management.showArchived")}
-              </label>
-            )}
           </div>
           {!!list.data?.total && (
             <Pagination
@@ -911,9 +937,11 @@ function ManagementEditor({
                     <option value="AGENCY">
                       {t("admin.agency")} · Super Admin
                     </option>
-                    <option value="GLOBAL">
-                      {t("shell.platform")} · Global
-                    </option>
+                    {options.role === "GLOBAL" && (
+                      <option value="GLOBAL">
+                        {t("shell.platform")} · Global
+                      </option>
+                    )}
                   </select>
                 </Field>
                 {values.scope !== "GLOBAL" && (

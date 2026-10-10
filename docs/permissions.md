@@ -3,7 +3,8 @@
 | Operação | Global | Super Admin | Admin | User |
 | --- | --- | --- | --- | --- |
 | Agências/tenants/estado de conta/papel Global | Plataforma | Não | Não | Não |
-| Atribuir Super Admin | Plataforma | Não | Não | Não |
+| Atribuir Super Admin | Plataforma | Suas agências | Não | Não |
+| Acessar Central de gestão | Todas as abas | Somente Permissões | Não | Não |
 | Triagem de pedido sem classificação | Plataforma | Não | Não | Não |
 | Revisar pedido já classificado | Qualquer tenant ativo | Sua agência | Seu tenant | Não |
 | Gerir Admin/User e convites | Qualquer tenant ativo | Sua agência | Seu tenant | Não |
@@ -26,6 +27,8 @@ As contas demo abrangentes servem para demonstrar navegação. A prova negativa 
 
 ## Central de gestão
 
-Os endpoints `/platform/management/*` exigem Global, inclusive leitura de listas e opções. Os formulários validam Agência → Cliente no servidor e não aceitam perfis arbitrários. Salvar dados do usuário afeta seus vínculos diretos com clientes; Global e Super Admin são administrados separadamente na aba Permissões. A criação de cliente na central associa um Admin existente e o ativa na mesma transação; o fluxo anterior de convite/bootstrap continua com suas regras de provisioning.
+A Central de gestão exige Global ou vínculo ativo de Super Admin em agência ativa. Global acessa todas as abas e pode conceder até Global. Super Admin acessa somente Permissões, podendo conceder/editar/revogar Super Admin nas suas agências e Admin/User nos clientes dessas agências. Admin e User não acessam a rota nem seus endpoints. Os cadastros de usuários, agências e clientes permanecem exclusivos de Global, inclusive leitura das listas administrativas e restauração. Os formulários validam Agência → Cliente no servidor e não aceitam perfis arbitrários. Salvar dados do usuário afeta seus vínculos diretos com clientes; Global e Super Admin são administrados separadamente na aba Permissões. A criação de cliente na central associa um Admin existente e o ativa na mesma transação; o fluxo anterior de convite/bootstrap continua com suas regras de provisioning.
 
 O arquivamento mantém as entidades e os vínculos, marca usuário/agência como inativos ou cliente como disabled, e registra auditoria. Arquivar usuário revoga sessões e tokens de senha. Edição legada não reativa registros arquivados; restauração é explícita e revalida os responsáveis. Trocar o e-mail invalida sessões, tokens de senha e convites pendentes para o endereço anterior. Nenhuma dessas operações remove conversas ou eventos de auditoria.
+
+Para Super Admin, opções, busca e paginação incluem somente agências administradas, seus clientes e usuários já vinculados a esses escopos. Identidades Global não aparecem e seus vínculos não podem ser modificados por Super Admin. A API revalida o papel e a agência em cada requisição, valida IDs antigos e novos durante edição e mantém alterações sob o lock transacional do grafo de acesso. A revogação do vínculo Super Admin ou a desativação da agência bloqueia a próxima operação.

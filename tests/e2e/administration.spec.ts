@@ -75,14 +75,21 @@ test("Global manages agencies and clients in one route with archive and restorat
   }
   await archive(client + " atualizado");
   await expect(row).toHaveCount(0);
-  await page.getByRole("checkbox", { name: "Mostrar arquivados" }).check();
+  await page
+    .getByRole("combobox", { name: "Exibir registros" })
+    .selectOption("archived");
+  await expect(
+    row.getByRole("cell", { name: "Arquivado", exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: `Ações de ${client} atualizado`, exact: true })
     .click();
   await page.getByRole("menuitem", { name: "Restaurar", exact: true }).click();
   await dialog.getByRole("button", { name: "Restaurar", exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await page.getByRole("checkbox", { name: "Mostrar arquivados" }).uncheck();
+  await page
+    .getByRole("combobox", { name: "Exibir registros" })
+    .selectOption("current");
   await expect(row).toBeVisible();
   await archive(client + " atualizado");
   await page.getByRole("tab", { name: "Agências", exact: true }).click();
@@ -125,3 +132,50 @@ test("Super Admin enters agency and tenant management without platform mutation 
     page.getByRole("button", { name: "Convidar membro", exact: true }),
   ).toBeVisible();
 });
+
+test("Super Admin sees only Permissions and cannot select Global", async ({
+  page,
+}) => {
+  await signIn(page, "superadmin");
+  await page
+    .getByRole("link", { name: "Central de gestão", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/plataforma\/gestao$/);
+  await expect(page.getByRole("tab")).toHaveCount(1);
+  await expect(
+    page.getByRole("tab", { name: "Permissões", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await page
+    .getByRole("button", { name: "Criar permissão", exact: true })
+    .click();
+  const scope = page
+    .getByRole("dialog")
+    .getByRole("combobox", { name: "Escopo de acesso", exact: true });
+  await expect(scope.locator("option")).toHaveText([
+    "Cliente",
+    "Agência · Super Admin",
+  ]);
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Cancelar", exact: true })
+    .click();
+  await page.goto("/plataforma/gestao?tab=users");
+  await expect(
+    page.getByRole("tab", { name: "Permissões", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(
+    page.getByRole("button", { name: "Criar usuário", exact: true }),
+  ).toHaveCount(0);
+});
+for (const role of ["admin", "user"])
+  test(`${role} cannot enter the management route`, async ({ page }) => {
+    await signIn(page, role);
+    await expect(
+      page.getByRole("link", { name: "Central de gestão", exact: true }),
+    ).toHaveCount(0);
+    await page.goto("/plataforma/gestao");
+    await expect(page).toHaveURL(/\/app\/[^/]+\/conversas$/);
+    await expect(
+      page.getByRole("heading", { name: "Central de gestão", exact: true }),
+    ).toHaveCount(0);
+  });

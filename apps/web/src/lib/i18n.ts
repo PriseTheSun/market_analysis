@@ -21,6 +21,11 @@ const copy: Record<string, [string, string, string]> = {
   "management.agencies": ["Agências", "Agencies", "Agencias"],
   "management.clients": ["Clientes", "Clients", "Clientes"],
   "management.user": ["Usuário", "User", "Usuario"],
+  "management.permissionsDescription": [
+    "Gerencie as permissões de acesso nas suas agências.",
+    "Manage access permissions within your agencies.",
+    "Gestiona los permisos de acceso en tus agencias.",
+  ],
   "management.userName": ["Nome do usuário", "User name", "Nombre del usuario"],
   "management.permission": ["Permissão", "Permission", "Permiso"],
   "management.scope": ["Escopo de acesso", "Access scope", "Ámbito de acceso"],
@@ -252,11 +257,14 @@ const copy: Record<string, [string, string, string]> = {
     "Restoring reactivates this record and associated access. Required administrator rules still apply.",
     "La restauración reactiva este registro y sus accesos. Se siguen verificando las reglas de responsables.",
   ],
-  "management.showArchived": [
-    "Mostrar arquivados",
-    "Show archived",
-    "Mostrar archivados",
+  "management.recordView": [
+    "Exibir registros",
+    "Show records",
+    "Mostrar registros",
   ],
+  "management.notArchived": ["Não arquivados", "Not archived", "No archivados"],
+  "management.archivedRecords": ["Arquivados", "Archived", "Archivados"],
+  "management.archived": ["Arquivado", "Archived", "Archivado"],
   "management.empty": [
     "Nenhum registro encontrado",
     "No records found",

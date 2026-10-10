@@ -7,6 +7,7 @@ import type {
   ManagementClientInput,
   PermissionInput,
 } from "@market/contracts";
+import type { Prisma } from "../generated/prisma/client.js";
 import { DatabaseService, type Tx } from "../database/database.service.js";
 import type { Actor } from "../authorization/policy.js";
 import { AuditService } from "../audit/audit.service.js";
@@ -33,10 +34,76 @@ export class ManagementService {
     @Inject(AuditService) private audit: AuditService,
     @Inject(MailService) private mail: MailService,
   ) {}
+  private manage<T>(
+    actor: Actor,
+    fn: (tx: Tx, current: Actor, agencyIds: string[] | null) => Promise<T>,
+    mutatesAccess = false,
+  ) {
+    return this.db.metadata.$transaction(
+      async (tx) => {
+        if (mutatesAccess) await this.db.lockAccess(tx);
+        const current = await this.db.actor(tx, actor);
+        const agencyIds =
+          current.platformRole === "GLOBAL"
+            ? null
+            : (
+                await tx.agencyMembership.findMany({
+                  where: {
+                    userId: current.id,
+                    active: true,
+                    role: "SUPER_ADMIN",
+                    agency: { active: true, archivedAt: null },
+                  },
+                  select: { agencyId: true },
+                })
+              ).map((m) => m.agencyId);
+        if (agencyIds && !agencyIds.length)
+          throw new AppError(403, "FORBIDDEN");
+        await this.db.setContext(tx, current, null);
+        return fn(tx, current, agencyIds);
+      },
+      { timeout: 10000 },
+    );
+  }
+  private requireAgency(agencyIds: string[] | null, agencyId: string) {
+    if (agencyIds && !agencyIds.includes(agencyId))
+      throw new AppError(404, "NOT_FOUND");
+  }
+  private visibleUser(agencyIds: string[] | null): Prisma.UserWhereInput {
+    return agencyIds
+      ? {
+          platformRole: null,
+          AND: [
+            {
+              OR: [
+                {
+                  agencies: {
+                    some: { active: true, agencyId: { in: agencyIds } },
+                  },
+                },
+                {
+                  tenants: {
+                    some: {
+                      active: true,
+                      tenant: { agencyId: { in: agencyIds } },
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        }
+      : {};
+  }
   options(actor: Actor) {
-    return this.db.global(actor, async (tx) => ({
+    return this.manage(actor, async (tx, current, agencyIds) => ({
+      role: current.platformRole === "GLOBAL" ? "GLOBAL" : "SUPER_ADMIN",
       agencies: await tx.agency.findMany({
-        where: { active: true, archivedAt: null },
+        where: {
+          active: true,
+          archivedAt: null,
+          ...(agencyIds ? { id: { in: agencyIds } } : {}),
+        },
         orderBy: { name: "asc" },
       }),
       clients: await tx.tenant.findMany({
@@ -44,19 +111,27 @@ export class ManagementService {
           status: "active",
           archivedAt: null,
           agency: { active: true, archivedAt: null },
+          ...(agencyIds ? { agencyId: { in: agencyIds } } : {}),
         },
         include: agencyInclude,
         orderBy: { name: "asc" },
       }),
       users: await tx.user.findMany({
-        where: { active: true, archivedAt: null },
+        where: {
+          active: true,
+          archivedAt: null,
+          ...this.visibleUser(agencyIds),
+        },
         select: userSelect,
         orderBy: { name: "asc" },
       }),
     }));
   }
   list(actor: Actor, kind: ManagementKind, p: ManagementListInput) {
-    return this.db.global(actor, async (tx) => {
+    return this.manage(actor, async (tx, _current, agencyIds) => {
+      if (agencyIds && kind !== "permissions")
+        throw new AppError(403, "FORBIDDEN");
+      if (p.agencyId) this.requireAgency(agencyIds, p.agencyId);
       const archivedAt = p.view === "archived" ? { not: null } : null;
       const match = { contains: p.search, mode: "insensitive" as const };
       if (kind === "users") {
@@ -116,20 +191,23 @@ export class ManagementService {
         );
       }
       const user = {
+        ...this.visibleUser(agencyIds),
         archivedAt: null,
         OR: [{ name: match }, { email: match }],
       };
-      const globals = p.agencyId
-        ? []
-        : await tx.user.findMany({
-            where: { ...user, platformRole: "GLOBAL" },
-            select: userSelect,
-          });
+      const globals =
+        p.agencyId || agencyIds
+          ? []
+          : await tx.user.findMany({
+              where: { ...user, platformRole: "GLOBAL" },
+              select: userSelect,
+            });
       const agencies = await tx.agencyMembership.findMany({
         where: {
           active: true,
           user,
           agency: { archivedAt: null },
+          ...(agencyIds ? { agencyId: { in: agencyIds } } : {}),
           ...(p.agencyId ? { agencyId: p.agencyId } : {}),
         },
         include: { user: { select: userSelect }, agency: true },
@@ -140,6 +218,7 @@ export class ManagementService {
           user,
           tenant: {
             archivedAt: null,
+            ...(agencyIds ? { agencyId: { in: agencyIds } } : {}),
             ...(p.agencyId ? { agencyId: p.agencyId } : {}),
           },
         },
@@ -406,9 +485,10 @@ export class ManagementService {
       true,
     );
   }
-  private async revoke(tx: Tx, id: string) {
+  private async revoke(tx: Tx, id: string, agencyIds: string[] | null) {
     const [kind, key] = id.split(":");
     if (kind === "global") {
+      if (agencyIds) throw new AppError(403, "FORBIDDEN");
       if (
         !(await tx.user.findFirst({
           where: { id: key, platformRole: "GLOBAL", archivedAt: null },
@@ -422,7 +502,13 @@ export class ManagementService {
     } else if (kind === "agency") {
       if (
         !(await tx.agencyMembership.findFirst({
-          where: { id: key, active: true },
+          where: {
+            id: key,
+            active: true,
+            ...(agencyIds
+              ? { agencyId: { in: agencyIds }, user: { platformRole: null } }
+              : {}),
+          },
         }))
       )
         throw new AppError(404, "NOT_FOUND");
@@ -433,7 +519,16 @@ export class ManagementService {
     } else {
       if (
         !(await tx.tenantMembership.findFirst({
-          where: { id: key, active: true },
+          where: {
+            id: key,
+            active: true,
+            ...(agencyIds
+              ? {
+                  tenant: { agencyId: { in: agencyIds } },
+                  user: { platformRole: null },
+                }
+              : {}),
+          },
         }))
       )
         throw new AppError(404, "NOT_FOUND");
@@ -449,18 +544,26 @@ export class ManagementService {
     data: PermissionInput,
     requestId: string,
   ) {
-    return this.db.global(
+    return this.manage(
       actor,
-      async (tx, current) => {
+      async (tx, current, agencyIds) => {
+        if (agencyIds && data.scope === "GLOBAL")
+          throw new AppError(403, "FORBIDDEN");
+        if (data.agencyId) this.requireAgency(agencyIds, data.agencyId);
         if (
           !(await tx.user.findFirst({
-            where: { id: data.userId, active: true, archivedAt: null },
+            where: {
+              id: data.userId,
+              active: true,
+              archivedAt: null,
+              ...this.visibleUser(agencyIds),
+            },
           }))
         )
           throw new AppError(400, "VALIDATION_ERROR", {
             userId: ["invalid_user"],
           });
-        if (id) await this.revoke(tx, id);
+        if (id) await this.revoke(tx, id, agencyIds);
         let resultId: string;
         if (data.scope === "GLOBAL") {
           await tx.user.update({
@@ -524,10 +627,10 @@ export class ManagementService {
     );
   }
   removePermission(actor: Actor, id: string, requestId: string) {
-    return this.db.global(
+    return this.manage(
       actor,
-      async (tx, current) => {
-        await this.revoke(tx, id);
+      async (tx, current, agencyIds) => {
+        await this.revoke(tx, id, agencyIds);
         await this.db.assertResponsibilities(tx);
         await this.audit.record(tx, current, "permission.removed", requestId, {
           resourceId: id,

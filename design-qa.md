@@ -124,3 +124,17 @@ Verificação final: 36 testes unitários, lint, build dos contratos/API/fronten
 ## Ajuste — nome e e-mail na edição de permissão
 
 **final result: passed**. O seletor “Nome do usuário” apresenta apenas o nome. O e-mail aparece em campo separado, somente leitura, preenchido pela conta selecionada. Conferência visual do painel com Admin, preservando layout e demais campos; nenhuma permissão foi salva durante a revisão. Evidência: [campos separados](output/management-center/permission-fields.jpg). TypeScript, ESLint, formatação e `git diff --check` aprovados para o ajuste.
+
+## Ajuste — hierarquia e acesso à Central
+
+**final result: passed**. Global mantém as quatro abas e pode atribuir Global. Super Admin acessa somente Permissões e pode atribuir Super Admin, Admin e User nas agências que administra. Cadastro, edição, arquivamento e restauração de usuários, agências e clientes na Central permanecem exclusivos de Global. Admin e User não acessam a rota nem a API da Central.
+
+Chrome com conta de teste isolada: somente a aba Permissões, inclusive ao abrir `?tab=users`; formulário oferece Cliente e Agência · Super Admin, sem Global; nomes e e-mails continuam separados. Agência e usuários disponíveis correspondem ao escopo autorizado. Nenhuma permissão foi salva durante a conferência visual. Console sem erros ou avisos. Evidência: [Super Admin na Central](output/management-center/superadmin-permissions.png). A conta demo de Super Admin estava sem vínculo ativo com agência; seus vínculos não foram alterados. Os cadastros isolados da conferência foram arquivados ao final.
+
+Verificações aprovadas: 14 testes de integração (7 novos de hierarquia e isolamento e 7 existentes da Central), 36 testes unitários, lint, TypeScript/build de contratos/API/frontend e `git diff --check`. Os testes verificam recusa de elevação a Global, acesso a outra agência, alterações em identidades Global, operações de Admin/User e perda de acesso após revogação. Casos E2E foram adicionados; a suíte Playwright completa não foi executada. O aviso existente sobre tamanho do chunk inicial permanece.
+
+## Ajuste — status e acesso aos arquivados
+
+**final result: passed**. Usuários agora possui coluna Status com Ativo, Inativo e Arquivado. Usuários, Agências e Clientes distinguem os cadastros arquivados dos apenas inativos. O filtro “Exibir registros” fica na barra ao lado da busca, com Não arquivados e Arquivados; substitui o checkbox antes localizado no rodapé. O menu de reticências mantém Restaurar para cadastros arquivados. A paginação continua com 12 registros e retorna à primeira página ao alterar o filtro.
+
+Conferência Chrome: listagens arquivadas das três abas, abertura de Restaurar sem efetivar alterações e filtros legíveis em desktop e mobile de 390 × 844. O mobile usa rolagem horizontal contida na tabela, sem overflow do documento. Console sem erros/avisos; viewport restaurado. Evidências: [arquivados e ação Restaurar](output/management-center/archived-users.png) e [filtros mobile](output/management-center/status-mobile.png). Build/TypeScript do frontend, ESLint dos arquivos alterados, Prettier e `git diff --check` aprovados. O E2E existente de arquivamento/restauração foi atualizado para o novo seletor; a suíte completa não foi executada. Nenhuma alteração de backend ou de dados nesta revisão.

@@ -126,6 +126,7 @@ export interface ManagementPermission {
   client?: ManagementClient;
 }
 export interface ManagementOptions {
+  role: "GLOBAL" | "SUPER_ADMIN";
   agencies: ManagementAgency[];
   clients: ManagementClient[];
   users: { id: string; name: string; email: string }[];
