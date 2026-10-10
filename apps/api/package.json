@@ -1,6 +1,49 @@
 {
- "name":"@market/api","version":"0.1.0","private":true,"type":"module",
- "scripts":{"build":"tsc -p tsconfig.json","typecheck":"tsc -p tsconfig.json --noEmit","dev":"tsx watch --env-file=../../.env src/main.ts","start":"node dist/main.js","db:generate":"prisma generate","db:migrate":"prisma migrate deploy","db:seed":"tsx --env-file=../../.env prisma/seed.ts"},
- "dependencies":{"@market/contracts":"workspace:*","@nestjs/common":"11.2.7","@nestjs/core":"11.2.7","@nestjs/platform-express":"11.2.7","@nestjs/swagger":"11.4.7","@prisma/client":"7.10.0","@prisma/adapter-pg":"7.10.0","zod":"4.6.5","argon2":"0.45.1","cookie-parser":"1.4.7","helmet":"8.3.0","nodemailer":"10.0.16","pg":"8.23.1","reflect-metadata":"0.2.2","rxjs":"7.8.2","@aws-sdk/client-s3":"3.1149.0","@aws-sdk/s3-presigned-post":"3.1149.0","@aws-sdk/s3-request-presigner":"3.1149.0","file-type":"22.1.1","fflate":"0.8.3","dotenv":"18.0.7"},
- "devDependencies":{"@market/config":"workspace:*","prisma":"7.10.0","@types/express":"5.0.6","@types/cookie-parser":"1.4.10","@types/nodemailer":"8.0.2","@types/pg":"8.23.1","supertest":"7.3.1","@types/supertest":"7.2.1"}
+ "name": "@market/api",
+ "version": "0.1.0",
+ "private": true,
+ "type": "module",
+ "scripts": {
+  "build": "tsc -p tsconfig.json",
+  "typecheck": "tsc -p tsconfig.json --noEmit",
+  "dev": "tsx watch --env-file=../../.env src/main.ts",
+  "start": "node dist/main.js",
+  "db:generate": "prisma generate",
+  "db:migrate": "prisma migrate deploy",
+  "db:seed": "tsx --env-file=../../.env prisma/seed.ts"
+ },
+ "dependencies": {
+  "@aws-sdk/client-s3": "3.1149.0",
+  "@aws-sdk/s3-presigned-post": "3.1149.0",
+  "@aws-sdk/s3-request-presigner": "3.1149.0",
+  "@market/contracts": "workspace:*",
+  "@nestjs/common": "11.2.7",
+  "@nestjs/core": "11.2.7",
+  "@nestjs/platform-express": "11.2.7",
+  "@nestjs/swagger": "11.4.7",
+  "@prisma/adapter-pg": "7.10.0",
+  "@prisma/client": "7.10.0",
+  "argon2": "0.45.1",
+  "cookie-parser": "1.4.7",
+  "dotenv": "18.0.7",
+  "fflate": "0.8.3",
+  "file-type": "22.1.1",
+  "helmet": "8.3.0",
+  "nodemailer": "10.0.16",
+  "pg": "8.23.1",
+  "reflect-metadata": "0.2.2",
+  "rxjs": "7.8.2",
+  "sharp": "0.35.5",
+  "zod": "4.6.5"
+ },
+ "devDependencies": {
+  "@market/config": "workspace:*",
+  "@types/cookie-parser": "1.4.10",
+  "@types/express": "5.0.6",
+  "@types/nodemailer": "8.0.2",
+  "@types/pg": "8.23.1",
+  "@types/supertest": "7.2.1",
+  "prisma": "7.10.0",
+  "supertest": "7.3.1"
+ }
 }

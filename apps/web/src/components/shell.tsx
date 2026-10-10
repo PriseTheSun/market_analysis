@@ -31,6 +31,7 @@ import {
   X,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { UserAvatar } from "./user-avatar";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
@@ -396,7 +397,7 @@ function AccountMenu({
           className="platform-account-trigger"
           aria-label={t("shell.accountMenu", { name: user.name })}
         >
-          <span className="avatar">{user.name.slice(0, 2).toUpperCase()}</span>
+          <UserAvatar user={user} />
           <span className="platform-account-identity">
             <strong>{user.name}</strong>
             <small>{role}</small>

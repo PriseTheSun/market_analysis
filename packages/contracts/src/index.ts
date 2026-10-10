@@ -160,7 +160,10 @@ export interface PublicUser {
   name: string;
   email: string;
   platformRole: "GLOBAL" | null;
+  avatarUrl: string | null;
 }
+export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
+export const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export interface Preference {
   locale: Locale;
   theme: "light" | "dark" | null;

@@ -12,6 +12,7 @@
 | Conversas pessoais | Apenas próprias | Apenas próprias | Apenas próprias | Apenas próprias |
 | Auditoria excepcional de conversas | Tela separada, motivo obrigatório | Não | Não | Não |
 | Preferências, notificações, tour | Próprios | Próprios | Próprios | Próprios |
+| Enviar, visualizar e remover foto de perfil | Própria | Própria | Própria | Própria |
 
 Global é atributo da identidade. Super Admin é vínculo de agência. Admin/User são vínculos de tenant; uma pessoa pode ter papéis diferentes em dois tenants. A política usa o contexto da requisição, não o maior papel da pessoa. Conta e vínculos são revalidados em cada operação; streams revalidam em heartbeat de 2 s, com teste de revogação abaixo de 5 s.
 
@@ -22,6 +23,8 @@ Alterações do grafo de acesso usam lock transacional compartilhado e validam q
 PostgreSQL aplica RLS com FORCE ao conteúdo por tenant. O pool runtime não é owner, superuser nem BYPASSRLS; o contexto é definido com `set_config(..., true)` dentro de transações curtas. Relacionamentos compostos impedem mensagem ligada à conversa de outro tenant. Propriedade de conversa é validada no serviço; RLS complementa a fronteira de tenant e não substitui as políticas. O runtime mantém acesso às tabelas de identidade necessárias à autenticação, sem permissão de alterar schema. Auditoria é append-only para runtime.
 
 Notificações têm destinatário e escopo; escopo nulo exige Global. A consulta reavalia permissões e omite antigos eventos administrativos de arquivo/pedido/convite se a pessoa passar a User. Contagens e marcação usam os mesmos filtros. Um link S3 já emitido não pode ser revogado individualmente e permanece válido até a expiração de 60 s.
+
+A foto de perfil é pessoal, sem dependência do workspace. Os endpoints de avatar usam sempre o usuário da sessão, não recebem ID de destinatário e não expõem URL pública. `UserAvatar` aplica FORCE RLS por `app.actor_id`, inclusive para Global. Substituição e remoção atualizam os bytes e a versão da imagem na mesma transação e registram auditoria. Conteúdo original e metadados não são armazenados; SVG, arquivos corrompidos, formatos não permitidos e imagens acima dos limites são recusados. Falhas de upload preservam a foto anterior.
 
 As contas demo abrangentes servem para demonstrar navegação. A prova negativa usa agências A/B e tenants A1/A2/B1 restritos nos testes, incluindo papel Admin em A1 e User em A2.
 

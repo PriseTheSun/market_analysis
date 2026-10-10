@@ -83,6 +83,8 @@ As instruções do ambiente isolado, resultados e limitações estão em [Valida
 
 ## Integrações
 
+Preferências (`/plataforma/preferencias`) inclui foto de perfil com prévia, envio, substituição e remoção. Aceita JPG/PNG/WebP estáticos até 2 MiB e 20 megapixels. A API valida e converte para WebP quadrado de 256 px, sem metadados, limitado a 256 KiB; somente essa versão é armazenada em `UserAvatar`, separada da identidade e protegida por RLS por usuário. `GET/POST/DELETE /api/v1/preferences/avatar` exige sessão; alterações exigem CSRF. A leitura é privada, sem cache público. O avatar atualiza no menu da conta e persiste entre sessões. Migração: `202610100003_user_avatar` (`pnpm db:migrate` e `pnpm db:generate`). A CSP do proxy permite `blob:` somente em imagens para a prévia local.
+
 O S3 é privado e usa endpoints interno/público distintos. PDF/CSV/XLSX/TXT têm limite real de 25 MiB na policy, conteúdo validado antes de disponibilidade e quota padrão de 1 GiB por tenant. Links de download expiram em 60 s. SMTP local usa Mailpit; entregas falhadas permanecem na outbox cifrada para retry ou reenvio administrativo.
 
 Para ambiente externo, configure banco, SMTP, S3, origens, TLS/cookies e a CSP do proxy. O Compose e sua CSP são deliberadamente locais. Um provider de IA real deve implementar `ChatProvider` em `apps/api/src/chat/chat.provider.ts`, ser registrado pela factory e validado no backend. Apenas fornecer uma chave não ativa uma integração: nenhum provedor real foi configurado nesta entrega. Não houve publicação em produção.

@@ -27,11 +27,15 @@ export const publicUser = (u: {
   name: string;
   email: string;
   platformRole: "GLOBAL" | null;
+  avatarVersion: string | null;
 }) => ({
   id: u.id,
   name: u.name,
   email: u.email,
   platformRole: u.platformRole,
+  avatarUrl: u.avatarVersion
+    ? `/api/v1/preferences/avatar?v=${u.avatarVersion}`
+    : null,
 });
 @Injectable()
 export class AuthService {

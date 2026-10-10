@@ -55,6 +55,8 @@ model User {
   sessions Session[]
   resets PasswordReset[]
   preference UserPreference?
+  avatar UserAvatar?
+  avatarVersion String? @db.Uuid
   conversations Conversation[]
   notifications Notification[]
   progress OnboardingProgress[]
@@ -182,6 +184,11 @@ model UserPreference {
   locale String @default("pt-BR")
   theme String?
   timeZone String @default("America/Sao_Paulo")
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+}
+model UserAvatar {
+  userId String @id @db.Uuid
+  image Bytes
   user User @relation(fields:[userId],references:[id],onDelete:Restrict)
 }
 model OnboardingProgress {

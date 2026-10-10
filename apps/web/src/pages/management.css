@@ -58,7 +58,7 @@
   border: 1px solid var(--border);
   background: var(--surface);
   border-radius: 6px;
-  padding-left: 14px;
+  padding-inline: 14px;
   width: 250px;
   max-width: 100%;
 }

@@ -11,6 +11,7 @@ const user: PublicUser = {
   name: "Pessoa",
   email: "user@example.test",
   platformRole: null,
+  avatarUrl: null,
 };
 const contexts: Context[] = [
   {

@@ -309,12 +309,21 @@ input[type="checkbox"] {
 }
 .language > svg {
   position: absolute;
-  left: 12px;
   pointer-events: none;
 }
+.language > .language-globe {
+  left: 12px;
+}
+.language > .language-chevron {
+  right: 14px;
+  width: 14px;
+  height: 14px;
+}
 .language select {
+  appearance: none;
   width: 128px;
   padding-left: 40px;
+  padding-right: 36px;
   min-height: 40px;
   font-weight: 500;
 }
@@ -724,6 +733,13 @@ input[type="checkbox"] {
   font-size: 12px;
   font-weight: 600;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .user-detail > span:last-child {
   min-width: 0;
@@ -1250,6 +1266,58 @@ td {
   max-width: 480px;
   margin-top: 32px;
 }
+.profile-photo-section {
+  max-width: 640px;
+  margin-top: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+.profile-photo-section h2 {
+  font-size: 18px;
+  margin: 0 0 20px;
+}
+.profile-photo-form {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+.profile-photo-preview.avatar {
+  width: 96px;
+  height: 96px;
+  font-size: 28px;
+}
+.profile-photo-controls {
+  min-width: 0;
+  flex: 1;
+}
+.profile-photo-controls p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.profile-photo-controls p.field-error {
+  color: var(--danger);
+  margin-top: 12px;
+}
+.profile-photo-controls .profile-photo-filename {
+  margin-top: 12px;
+}
+.profile-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+@media (max-width: 600px) {
+  .profile-photo-form {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .profile-photo-preview.avatar {
+    width: 80px;
+    height: 80px;
+  }
+}
 .preferences-form > button {
   align-self: flex-start;
 }
@@ -1514,7 +1582,7 @@ td {
     font-size: 14px;
     padding-left: 36px;
   }
-  .language > svg {
+  .language > .language-globe {
     left: 10px;
     width: 18px;
   }
@@ -1928,7 +1996,7 @@ td {
   color: var(--muted);
   flex-shrink: 0;
 }
-/* Reserve enough inline space for PT-BR next to the native select arrow. */
+/* Reserve enough inline space for PT-BR and the inset chevron. */
 .language select {
   width: 136px;
 }

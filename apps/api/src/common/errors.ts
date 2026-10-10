@@ -55,6 +55,7 @@ export class ErrorFilter implements ExceptionFilter {
             401: "UNAUTHENTICATED",
             403: "FORBIDDEN",
             404: "NOT_FOUND",
+            413: "UPLOAD_TOO_LARGE",
             429: "RATE_LIMITED",
             503: "SERVICE_UNAVAILABLE",
           } as Record<number, ErrorCode>

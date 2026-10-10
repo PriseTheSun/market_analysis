@@ -36,7 +36,9 @@ export async function request(path: string, options: RequestInit = {}) {
     ...options,
     credentials: "include",
     headers: {
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.body && !(options.body instanceof FormData)
+        ? { "Content-Type": "application/json" }
+        : {}),
       ...(method !== "GET" ? { "X-CSRF-Token": await csrfToken() } : {}),
       ...options.headers,
     },

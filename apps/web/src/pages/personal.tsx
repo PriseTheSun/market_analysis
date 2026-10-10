@@ -8,6 +8,7 @@ import { useSession, savePreference } from "../lib/session";
 import { errorText, queryClient } from "../lib/api";
 import { useScope, PageHeading, useNotifications } from "../components/shell";
 import { Button } from "../components/ui/button";
+import { ProfilePhoto } from "../components/profile-photo";
 import {
   Field,
   Loading,
@@ -28,6 +29,7 @@ export function Preferences() {
         title={t("shell.preferences")}
         description={t("preferences.sub")}
       />
+      <ProfilePhoto user={session!.user} />
       <form
         className="preferences-form form-stack"
         onSubmit={(e) => {

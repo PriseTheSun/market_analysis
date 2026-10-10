@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Module,
@@ -9,10 +10,15 @@ import {
   Post,
   Query,
   Req,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
-import type { Request } from "express";
+import { FileInterceptor } from "@nestjs/platform-express";
+import type { Request, Response } from "express";
 import {
+  AVATAR_MAX_BYTES,
   idSchema,
   paginationSchema,
   preferenceSchema,
@@ -23,10 +29,39 @@ import { SessionGuard } from "../auth/auth.service.js";
 import { DatabaseService, type Tx } from "../database/database.service.js";
 import { AppError, parse } from "../common/errors.js";
 import type { Actor } from "../authorization/policy.js";
+import { AvatarService } from "./avatar.service.js";
+import { SecurityService } from "../common/security.service.js";
 @Controller()
 @UseGuards(SessionGuard)
 export class PersonalController {
-  constructor(@Inject(DatabaseService) private db: DatabaseService) {}
+  constructor(
+    @Inject(DatabaseService) private db: DatabaseService,
+    @Inject(AvatarService) private avatars: AvatarService,
+    @Inject(SecurityService) private security: SecurityService,
+  ) {}
+  @Post("preferences/avatar")
+  @UseInterceptors(
+    FileInterceptor("image", {
+      limits: { fileSize: AVATAR_MAX_BYTES, files: 1, fields: 0, parts: 1 },
+    }),
+  )
+  async uploadAvatar(
+    @Req() r: Request,
+    @UploadedFile() file: { buffer: Buffer; mimetype: string } | undefined,
+  ) {
+    await this.security.limit(r, "avatar.upload", 30);
+    return this.avatars.save(r.actor!, file, r.requestId);
+  }
+  @Get("preferences/avatar")
+  async avatar(@Req() r: Request, @Res() res: Response) {
+    res.setHeader("Cache-Control", "private, no-store");
+    const image = await this.avatars.image(r.actor!);
+    res.type("image/webp").send(image);
+  }
+  @Delete("preferences/avatar")
+  removeAvatar(@Req() r: Request) {
+    return this.avatars.remove(r.actor!, r.requestId);
+  }
   @Get("preferences") preferences(@Req() r: Request) {
     return this.db.personal(
       r.actor!,
@@ -174,5 +209,9 @@ export class PersonalController {
     });
   }
 }
-@Module({ imports: [AuthModule], controllers: [PersonalController] })
+@Module({
+  imports: [AuthModule],
+  controllers: [PersonalController],
+  providers: [AvatarService],
+})
 export class PersonalModule {}

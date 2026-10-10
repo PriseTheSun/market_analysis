@@ -1,4 +1,4 @@
-import { Globe } from "lucide-react";
+import { ChevronDown, Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "@market/contracts";
 import { useSession, savePreference } from "../lib/session";
@@ -9,7 +9,7 @@ export function Language() {
   const { session } = useSession();
   return (
     <label className="language">
-      <Globe aria-hidden="true" />
+      <Globe className="language-globe" aria-hidden="true" />
       <span className="sr-only">{t("common.language")}</span>
       <select
         value={i18n.language}
@@ -26,6 +26,7 @@ export function Language() {
         <option value="en">EN</option>
         <option value="es">ES</option>
       </select>
+      <ChevronDown className="language-chevron" aria-hidden="true" />
     </label>
   );
 }
