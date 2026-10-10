@@ -57,3 +57,19 @@ Build frontend/TypeScript, lint e formatação aprovados. Seletores E2E de admin
 ## Atualização — tooltips no azul da marca
 
 **final result: passed**. Fundo e borda dos tooltips usam o token `--brand-blue` (#2453ff), com texto branco. A cor de marca permanece constante nos dois temas. Conferência no navegador confirmou background/border `rgb(36, 83, 255)` e texto `rgb(255, 255, 255)`, com foco de teclado e texto legível. Evidência: [tooltip azul](output/brand-tooltips/blue-tooltip.jpg), recorte de 610 × 410 mostrando a navegação e o contexto da página. Formatação CSS aprovada; alteração apenas de estilo, sem novos testes automatizados.
+
+## Atualização — animação da lateral
+
+**final result: passed**. Motion sincroniza abertura/recolhimento em 280 ms; rótulos fazem fade e o conteúdo acompanha a largura. Chrome em 1920 × 929 confirmou medidas intermediárias, endpoints de 80/215 px, ícones e avatar recolhidos em x=39,5 px, logo expandido de 128 × 36 px, rótulos completos e ausência de overflow. Dois acionamentos rápidos pelo teclado inverteram a transição e terminaram em 80 px. Recarregar a página recolhida restaurou progresso zero e 80 px diretamente.
+
+Em 390 × 844, drawer de 280 px com slide/fade na abertura e saída; a inspeção observou `data-state="closed"` e a transformação intermediária antes da remoção do drawer/backdrop. Nenhum erro ou aviso no console da aba de revisão. Estado expandido e viewport padrão restaurados ao terminar.
+
+Evidências: [transição em andamento](output/sidebar-motion/transition.jpg), [recolhida](output/sidebar-motion/collapsed.jpg), [mobile](output/sidebar-motion/mobile.jpg) e [medidas da animação](output/sidebar-motion/measurements.json). Build/TypeScript, lint e formatação aprovados; aviso já existente de chunk acima de 500 kB permanece. Movimento reduzido tratado pelo hook/CSS e revisado em código, sem emulação da preferência do sistema nesta rodada. Suíte E2E completa não reexecutada.
+
+## Atualização — tabelas de Contas e Solicitações
+
+**final result: passed**. As duas rotas usam `RecordActions` e a mesma coluna de ações das tabelas de Agências/Organizações. Em Contas, os comandos de perfil global e ativação estão no dropdown. Em Solicitações, Abrir está no dropdown; identidade com iniciais/nome/e-mail e tabela responsiva foram incorporadas ao padrão compartilhado.
+
+Chrome desktop: 12 registros em cada tabela, um botão de reticências por célula de ações, coluna de 108 px e alinhamento centralizado. Os dois comandos de Contas abriram os formulários correspondentes, fechados sem salvar; Abrir exibiu os detalhes da solicitação e os controles de classificação/revisão existentes. No mobile de 390 × 844, ambas as tabelas mantiveram o documento com 390 px e menus entre x=16 e x=206, sem corte. Escape fecha os menus. Console sem erros/avisos; viewport restaurado ao final.
+
+Evidências: [Contas](output/accounts-requests-tables/accounts.jpg), [Solicitações](output/accounts-requests-tables/requests.jpg), [Contas mobile](output/accounts-requests-tables/accounts-mobile.jpg) e [Solicitações mobile](output/accounts-requests-tables/requests-mobile.jpg). Build/TypeScript, lint e formatação aprovados. Seletor E2E da revisão de acesso atualizado; suíte completa não reexecutada. Nenhuma alteração em dados, papéis, status de contas ou solicitações durante a conferência.

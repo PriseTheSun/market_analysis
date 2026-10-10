@@ -18,11 +18,19 @@
   --border: #334155;
 }
 .app-shell {
-  grid-template-columns: 215px minmax(0, 1fr);
+  /* One Motion value keeps the layout, labels and icon positions in sync. */
+  --sidebar-progress: 1;
+  --sidebar-hidden: calc(1 - var(--sidebar-progress));
+  --sidebar-label-opacity: clamp(0, calc(2 * var(--sidebar-progress) - 1), 1);
+  grid-template-columns: calc(80px + 135px * var(--sidebar-progress)) minmax(
+      0,
+      1fr
+    );
   color: var(--text);
   background: var(--bg);
 }
 .app-shell .sidebar {
+  min-width: 0;
   padding: 16px 7px 8px;
   overflow-y: auto;
 }
@@ -349,8 +357,7 @@
 .agencies-table th:first-child {
   width: 50.5%;
 }
-.agencies-table th:last-child,
-.organizations-table th:last-child {
+.record-table th:last-child {
   width: 108px;
   text-align: center;
 }
@@ -358,8 +365,7 @@
   padding: 7px 22px;
   height: 57px;
 }
-.agencies-table td:last-child,
-.organizations-table td:last-child {
+.record-table td:last-child {
   text-align: center;
 }
 .app-shell .table-scroll tbody tr:hover {
@@ -490,38 +496,37 @@
 .agencies-footer .pagination .button:not(:focus-visible) {
   outline: none;
 }
-.app-shell.collapsed {
-  grid-template-columns: 80px minmax(0, 1fr);
+.app-shell .sidebar .sidebar-brand-row {
+  padding: 0 0 0 calc(10.5px + 3.5px * var(--sidebar-progress));
 }
-.app-shell.collapsed .sidebar-brand-row {
-  justify-content: center;
-  padding: 0;
-  margin-bottom: 47px;
-}
-.app-shell.collapsed .sidebar-brand {
-  width: 44px;
+.app-shell .sidebar .sidebar-brand {
+  width: calc(44px + 84px * var(--sidebar-progress));
   overflow: hidden;
 }
-.app-shell.collapsed .sidebar-brand img {
+.app-shell .sidebar .sidebar-brand img {
   max-width: none;
   width: 128px;
   object-position: left;
 }
-.app-shell.collapsed .sidebar-toggle svg {
-  transform: rotate(180deg);
+.app-shell .sidebar-toggle svg {
+  transform: rotate(calc(180deg * var(--sidebar-hidden)));
 }
-.app-shell.collapsed .platform-nav-label {
-  visibility: hidden;
+.app-shell .sidebar .platform-nav-label,
+.app-shell .sidebar nav a > span,
+.app-shell .sidebar .platform-account-identity {
+  opacity: var(--sidebar-label-opacity);
 }
-.app-shell.collapsed .sidebar nav {
-  align-items: center;
-}
-.app-shell.collapsed .sidebar nav a {
-  justify-content: center;
-  width: 44px;
+.app-shell .sidebar nav a {
   height: 42px;
-  padding: 0;
-  gap: 0;
+  margin-inline: calc(10.5px * var(--sidebar-hidden));
+  padding-left: calc(12px + 4px * var(--sidebar-progress));
+  padding-right: calc(12px - 4px * var(--sidebar-progress));
+  gap: calc(14px * var(--sidebar-progress));
+}
+.app-shell .sidebar nav a > span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .app-shell .sidebar nav a > svg,
 .mobile-drawer nav a > svg {
@@ -529,23 +534,13 @@
   height: 20px;
   flex-shrink: 0;
 }
-.app-shell.collapsed .sidebar nav a > span {
-  display: none;
+.app-shell .sidebar .sidebar-bottom {
+  margin-inline: calc(8px * var(--sidebar-progress));
 }
-.app-shell.collapsed .platform-account-identity {
-  display: none;
-}
-.app-shell.collapsed .sidebar-bottom {
-  margin-inline: 0;
-}
-.app-shell.collapsed .platform-account-trigger {
-  justify-content: center;
-}
-.app-shell.collapsed .scope-switch span {
-  display: block;
-}
-.mobile-drawer .platform-account-identity {
-  display: flex;
+.app-shell .sidebar .platform-account-trigger {
+  padding-inline: calc(11.5px - 5.5px * var(--sidebar-progress));
+  gap: calc(12px * var(--sidebar-progress));
+  overflow: hidden;
 }
 :root[data-theme="dark"] .record-avatar,
 :root[data-theme="dark"] .record-status.is-inactive {
@@ -618,6 +613,50 @@
 .mobile-drawer {
   width: min(280px, calc(100vw - 24px));
   overflow-y: auto;
+}
+.mobile-drawer[data-state="open"] {
+  animation: sidebar-slide-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.mobile-drawer[data-state="closed"] {
+  animation: sidebar-slide-out 200ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.sidebar-overlay[data-state="open"] {
+  animation: sidebar-fade-in 280ms ease-out both;
+}
+.sidebar-overlay[data-state="closed"] {
+  animation: sidebar-fade-out 200ms ease-in both;
+}
+@keyframes sidebar-slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes sidebar-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes sidebar-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes sidebar-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 @media (max-width: 960px) {
   .app-shell,

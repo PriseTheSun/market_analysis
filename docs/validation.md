@@ -105,3 +105,11 @@ Validação: build frontend/TypeScript, lint, formatação e 24 testes unitário
 A coluna Ações de Organizações agora usa o mesmo componente de reticências de Agências (`RecordActions`), com Abrir/Alterar conforme status e permissões. A coluna ficou compacta e centralizada. As duas rotas compartilham aparência, nome acessível, posicionamento e interação do menu.
 
 Build frontend/TypeScript, lint e formatação aprovados. No Chrome, verificados abertura de Atlas, formulário Alterar sem salvar, menu de organização desativada, Escape, preservação das ações de Agências e menu mobile sem corte. Evidências em `output/organizations-actions/`. Seletores E2E atualizados, sem reexecução da suíte completa nesta rodada.
+
+## Animação da lateral — 10/10/2026
+
+Abertura/recolhimento desktop sincronizados com Motion em 280 ms, mantendo 80/215 px e alinhamento dos ícones. Drawer mobile com entrada de 280 ms e saída de 200 ms. Build/TypeScript, lint e formatação aprovados. Verificação no Chrome cobriu medidas intermediárias da transição, inversão por acionamentos rápidos, restauração da preferência após reload, texto e logo expandidos, abertura/saída mobile e remoção do backdrop ao final. Console sem erros/avisos. Evidências em `output/sidebar-motion/` e detalhes em `design-qa.md`. Movimento reduzido revisado no código; suíte E2E completa não reexecutada para este ajuste.
+
+## Tabelas de Contas e Solicitações — 10/10/2026
+
+Padronizados identidade, coluna de ações e menus de reticências nas duas rotas; Solicitações passou a usar também a tabela responsiva. Build/TypeScript, lint e formatação aprovados. Conferência no Chrome desktop/mobile confirmou 12 linhas por página, menus sem corte e abertura dos formulários existentes sem salvar alterações. Console sem erros/avisos. Seletor E2E da revisão de acesso atualizado, sem reexecutar a suíte completa. Evidências em `output/accounts-requests-tables/`.

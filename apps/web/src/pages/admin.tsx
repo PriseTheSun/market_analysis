@@ -30,6 +30,8 @@ import {
   Search,
   Filter,
   ChevronDown,
+  UserCheck,
+  UserX,
 } from "lucide-react";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import {
@@ -548,7 +550,7 @@ export function Agencies() {
           <ErrorState error={q.error} retry={() => void q.refetch()} />
         ) : (
           <>
-            <div className="table-scroll agencies-table">
+            <div className="table-scroll agencies-table record-table">
               <table aria-label={t("shell.agencies")}>
                 <thead>
                   <tr>
@@ -743,7 +745,7 @@ export function Organizations() {
   return (
     <>
       <AdminTable<Tenant>
-        tableClassName="organizations-table"
+        tableClassName="organizations-table record-table"
         title={t("shell.organizations")}
         path={agencyId ? `/agencies/${agencyId}/tenants` : "/platform/tenants"}
         columns={[
@@ -877,6 +879,7 @@ export function UsersPage() {
   return (
     <>
       <AdminTable<User>
+        tableClassName="record-table"
         title={t("shell.users")}
         path="/platform/users"
         columns={[
@@ -895,22 +898,24 @@ export function UsersPage() {
               <ActiveStatus active={u.active} />
             </td>
             <td>
-              <div className="row-actions">
-                <Button
-                  variant="ghost"
-                  size="small"
-                  onClick={() => setAction({ user: u, kind: "global-role" })}
+              <RecordActions name={u.name}>
+                <Dropdown.Item
+                  onSelect={() => setAction({ user: u, kind: "global-role" })}
                 >
+                  <ShieldCheck aria-hidden="true" />
                   {t(u.platformRole ? "admin.demote" : "admin.promote")}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="small"
-                  onClick={() => setAction({ user: u, kind: "status" })}
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onSelect={() => setAction({ user: u, kind: "status" })}
                 >
+                  {u.active ? (
+                    <UserX aria-hidden="true" />
+                  ) : (
+                    <UserCheck aria-hidden="true" />
+                  )}
                   {t(u.active ? "admin.disableAccount" : "admin.enableAccount")}
-                </Button>
-              </div>
+                </Dropdown.Item>
+              </RecordActions>
             </td>
           </tr>
         )}

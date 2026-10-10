@@ -1,9 +1,15 @@
-import { TableSearch } from "../components/ui/table";
+import {
+  TableSearch,
+  RecordIdentity,
+  RecordActions,
+} from "../components/ui/table";
 import { PAGE_SIZE } from "../lib/pagination";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { ArrowRight } from "lucide-react";
+import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import { classifySchema, reviewSchema, type Page } from "@market/contracts";
 import { api, errorText, queryClient } from "../lib/api";
 import { useScope, PageHeading } from "../components/shell";
@@ -112,8 +118,8 @@ export function Requests() {
         <Empty />
       ) : (
         <>
-          <div className="table-scroll">
-            <table>
+          <div className="table-scroll record-table">
+            <table className="responsive-table" role="table">
               <thead>
                 <tr>
                   <th>{t("auth.name")}</th>
@@ -126,13 +132,16 @@ export function Requests() {
               <tbody>
                 {q.data.items.map((r) => (
                   <tr key={r.id}>
-                    <td>
-                      <strong>{r.name}</strong>
-                      <small>{r.email}</small>
+                    <td data-label={t("auth.name")}>
+                      <RecordIdentity name={r.name} detail={r.email} />
                     </td>
-                    <td>{r.organization}</td>
-                    <td>{r.tenant?.name ?? t("requests.unscoped")}</td>
-                    <td>
+                    <td data-label={t("auth.organization")}>
+                      {r.organization}
+                    </td>
+                    <td data-label={t("admin.organization")}>
+                      {r.tenant?.name ?? t("requests.unscoped")}
+                    </td>
+                    <td data-label={t("common.status")}>
                       <Badge status={r.status} />
                       {r.deliveryStatus && (
                         <small>
@@ -140,17 +149,18 @@ export function Requests() {
                         </small>
                       )}
                     </td>
-                    <td>
-                      <Button
-                        size="small"
-                        variant="outline"
-                        onClick={() => {
-                          setSelected(r);
-                          setAction(undefined);
-                        }}
-                      >
-                        {t("common.open")}
-                      </Button>
+                    <td data-label={t("common.actions")}>
+                      <RecordActions name={r.name}>
+                        <Dropdown.Item
+                          onSelect={() => {
+                            setSelected(r);
+                            setAction(undefined);
+                          }}
+                        >
+                          <ArrowRight aria-hidden="true" />
+                          {t("common.open")}
+                        </Dropdown.Item>
+                      </RecordActions>
                     </td>
                   </tr>
                 ))}

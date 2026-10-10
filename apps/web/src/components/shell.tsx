@@ -1,5 +1,6 @@
 import { BlurFade } from "./magicui/blur-fade";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { Outlet, useLocation, useParams } from "react-router-dom";
 import {
   LocalizedLink as Link,
@@ -362,6 +363,7 @@ function ScopedShell({
   contexts: Context[];
 }) {
   const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
   const [drawer, setDrawer] = useState(false),
     [collapsed, setCollapsed] = useState(() => {
       try {
@@ -526,7 +528,9 @@ function ScopedShell({
                 aria-label={t(item.label)}
               >
                 <item.icon aria-hidden="true" />
-                <span>{t(item.label)}</span>
+                <span aria-hidden={collapsed && !inDrawer}>
+                  {t(item.label)}
+                </span>
               </NavLink>
             </Tooltip>
           ))}
@@ -548,11 +552,19 @@ function ScopedShell({
   return (
     <ScopeContext.Provider value={scope}>
       <TooltipProvider delayDuration={350}>
-        <div className={"app-shell" + (collapsed ? " collapsed" : "")}>
+        <motion.div
+          className={"app-shell" + (collapsed ? " collapsed" : "")}
+          initial={false}
+          animate={{ "--sidebar-progress": collapsed ? 0 : 1 }}
+          transition={{
+            duration: reducedMotion ? 0 : 0.28,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        >
           <aside className="sidebar">{links()}</aside>
           <Dialog.Root open={drawer} onOpenChange={setDrawer}>
             <Dialog.Portal>
-              <Dialog.Overlay className="dialog-overlay" />
+              <Dialog.Overlay className="dialog-overlay sidebar-overlay" />
               <Dialog.Content
                 className="mobile-drawer"
                 aria-describedby={undefined}
@@ -586,7 +598,7 @@ function ScopedShell({
                 >
                   <button
                     className="icon-button sidebar-toggle"
-                    onClick={() => setCollapsed(!collapsed)}
+                    onClick={() => setCollapsed((value) => !value)}
                     aria-label={t(
                       collapsed ? "shell.expand" : "shell.collapse",
                     )}
@@ -614,7 +626,7 @@ function ScopedShell({
               <Outlet />
             </BlurFade>
           </div>
-        </div>
+        </motion.div>
       </TooltipProvider>
     </ScopeContext.Provider>
   );

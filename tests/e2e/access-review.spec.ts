@@ -38,8 +38,9 @@ test("public request → global classification → approval → local email → 
   await page
     .getByRole("row")
     .filter({ hasText: email })
-    .getByRole("button", { name: "Abrir" })
+    .getByRole("button", { name: "Ações de Pessoa da jornada", exact: true })
     .click();
+  await page.getByRole("menuitem", { name: "Abrir", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("button", { name: "Classificar" }).click();
   await dialog
