@@ -1,9 +1,3 @@
-.app-shell .page.preferences-page {
-  width: 100%;
-  max-width: 1170px;
-  margin-inline: auto;
-  padding: 32px 24px 40px;
-}
 .app-shell .preferences-page .page-heading {
   margin-bottom: 28px;
 }
@@ -322,9 +316,6 @@
   }
 }
 @media (max-width: 760px) {
-  .app-shell .page.preferences-page {
-    padding: 24px 20px;
-  }
   .app-shell .preferences-page h1 {
     font-size: 30px;
   }
