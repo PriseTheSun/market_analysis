@@ -42,6 +42,7 @@ import {
   type AgencyContext,
 } from "../lib/workspace";
 import { Language } from "./language";
+import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
 import { Loading, Empty, ErrorState } from "./ui/common";
 import { Tour } from "./tour";
@@ -614,8 +615,9 @@ function ScopedShell({
                 />
               </div>
               <div className="header-tools">
-                {!preferencesPath && <Language />}
                 {!agencyId && <NotificationBell />}
+                <ThemeToggle />
+                <Language />
               </div>
             </header>
             {tenant && <Tour />}

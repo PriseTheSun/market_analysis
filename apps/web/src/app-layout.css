@@ -247,6 +247,26 @@
 }
 .app-shell .header-tools {
   gap: 12px;
+  flex-shrink: 0;
+}
+.app-shell .header-tools .icon-button {
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 8px;
+}
+.app-shell .header-tools .language select {
+  width: 116px;
+  height: 38px;
+  min-height: 38px;
+  padding: 6px 10px 6px 34px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.app-shell .header-tools .language > svg {
+  width: 18px;
+  height: 18px;
+  left: 10px;
 }
 .app-shell .notification-bell {
   min-height: 32px;
@@ -687,6 +707,22 @@
   }
   .app-shell .header-tools {
     gap: 4px;
+  }
+  .app-shell .header-tools .icon-button {
+    width: 32px;
+    height: 38px;
+    padding: 6px;
+  }
+  .app-shell .header-tools .language select {
+    width: 104px;
+    padding-left: 30px;
+  }
+  .app-shell .header-tools .language > svg {
+    left: 8px;
+    width: 16px;
+  }
+  .app-shell .scope-switch .scope-leading-icon {
+    display: none;
   }
   .app-shell .scope-switch {
     width: 100%;

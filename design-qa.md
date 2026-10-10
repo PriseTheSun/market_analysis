@@ -73,3 +73,9 @@ Evidências: [transição em andamento](output/sidebar-motion/transition.jpg), [
 Chrome desktop: 12 registros em cada tabela, um botão de reticências por célula de ações, coluna de 108 px e alinhamento centralizado. Os dois comandos de Contas abriram os formulários correspondentes, fechados sem salvar; Abrir exibiu os detalhes da solicitação e os controles de classificação/revisão existentes. No mobile de 390 × 844, ambas as tabelas mantiveram o documento com 390 px e menus entre x=16 e x=206, sem corte. Escape fecha os menus. Console sem erros/avisos; viewport restaurado ao final.
 
 Evidências: [Contas](output/accounts-requests-tables/accounts.jpg), [Solicitações](output/accounts-requests-tables/requests.jpg), [Contas mobile](output/accounts-requests-tables/accounts-mobile.jpg) e [Solicitações mobile](output/accounts-requests-tables/requests-mobile.jpg). Build/TypeScript, lint e formatação aprovados. Seletor E2E da revisão de acesso atualizado; suíte completa não reexecutada. Nenhuma alteração em dados, papéis, status de contas ou solicitações durante a conferência.
+
+## Atualização — controles de tema e idioma
+
+**final result: passed**. Cabeçalho compartilhado com sino, switch de modo escuro e idioma na ordem solicitada. Controles compactos, alinhados e com cores do tema. Tema e idioma persistiram após reload; alternância pelo teclado conferida. Mobile de 390 e 320 px mantém o cabeçalho de 64 px sem overflow horizontal. Tema claro e PT-BR restaurados após a conferência.
+
+Evidências: [controles](output/header-preferences/controls.jpg), [claro/PT-BR](output/header-preferences/light-pt.jpg), [escuro/EN](output/header-preferences/dark-en.jpg) e [mobile](output/header-preferences/mobile.jpg). Build/TypeScript, lint e formatação aprovados; suíte E2E completa não reexecutada.

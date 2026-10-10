@@ -550,6 +550,17 @@ const copy: Record<string, [string, string, string]> = {
   "preferences.theme": ["Aparência", "Appearance", "Apariencia"],
   "preferences.light": ["Claro", "Light", "Claro"],
   "preferences.dark": ["Escuro", "Dark", "Oscuro"],
+  "preferences.darkMode": ["Modo escuro", "Dark mode", "Modo oscuro"],
+  "preferences.useLight": [
+    "Ativar modo claro",
+    "Switch to light mode",
+    "Activar modo claro",
+  ],
+  "preferences.useDark": [
+    "Ativar modo escuro",
+    "Switch to dark mode",
+    "Activar modo oscuro",
+  ],
   "preferences.zone": ["Fuso horário", "Time zone", "Zona horaria"],
   "preferences.tour": [
     "Conheça seu espaço",
