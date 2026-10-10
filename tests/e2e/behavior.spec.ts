@@ -103,7 +103,7 @@ test("notification read state survives reload and Global audit has a separate re
     .fill("global@marketanalysis.com");
   await page.locator("input[type=password]").fill("MarketGlobal#2027");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(page).toHaveURL(/\/app\/[^/]+\/conversas$/);
+  await expect(page).toHaveURL(/\/plataforma\/agencias$/);
   await switchWorkspace(page, "Aurora");
   await page
     .getByRole("link", { name: "Consultar conversas", exact: true })

@@ -361,6 +361,8 @@ Há um único Sonner no canto inferior esquerdo, com fechamento e duração padr
 
 ## Padrão compartilhado das rotas autenticadas — 10/10/2026
 
+Entrada por perfil: Global inicia no workspace de administração global (`/plataforma/agencias` em português), mesmo após visitar uma organização. A escolha explícita de uma organização continua disponível no seletor do cabeçalho. Os demais perfis mantêm a entrada na última organização autorizada ou na primeira disponível. `/app` e o endereço legado `/contexts` seguem a mesma regra.
+
 A referência de Agências passa a reger o shell de toda a aplicação autenticada. A fonte de implementação é `apps/web/src/app-layout.css`, importada depois dos estilos base. As dimensões não devem depender da rota: sidebar 215 px (80 px recolhida), logo 128 × 36 px, cabeçalho 64 px, conteúdo com 23 px laterais no desktop. O seletor de contexto fica no cabeçalho e a conta no rodapé da lateral, sem seta. Preferências e Sair ficam no menu da conta, conforme acesso disponível; contas sem rota autorizada de preferências conservam o seletor de idioma no cabeçalho.
 
 Tokens do shell claro (substituem os tokens base apenas enquanto o shell autenticado está presente): fundo #f5f9fc, texto #111d4b, secundário #52699f, borda #d3def0, ação #2453ff, hover #193bdb, seleção #e8eeff. No escuro: ação #a2b6ff, hover #c1ceff, seleção #253353, secundário #b7c2db. Portais herdam os tokens do shell.

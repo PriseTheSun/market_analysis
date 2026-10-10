@@ -34,7 +34,7 @@ docker compose up -d --wait api web
 | Admin | admin@marketanalysis.com | Admin nos quatro tenants |
 | User | user@marketanalysis.com | Conversas pessoais nos quatro tenants |
 
-Após o login, o aplicativo abre direto no chat. A troca de cliente fica no menu lateral; o último cliente acessado neste navegador é lembrado por usuário, respeitando as permissões atuais.
+Após o login, contas Global entram na administração global, em `/plataforma/agencias`, mesmo que tenham acessado uma organização anteriormente. Para os demais perfis, o aplicativo abre direto no chat da última organização autorizada (ou da primeira disponível). A troca de organização fica no seletor de espaço do cabeçalho.
 
 Na interface, os espaços de clientes são **Organizações**. As URLs acompanham o idioma escolhido: `/plataforma/organizacoes` em português, `/platform/organizations` em inglês e `/plataforma/organizaciones` em espanhol. O mesmo vale para autenticação, conversas, arquivos e demais páginas. Links antigos, como `/platform/tenants` e `/login`, redirecionam para o endereço no idioma atual.
 

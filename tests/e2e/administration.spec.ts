@@ -7,7 +7,9 @@ async function signIn(page: Page, role: string) {
     .fill(role + "@marketanalysis.com");
   await page.locator("input[type=password]").fill("MarketGlobal#2027");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(page).toHaveURL(/\/app\/[^/]+\/conversas$/);
+  await expect(page).toHaveURL(
+    role === "global" ? /\/plataforma\/agencias$/ : /\/app\/[^/]+\/conversas$/,
+  );
 }
 test("Global creates agency and provisioning tenant, then disables both through scoped dialogs", async ({
   page,

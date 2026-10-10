@@ -113,3 +113,9 @@ Abertura/recolhimento desktop sincronizados com Motion em 280 ms, mantendo 80/21
 ## Tabelas de Contas e Solicitações — 10/10/2026
 
 Padronizados identidade, coluna de ações e menus de reticências nas duas rotas; Solicitações passou a usar também a tabela responsiva. Build/TypeScript, lint e formatação aprovados. Conferência no Chrome desktop/mobile confirmou 12 linhas por página, menus sem corte e abertura dos formulários existentes sem salvar alterações. Console sem erros/avisos. Seletor E2E da revisão de acesso atualizado, sem reexecutar a suíte completa. Evidências em `output/accounts-requests-tables/`.
+
+## Entrada padrão do perfil Global — 10/10/2026
+
+`workspaceDestination` agora prioriza o perfil Global antes da organização lembrada. Global entra em `/plataforma/agencias`; os demais perfis continuam usando o último contexto autorizado, com os fallbacks existentes. Testes unitários cobrem Global com organização lembrada válida, removida ou ausente, com/sem contextos, além das regras dos demais perfis.
+
+27 testes unitários, build/TypeScript, lint e formatação aprovados. No Chrome, `/app` abriu Administração global; a seleção explícita de Aurora funcionou; após sair de Aurora e fazer login novamente como Global, a rota final foi `/plataforma/agencias` com contexto Market Analysis. `/contexts` também levou à administração global. Evidência: `output/global-entry/after-login.jpg`. Testes E2E existentes atualizados para a nova entrada, incluindo regressão da preferência de organização para não-Global, sem reexecução da suíte completa. O console registrou mensagens de extensões do Chrome; os fluxos de navegação e login concluíram.

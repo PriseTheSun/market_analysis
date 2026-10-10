@@ -13,32 +13,54 @@ async function login(
     .fill(role + "@marketanalysis.com");
   await page.locator("input[type=password]").fill(password);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
-  await expect(page).toHaveURL(/\/app\/[^/]+\/conversas$/);
+  await expect(page).toHaveURL(
+    role === "global" ? /\/plataforma\/agencias$/ : /\/app\/[^/]+\/conversas$/,
+  );
   await expect(
     page.getByRole("heading", { name: "Escolha seu espaço de trabalho" }),
   ).toHaveCount(0);
-  if (workspace) await switchWorkspace(page, workspace);
-  await expect(page).toHaveURL(/\/conversas$/);
+  if (workspace) {
+    await switchWorkspace(page, workspace);
+    await expect(page).toHaveURL(/\/conversas$/);
+  }
   const skip = page.getByRole("button", { name: "Agora não" });
   if (await skip.isVisible()) await skip.click();
 }
-test("direct login remembers an authorized workspace per identity and redirects old entry links", async ({
+test("Global enters platform administration even after visiting an organization", async ({
   page,
 }) => {
   await login(page, "global", null);
-  await expect(page.locator(".scope-switch strong")).toHaveText("Atlas");
+  await expect(page.locator(".scope-switch strong")).toHaveText(
+    "Market Analysis",
+  );
   await switchWorkspace(page, "Aurora");
   await page.locator(".sidebar .platform-account-trigger").click();
   await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
   await login(page, "global", null);
-  await expect(page.locator(".scope-switch strong")).toHaveText("Aurora");
+  await expect(page.locator(".scope-switch strong")).toHaveText(
+    "Market Analysis",
+  );
   await page.goto("/contexts");
-  await expect(page).toHaveURL(/\/conversas$/);
-  await expect(page.locator(".scope-switch strong")).toHaveText("Aurora");
+  await expect(page).toHaveURL(/\/plataforma\/agencias$/);
+  await expect(page.locator(".scope-switch strong")).toHaveText(
+    "Market Analysis",
+  );
   await page.locator(".sidebar .platform-account-trigger").click();
   await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
   await login(page, "admin", null);
   await expect(page.locator(".scope-switch strong")).toHaveText("Atlas");
+});
+test("non-Global login remembers an authorized organization and redirects old entry links", async ({
+  page,
+}) => {
+  await login(page, "admin", "Aurora");
+  await page.locator(".sidebar .platform-account-trigger").click();
+  await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
+  await login(page, "admin", null);
+  await expect(page.locator(".scope-switch strong")).toHaveText("Aurora");
+  await page.goto("/contexts");
+  await expect(page).toHaveURL(/\/conversas$/);
+  await expect(page.locator(".scope-switch strong")).toHaveText("Aurora");
 });
 test("login, scoped navigation, persistent streamed chat and logout", async ({
   page,

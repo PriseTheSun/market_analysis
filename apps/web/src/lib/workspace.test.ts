@@ -26,19 +26,24 @@ const contexts: Context[] = [
 ];
 
 describe("direct workspace entry", () => {
-  it("opens the first authorized chat without requiring a selection, including for Global", () => {
+  it("opens the first authorized chat for a non-Global account without requiring a selection", () => {
     expect(workspaceDestination(user, contexts, [], null)).toBe(
       "/app/atlas/chat",
     );
-    expect(
-      workspaceDestination(
-        { ...user, platformRole: "GLOBAL" },
-        contexts,
-        [],
-        null,
-      ),
-    ).toBe("/app/atlas/chat");
   });
+  it.each([null, "aurora", "removed-tenant"])(
+    "opens global administration even with authorized tenants and last tenant %s",
+    (lastTenant) => {
+      expect(
+        workspaceDestination(
+          { ...user, platformRole: "GLOBAL" },
+          contexts,
+          [{ id: "agency", name: "Agência" }],
+          lastTenant,
+        ),
+      ).toBe("/platform/agencies");
+    },
+  );
   it("returns to the remembered tenant only while it remains authorized", () => {
     expect(workspaceDestination(user, contexts, [], "aurora")).toBe(
       "/app/aurora/chat",

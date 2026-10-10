@@ -11,11 +11,12 @@ export function workspaceDestination(
   agencies: AgencyContext[],
   lastTenant: string | null,
 ): string | null {
+  // Global always enters platform administration, regardless of the last tenant.
+  if (user.platformRole === "GLOBAL") return "/platform/agencies";
   // A stored preference is only a hint; access comes from the current API list.
   const tenant =
     contexts.find((context) => context.id === lastTenant) ?? contexts[0];
   if (tenant) return `/app/${tenant.id}/chat`;
-  if (user.platformRole === "GLOBAL") return "/platform/agencies";
   if (agencies[0]) return `/agencies/${agencies[0].id}`;
   return null;
 }
