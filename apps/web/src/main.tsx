@@ -14,7 +14,7 @@ import {
   LocalizedNavigate as Navigate,
 } from "./lib/navigation";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "sonner";
+import { Toaster } from "./components/ui/sonner";
 import { useTranslation } from "react-i18next";
 import "@fontsource-variable/montserrat";
 import "driver.js/dist/driver.css";
@@ -46,7 +46,7 @@ const Requests = lazy(() =>
   import("./pages/requests").then((m) => ({ default: m.Requests })),
 );
 const Preferences = lazy(() =>
-  import("./pages/personal").then((m) => ({ default: m.Preferences })),
+  import("./pages/preferences").then((m) => ({ default: m.Preferences })),
 );
 const Notifications = lazy(() =>
   import("./pages/personal").then((m) => ({ default: m.Notifications })),
@@ -143,12 +143,7 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-          <Toaster
-            position="bottom-left"
-            closeButton
-            richColors
-            duration={5000}
-          />
+          <Toaster />
         </BrowserRouter>
       </SessionProvider>
     </QueryClientProvider>

@@ -334,9 +334,13 @@ O compositor é um contêiner sólido com borda, largura máxima de 740px e text
 
 ### Motion and feedback
 
+Preferências usa um painel central de até 1122px de conteúdo, com seções de Foto de perfil, Aparência e Idioma. No desktop, cada seção possui descrição à esquerda e controles à direita; no mobile, as colunas são empilhadas. Aparência oferece opções de rádio com miniaturas clara e escura. Idioma mantém o fuso horário existente. As alterações da página ficam em rascunho até Salvar alterações; Descartar alterações restaura os valores persistidos. Os controles globais do cabeçalho mantêm seu salvamento imediato.
+
+O avatar tem prévia circular de 104px (80px no mobile). Alterar foto abre o editor, com arraste, setas do teclado, zoom de 100% a 300%, redefinição, cancelamento e Aplicar enquadramento. O recorte aplicado permanece local até o salvamento da página; Ajustar enquadramento permite editar uma prévia ou foto já salva. A remoção também passa pela confirmação do rodapé. `react-easy-crop` fornece as interações; o canvas exporta os pixels selecionados para WebP de 512px, e a API preserva sua validação e normalização em 256px. A máscara circular é uma prévia de exibição, mantendo o arquivo quadrado. A interface continua com traduções PT/EN/ES, tokens dos dois temas e rótulos acessíveis.
+
 A entrada implementada nos formulários de autenticação e no conteúdo de rota do app é um único bloco: 200ms, easeOut, opacidade de 0.85 a 1, deslocamento vertical de 6px a 0 e blur de 1px a 0. No app, a troca de pathname reinicia a entrada do bloco de rota. Reduced motion remove esse estado inicial e reduz transições/animações CSS a 0.01ms; a rolagem deixa de ser suave. O vídeo pausa quando a aba fica oculta e usa poster sem autoplay sob reduced motion ou economia de dados.
 
-Há um único Sonner no canto inferior esquerdo, com fechamento e duração padrão de 5000ms. O offset inferior respeita a área segura; o tour ocupa o fluxo em vez de cobrir controles.
+Há um único Sonner no canto inferior esquerdo, com fechamento e duração padrão de 5000ms. O componente compartilhado `components/ui/sonner.tsx` adapta o padrão shadcn/ui: superfície neutra, borda discreta, raio de 8px e cores dos tokens do tema, sem `richColors`. Os tipos success, info, warning e error usam respectivamente CircleCheck, Info, TriangleAlert e OctagonX de 16px; loading usa LoaderCircle animado, estático sob reduced motion. Default permanece sem ícone. Use `toast.promise` para acompanhar uma operação de carregamento até sucesso ou erro na mesma notificação; o salvamento de Preferências adota esse fluxo. Validações de arquivo anteriores ao envio usam warning; falhas de operação usam error. O fechamento e a região de notificações têm rótulos traduzidos. As margens são 24px no desktop e 16px no mobile, respeitando a área segura inferior; o tour ocupa o fluxo em vez de cobrir controles.
 
 ## Do's and Don'ts
 

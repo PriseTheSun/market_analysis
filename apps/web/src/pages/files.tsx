@@ -70,7 +70,7 @@ export function FilesPage() {
       xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     };
     if (!ext || !types[ext] || file.size > 26214400 || file.size === 0) {
-      toast.error(t("errors.UPLOAD_INVALID"));
+      toast.warning(t("errors.UPLOAD_INVALID"));
       return;
     }
     setProgress(0);
