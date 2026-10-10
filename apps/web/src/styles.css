@@ -1831,7 +1831,7 @@ td {
   color: var(--text);
   box-shadow: var(--shadow);
 }
-.workspace-menu > div:first-child {
+.workspace-menu .workspace-label {
   padding: 10px 12px;
   color: var(--muted);
   font-size: 12px;
@@ -1857,6 +1857,45 @@ td {
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+.workspace-menu [role="menuitem"] > svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+.workspace-menu .workspace-agency[data-current] {
+  color: var(--primary);
+}
+.workspace-menu .workspace-agency[data-disabled] {
+  opacity: 0.55;
+}
+.workspace-menu .workspace-expand {
+  transition: transform 160ms ease;
+}
+.workspace-menu [aria-expanded="true"] .workspace-expand {
+  transform: rotate(180deg);
+}
+.workspace-menu .workspace-clients {
+  margin: 0 0 8px 20px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border);
+}
+.workspace-menu [role="menuitem"] > .workspace-client-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 600;
+}
+.workspace-menu .workspace-empty {
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
 }
 .workspace-menu strong,
 .workspace-menu small {

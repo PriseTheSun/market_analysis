@@ -318,7 +318,7 @@ Badges são rótulos de status, com texto de 12px em peso 500. O estado neutro u
 
 ### Cards / Containers
 
-A entrada no aplicativo abre diretamente o chat de um cliente autorizado. A troca de cliente e de área administrativa ocorre em um menu acionado pelo contexto no topo da navegação lateral, também disponível no drawer mobile. Cada opção mostra cliente e agência; o contexto atual recebe indicador e fundo suave. O menu tem largura máxima de 320px, limite à largura do viewport e rolagem interna. Tabelas e listas usam contornos e divisórias, sem empilhar sombras. Diálogos têm largura máxima de 520px, rolagem interna quando necessária e padding de 32px; no mobile, 28px 24px.
+A entrada respeita o perfil: Global acessa a administração global; os demais perfis acessam o último cliente autorizado ou a agência disponível. A troca de cliente e de área administrativa ocorre no seletor de contexto do cabeçalho, também acessível no mobile. O seletor lista as agências autorizadas e expande os clientes dentro da agência escolhida; o contexto atual recebe indicador e fundo suave. O menu tem largura máxima de 320px, limite à largura do viewport e rolagem interna. Tabelas e listas usam contornos e divisórias, sem empilhar sombras. Diálogos têm largura máxima de 520px, rolagem interna quando necessária e padding de 32px; no mobile, 28px 24px.
 
 ### Inputs / Fields
 
@@ -383,3 +383,12 @@ A lateral abre e recolhe em 280 ms com Motion e curva `cubic-bezier(0.22, 1, 0.3
 A hierarquia visível é Agência → Cliente: Publicis → Nivea é um exemplo. Cada cliente pertence a uma agência. Menus, títulos, formulários, solicitações de acesso e mensagens usam Cliente/Clientes, Client/Clients e Cliente/Clientes nos três idiomas. A listagem identifica o cliente e sua agência em colunas separadas. A área Global permanece independente dos espaços dos clientes.
 
 A rota da listagem é `/plataforma/clientes` em português e espanhol e `/platform/clients` em inglês. Endereços antigos de organizações e `/platform/tenants` redirecionam preservando parâmetros e fragmentos. Os contratos internos de tenant e o campo legado de afiliação da solicitação de acesso permanecem compatíveis; esta alteração não modifica dados cadastrados.
+
+
+## Seletor de workspace por agência — 10/10/2026
+
+Global visualiza todas as agências no seletor, inclusive as sem clientes e as inativas (identificadas e desabilitadas). Super Admin visualiza as agências que administra; Admin e User visualizam as agências dos clientes autorizados, sem ganhar acesso à administração da agência. Todas as páginas da API são carregadas, com 100 opções por requisição, independentemente do limite de 12 registros das tabelas.
+
+Ao selecionar uma agência, o menu permanece aberto e exibe seus clientes em uma lista recuada, com nome, identificação de cliente e indicador da seleção atual. A escolha explícita está disponível com qualquer quantidade de clientes, incluindo dois ou mais. “Acessar agência” aparece somente para Global e Super Admin autorizados. Agências sem clientes operáveis exibem uma mensagem; Administração global permanece uma opção separada para Global. Ao reabrir, a agência atual aparece expandida. As opções são atualizadas ao abrir o menu.
+
+Validação: 32 testes unitários (incluindo três clientes na mesma agência, permissões e 205 agências distribuídas em três páginas), build e lint. No Chrome, conferidos lista completa, expansão, agência sem clientes, seleção de Horizonte por teclado, retorno ao Global e menu em 390 px. Evidências em `output/workspace-agencies/`.

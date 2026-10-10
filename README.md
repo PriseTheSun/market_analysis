@@ -34,7 +34,7 @@ docker compose up -d --wait api web
 | Admin | admin@marketanalysis.com | Admin nos quatro clientes |
 | User | user@marketanalysis.com | Conversas pessoais nos quatro clientes |
 
-Após o login, contas Global entram na administração global, em `/plataforma/agencias`, mesmo que tenham acessado um cliente anteriormente. Para os demais perfis, o aplicativo abre direto no chat do último cliente autorizado (ou do primeiro disponível). A troca de cliente fica no seletor de espaço do cabeçalho.
+Após o login, contas Global entram na administração global, em `/plataforma/agencias`, mesmo que tenham acessado um cliente anteriormente. Para os demais perfis, o aplicativo abre direto no chat do último cliente autorizado (ou do primeiro disponível). O seletor de espaço do cabeçalho lista as agências autorizadas — todas para Global — e expande os clientes de cada agência para a escolha exata do workspace. O acesso administrativo à agência aparece apenas para quem possui essa permissão.
 
 A hierarquia do produto é **Agência → Cliente**: por exemplo, agência Publicis e cliente Nivea. Cada cliente pertence a uma agência e possui seu próprio espaço de trabalho. A listagem usa `/plataforma/clientes` em português e espanhol, e `/platform/clients` em inglês. Os links antigos de organizações e `/platform/tenants` redirecionam para a nova rota no idioma atual. O mesmo padrão de tradução se aplica às demais páginas. Os identificadores e contratos internos de tenant permanecem estáveis, preservando dados, vínculos e permissões existentes.
 

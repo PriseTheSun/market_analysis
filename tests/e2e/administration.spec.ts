@@ -89,7 +89,12 @@ test("Super Admin enters agency and tenant management without platform mutation 
   await page
     .getByRole("button", { name: "Trocar espaço", exact: true })
     .click();
-  await page.getByRole("menuitem", { name: /^Agência Demo A/ }).click();
+  const agencyItem = page.getByRole("menuitem", { name: /^Agência Demo A/ });
+  if ((await agencyItem.getAttribute("aria-expanded")) !== "true")
+    await agencyItem.click();
+  await page
+    .getByRole("menuitem", { name: "Acessar agência", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Clientes", exact: true }),
   ).toBeVisible();

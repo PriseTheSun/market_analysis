@@ -37,6 +37,8 @@ import { api, errorText, queryClient, resetCsrf } from "../lib/api";
 import { useSession } from "../lib/session";
 import {
   lastWorkspace,
+  loadAllAgencies,
+  groupWorkspaces,
   rememberWorkspace,
   workspaceDestination,
   type AgencyContext,
@@ -66,7 +68,14 @@ function useAgencies(userId: string, enabled = true) {
   return useQuery({
     queryKey: [userId, "agencies"],
     queryFn: ({ signal }) =>
-      api<Page<AgencyContext>>("/agencies", "GET", undefined, signal),
+      loadAllAgencies((page) =>
+        api<Page<AgencyContext>>(
+          `/agencies?page=${page}&pageSize=100`,
+          "GET",
+          undefined,
+          signal,
+        ),
+      ),
     enabled,
   });
 }
@@ -99,7 +108,7 @@ export function WorkspaceEntry() {
   const destination = workspaceDestination(
     user,
     contexts.data,
-    agencies.data?.items ?? [],
+    agencies.data ?? [],
     lastWorkspace(user.id),
   );
   if (destination) return <Navigate to={destination} replace />;
@@ -142,15 +151,28 @@ function WorkspaceSwitcher({
   user: PublicUser;
   contexts: Context[];
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { agencyId } = useParams();
-  const agencies = useAgencies(
-    user.id,
-    user.platformRole !== "GLOBAL" || !!agencyId,
+  const agencies = useAgencies(user.id);
+  const currentAgencyId = tenant?.agencyId ?? agencyId;
+  const [expandedId, setExpandedId] = useState(currentAgencyId);
+  const groups = useMemo(
+    () => groupWorkspaces(agencies.data ?? [], contexts, i18n.language),
+    [agencies.data, contexts, i18n.language],
   );
-  const agency = agencies.data?.items.find((item) => item.id === agencyId);
+  const agency = groups.find((item) => item.id === agencyId);
   return (
-    <Dropdown.Root>
+    <Dropdown.Root
+      onOpenChange={(open) => {
+        if (open) {
+          setExpandedId(currentAgencyId);
+          void agencies.refetch();
+          void queryClient.invalidateQueries({
+            queryKey: [user.id, "contexts"],
+          });
+        }
+      }}
+    >
       <Dropdown.Trigger asChild>
         <button
           className="scope-switch"
@@ -161,7 +183,7 @@ function WorkspaceSwitcher({
           <span>
             <small>
               {tenant?.agencyName ??
-                t(agencyId ? "shell.agencyArea" : "shell.platform")}
+                t(agencyId ? "admin.agency" : "shell.platform")}
             </small>
             <strong>{tenant?.name ?? agency?.name ?? "Market Analysis"}</strong>
           </span>
@@ -174,63 +196,139 @@ function WorkspaceSwitcher({
           align="start"
           sideOffset={8}
           collisionPadding={16}
+          aria-label={t("shell.switch")}
         >
-          <Dropdown.Label>{t("shell.switch")}</Dropdown.Label>
-          {contexts.map((context) => (
-            <Dropdown.Item key={context.id} asChild>
-              <Link
-                to={`/app/${context.id}/chat`}
-                aria-current={tenant?.id === context.id ? "page" : undefined}
-              >
-                <Building2 />
-                <span>
-                  <strong>{context.name}</strong>
-                  <small>{context.agencyName}</small>
-                </span>
-                {tenant?.id === context.id && (
-                  <Check className="workspace-current" />
-                )}
-              </Link>
-            </Dropdown.Item>
-          ))}
-          {user.platformRole === "GLOBAL" ? (
+          <Dropdown.Label className="workspace-label">
+            {t("shell.switch")}
+          </Dropdown.Label>
+          {user.platformRole === "GLOBAL" && (
             <>
-              <Dropdown.Separator />
               <Dropdown.Item asChild>
-                <Link to="/platform/agencies">
-                  <ShieldCheck />
+                <Link
+                  to="/platform/agencies"
+                  aria-current={!tenant && !agencyId ? "page" : undefined}
+                >
+                  <ShieldCheck aria-hidden="true" />
                   <span>{t("shell.platform")}</span>
+                  {!tenant && !agencyId && (
+                    <Check className="workspace-current" aria-hidden="true" />
+                  )}
                 </Link>
               </Dropdown.Item>
+              <Dropdown.Separator />
             </>
-          ) : (
-            <>
-              {agencies.data?.items.length ? <Dropdown.Separator /> : null}
-              {agencies.data?.items.map((item) => (
-                <Dropdown.Item key={item.id} asChild>
-                  <Link
-                    to={`/agencies/${item.id}`}
-                    aria-current={agencyId === item.id ? "page" : undefined}
-                  >
-                    <Layers />
-                    <span>
-                      <strong>{item.name}</strong>
-                      <small>{t("shell.agencyArea")}</small>
-                    </span>
-                    {agencyId === item.id && (
-                      <Check className="workspace-current" />
-                    )}
-                  </Link>
+          )}
+          <Dropdown.Label className="workspace-label">
+            {t("shell.agencies")}
+          </Dropdown.Label>
+          {groups.map((item) => {
+            const expanded = expandedId === item.id;
+            return (
+              <Dropdown.Group key={item.id}>
+                <Dropdown.Item
+                  className="workspace-agency"
+                  textValue={item.name}
+                  disabled={item.active === false}
+                  aria-expanded={expanded}
+                  aria-controls={
+                    expanded ? `workspace-clients-${item.id}` : undefined
+                  }
+                  data-current={currentAgencyId === item.id || undefined}
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    setExpandedId(expanded ? undefined : item.id);
+                  }}
+                >
+                  <Building2 aria-hidden="true" />
+                  <span>
+                    <strong>{item.name}</strong>
+                    <small>
+                      {item.active === false
+                        ? t("common.inactive")
+                        : t(
+                            item.clients.length === 1
+                              ? "shell.clientCountOne"
+                              : "shell.clientCount",
+                            { count: item.clients.length },
+                          )}
+                    </small>
+                  </span>
+                  <ChevronDown
+                    className="workspace-expand"
+                    aria-hidden="true"
+                  />
                 </Dropdown.Item>
-              ))}
-              {agencies.isPending && <Loading />}
-              {agencies.isError && (
-                <ErrorState
-                  error={agencies.error}
-                  retry={() => void agencies.refetch()}
-                />
-              )}
-            </>
+                {expanded && item.active !== false && (
+                  <Dropdown.Group
+                    className="workspace-clients"
+                    id={`workspace-clients-${item.id}`}
+                    aria-label={t("shell.agencyClients", { name: item.name })}
+                  >
+                    {item.canManage && (
+                      <Dropdown.Item asChild>
+                        <Link
+                          to={`/agencies/${item.id}`}
+                          aria-current={
+                            agencyId === item.id ? "page" : undefined
+                          }
+                        >
+                          <Layers aria-hidden="true" />
+                          <span>{t("shell.openAgency")}</span>
+                          {agencyId === item.id && (
+                            <Check
+                              className="workspace-current"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </Link>
+                      </Dropdown.Item>
+                    )}
+                    {item.clients.map((client) => (
+                      <Dropdown.Item key={client.id} asChild>
+                        <Link
+                          to={`/app/${client.id}/chat`}
+                          aria-current={
+                            tenant?.id === client.id ? "page" : undefined
+                          }
+                        >
+                          <span
+                            className="workspace-client-avatar"
+                            aria-hidden="true"
+                          >
+                            {client.name.slice(0, 2).toUpperCase()}
+                          </span>
+                          <span>
+                            <strong>{client.name}</strong>
+                            <small>{t("admin.client")}</small>
+                          </span>
+                          {tenant?.id === client.id && (
+                            <Check
+                              className="workspace-current"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </Link>
+                      </Dropdown.Item>
+                    ))}
+                    {!item.clients.length && (
+                      <p className="workspace-empty">
+                        {t("shell.noAgencyClients")}
+                      </p>
+                    )}
+                  </Dropdown.Group>
+                )}
+              </Dropdown.Group>
+            );
+          })}
+          {agencies.isPending && <Loading />}
+          {agencies.isError && (
+            <ErrorState
+              error={agencies.error}
+              retry={() => void agencies.refetch()}
+            />
+          )}
+          {agencies.isSuccess && !groups.length && (
+            <p className="workspace-empty">{t("shell.noAccess")}</p>
           )}
         </Dropdown.Content>
       </Dropdown.Portal>
@@ -343,7 +441,10 @@ export function Shell() {
   )
     return <Navigate to="/app" replace />;
   if (agencyId && agencyQuery.isPending) return <Loading />;
-  if (agencyId && !agencyQuery.data?.items.some((a) => a.id === agencyId))
+  if (
+    agencyId &&
+    !agencyQuery.data?.some((a) => a.id === agencyId && a.active !== false)
+  )
     return <Navigate to="/app" replace />;
   return (
     <ScopedShell

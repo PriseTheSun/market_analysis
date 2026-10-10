@@ -1,10 +1,23 @@
 import { expect, type Page } from "@playwright/test";
 
-export async function switchWorkspace(page: Page, name: string) {
+export async function switchWorkspace(
+  page: Page,
+  name: string,
+  agency = name === "Aurora" || name === "Horizonte"
+    ? "Agência Demo A"
+    : "Agência Demo B",
+) {
   await expect(page.locator(".app-shell")).toBeVisible();
   if (!(await page.locator(".scope-switch").first().isVisible()))
     await page.locator(".menu-toggle").click();
   await page.locator(".scope-switch:visible").click();
-  await page.getByRole("menuitem").filter({ hasText: name }).click();
+  const agencyItem = page.getByRole("menuitem").filter({ hasText: agency });
+  if ((await agencyItem.getAttribute("aria-expanded")) !== "true")
+    await agencyItem.click();
+  await page
+    .locator(".workspace-clients")
+    .getByRole("menuitem")
+    .filter({ hasText: name })
+    .click();
   await expect(page.locator(".scope-switch strong")).toHaveText(name);
 }
