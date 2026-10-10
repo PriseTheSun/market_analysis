@@ -26,7 +26,7 @@ async function login(
   const skip = page.getByRole("button", { name: "Agora não" });
   if (await skip.isVisible()) await skip.click();
 }
-test("Global enters platform administration even after visiting an organization", async ({
+test("Global enters platform administration even after visiting a client", async ({
   page,
 }) => {
   await login(page, "global", null);
@@ -50,7 +50,7 @@ test("Global enters platform administration even after visiting an organization"
   await login(page, "admin", null);
   await expect(page.locator(".scope-switch strong")).toHaveText("Atlas");
 });
-test("non-Global login remembers an authorized organization and redirects old entry links", async ({
+test("non-Global login remembers an authorized client and redirects old entry links", async ({
   page,
 }) => {
   await login(page, "admin", "Aurora");
@@ -173,8 +173,8 @@ test("public access form keeps values on error and confirms receipt", async ({
     .getByRole("textbox", { name: "E-mail corporativo" })
     .fill("e2e-" + Date.now() + "@example.test");
   await page
-    .getByRole("textbox", { name: "Nome da agência ou organização" })
-    .fill("Organização E2E");
+    .getByRole("textbox", { name: "Nome da agência ou cliente" })
+    .fill("Cliente E2E");
   await page.getByRole("button", { name: "Enviar solicitação" }).click();
   await expect(
     page.getByRole("heading", { name: "Solicitação recebida" }),

@@ -31,9 +31,9 @@ test("Global creates agency and provisioning tenant, then disables both through 
     .fill("e2e-" + suffix);
   await dialog.getByRole("button", { name: "Confirmar", exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await page.getByRole("link", { name: "Organizações", exact: true }).click();
+  await page.getByRole("link", { name: "Clientes", exact: true }).click();
   await page
-    .getByRole("button", { name: "Criar organização", exact: true })
+    .getByRole("button", { name: "Criar cliente", exact: true })
     .click();
   dialog = page.getByRole("dialog");
   await dialog.getByRole("textbox", { name: "Nome", exact: true }).fill(tenant);
@@ -91,10 +91,10 @@ test("Super Admin enters agency and tenant management without platform mutation 
     .click();
   await page.getByRole("menuitem", { name: /^Agência Demo A/ }).click();
   await expect(
-    page.getByRole("heading", { name: "Organizações", exact: true }),
+    page.getByRole("heading", { name: "Clientes", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Criar organização", exact: true }),
+    page.getByRole("button", { name: "Criar cliente", exact: true }),
   ).toHaveCount(0);
   await page
     .getByRole("row")

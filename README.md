@@ -29,16 +29,16 @@ docker compose up -d --wait api web
 
 | Perfil demo | E-mail | Escopo inicial |
 | --- | --- | --- |
-| Global | global@marketanalysis.com | Plataforma, duas agências e quatro tenants |
-| Super Admin | superadmin@marketanalysis.com | Duas agências, sem memberships artificiais em tenants |
-| Admin | admin@marketanalysis.com | Admin nos quatro tenants |
-| User | user@marketanalysis.com | Conversas pessoais nos quatro tenants |
+| Global | global@marketanalysis.com | Plataforma, duas agências e quatro clientes |
+| Super Admin | superadmin@marketanalysis.com | Duas agências, sem vínculos artificiais em clientes |
+| Admin | admin@marketanalysis.com | Admin nos quatro clientes |
+| User | user@marketanalysis.com | Conversas pessoais nos quatro clientes |
 
-Após o login, contas Global entram na administração global, em `/plataforma/agencias`, mesmo que tenham acessado uma organização anteriormente. Para os demais perfis, o aplicativo abre direto no chat da última organização autorizada (ou da primeira disponível). A troca de organização fica no seletor de espaço do cabeçalho.
+Após o login, contas Global entram na administração global, em `/plataforma/agencias`, mesmo que tenham acessado um cliente anteriormente. Para os demais perfis, o aplicativo abre direto no chat do último cliente autorizado (ou do primeiro disponível). A troca de cliente fica no seletor de espaço do cabeçalho.
 
-Na interface, os espaços de clientes são **Organizações**. As URLs acompanham o idioma escolhido: `/plataforma/organizacoes` em português, `/platform/organizations` em inglês e `/plataforma/organizaciones` em espanhol. O mesmo vale para autenticação, conversas, arquivos e demais páginas. Links antigos, como `/platform/tenants` e `/login`, redirecionam para o endereço no idioma atual.
+A hierarquia do produto é **Agência → Cliente**: por exemplo, agência Publicis e cliente Nivea. Cada cliente pertence a uma agência e possui seu próprio espaço de trabalho. A listagem usa `/plataforma/clientes` em português e espanhol, e `/platform/clients` em inglês. Os links antigos de organizações e `/platform/tenants` redirecionam para a nova rota no idioma atual. O mesmo padrão de tradução se aplica às demais páginas. Os identificadores e contratos internos de tenant permanecem estáveis, preservando dados, vínculos e permissões existentes.
 
-Senha inicial de todas: **`MarketGlobal#2027`**. Agências Demo A/B; tenants Aurora, Horizonte, Atlas e Cobalto. O seed é idempotente: preserva senhas, preferências e alterações existentes, não envia e-mails e recusa execução em produção. Para restaurar **explicitamente só as senhas demo**:
+Senha inicial de todas: **`MarketGlobal#2027`**. Agências Demo A/B; clientes Aurora, Horizonte, Atlas e Cobalto. O seed é idempotente: preserva senhas, preferências e alterações existentes, não envia e-mails e recusa execução em produção. Para restaurar **explicitamente só as senhas demo**:
 
 ```sh
 docker compose run --rm migrate pnpm --filter @market/api exec tsx prisma/seed.ts --reset-demo-passwords

@@ -341,7 +341,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
         {mode === "request" && (
           <>
             <Field
-              label={t("auth.organization")}
+              label={t("auth.agencyOrClient")}
               error={invalid("organization")}
             >
               <span className="input-icon">
@@ -349,7 +349,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
                 <input
                   {...form.register("organization")}
                   autoComplete="organization"
-                  placeholder={t("auth.organizationPlaceholder")}
+                  placeholder={t("auth.agencyOrClientPlaceholder")}
                   aria-invalid={!!invalid("organization")}
                 />
               </span>

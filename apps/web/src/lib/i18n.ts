@@ -55,15 +55,15 @@ const copy: Record<string, [string, string, string]> = {
     "What is your name?",
     "¿Cómo te llamas?",
   ],
-  "auth.organization": [
-    "Nome da agência ou organização",
-    "Agency or organization name",
-    "Nombre de la agencia u organización",
+  "auth.agencyOrClient": [
+    "Nome da agência ou cliente",
+    "Agency or client name",
+    "Nombre de la agencia o cliente",
   ],
-  "auth.organizationPlaceholder": [
-    "Digite o nome da sua organização",
-    "Enter your organization name",
-    "Escribe el nombre de tu organización",
+  "auth.agencyOrClientPlaceholder": [
+    "Digite o nome da agência ou cliente",
+    "Enter the agency or client name",
+    "Escribe el nombre de la agencia o cliente",
   ],
   "auth.message": [
     "Mensagem (opcional)",
@@ -211,7 +211,7 @@ const copy: Record<string, [string, string, string]> = {
   "shell.preferences": ["Preferências", "Preferences", "Preferencias"],
   "shell.notifications": ["Notificações", "Notifications", "Notificaciones"],
   "shell.agencies": ["Agências", "Agencies", "Agencias"],
-  "shell.organizations": ["Organizações", "Organizations", "Organizaciones"],
+  "shell.clients": ["Clientes", "Clients", "Clientes"],
   "shell.users": [
     "Contas da plataforma",
     "Platform accounts",
@@ -230,9 +230,9 @@ const copy: Record<string, [string, string, string]> = {
     "No hay espacios disponibles",
   ],
   "shell.noAccessSub": [
-    "Aguarde um convite ou procure o administrador da sua organização.",
-    "Wait for an invitation or contact your organization administrator.",
-    "Espera una invitación o contacta al administrador de tu organización.",
+    "Aguarde um convite ou procure o administrador do seu cliente.",
+    "Wait for an invitation or contact your client administrator.",
+    "Espera una invitación o contacta al administrador de tu cliente.",
   ],
   "shell.menu": ["Abrir navegação", "Open navigation", "Abrir navegación"],
   "shell.accountMenu": [
@@ -464,18 +464,14 @@ const copy: Record<string, [string, string, string]> = {
     "Preferences for {{name}}",
     "Preferencias de {{name}}",
   ],
-  "admin.organization": ["Organização", "Organization", "Organización"],
+  "admin.client": ["Cliente", "Client", "Cliente"],
   "admin.adminEmail": [
     "E-mail do Admin responsável",
     "Responsible Admin email",
     "Correo del Admin responsable",
   ],
   "admin.newAgency": ["Criar agência", "Create agency", "Crear agencia"],
-  "admin.newOrganization": [
-    "Criar organização",
-    "Create organization",
-    "Crear organización",
-  ],
+  "admin.newClient": ["Criar cliente", "Create client", "Crear cliente"],
   "admin.superAdmins": [
     "Super Admins da agência",
     "Agency Super Admins",
@@ -538,9 +534,9 @@ const copy: Record<string, [string, string, string]> = {
   ],
   "requests.reviewer": ["Revisado por", "Reviewed by", "Revisado por"],
   "requests.roleHint": [
-    "O convite concede acesso apenas à organização selecionada.",
-    "The invitation grants access only to the selected organization.",
-    "La invitación concede acceso solo a la organización seleccionada.",
+    "O convite concede acesso apenas ao cliente selecionado.",
+    "The invitation grants access only to the selected client.",
+    "La invitación concede acceso solo al cliente seleccionado.",
   ],
   "preferences.sub": [
     "Estas escolhas acompanham sua conta.",
@@ -670,9 +666,9 @@ const copy: Record<string, [string, string, string]> = {
     "Correo o contraseña incorrectos. Revisa e inténtalo de nuevo.",
   ],
   "errors.LAST_ADMIN": [
-    "Mantenha pelo menos um Admin ativo nesta organização.",
-    "Keep at least one active Admin in this organization.",
-    "Mantén al menos un Admin activo en esta organización.",
+    "Mantenha pelo menos um Admin ativo neste cliente.",
+    "Keep at least one active Admin in this client.",
+    "Mantén al menos un Admin activo en este cliente.",
   ],
   "errors.LAST_GLOBAL": [
     "Mantenha pelo menos um Global ativo.",

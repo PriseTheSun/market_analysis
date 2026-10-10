@@ -452,7 +452,7 @@ function ScopedShell({
       ? [
           {
             to: `/agencies/${agencyId}`,
-            label: "shell.organizations",
+            label: "shell.clients",
             icon: Layers,
           },
         ]
@@ -463,8 +463,8 @@ function ScopedShell({
             icon: Building2,
           },
           {
-            to: "/platform/organizations",
-            label: "shell.organizations",
+            to: "/platform/clients",
+            label: "shell.clients",
             icon: Layers,
           },
           { to: "/platform/users", label: "shell.users", icon: Users },

@@ -722,7 +722,7 @@ function SuperAdmins({ agency }: { agency: Agency }) {
     </>
   );
 }
-export function Organizations() {
+export function Clients() {
   const s = useScope(),
     { t } = useTranslation();
   const { agencyId } = useParams();
@@ -745,11 +745,11 @@ export function Organizations() {
   return (
     <>
       <AdminTable<Tenant>
-        tableClassName="organizations-table record-table"
-        title={t("shell.organizations")}
+        tableClassName="clients-table record-table"
+        title={t("shell.clients")}
         path={agencyId ? `/agencies/${agencyId}/tenants` : "/platform/tenants"}
         columns={[
-          t("common.name"),
+          t("admin.client"),
           t("admin.agency"),
           t("common.status"),
           t("common.actions"),
@@ -758,7 +758,7 @@ export function Organizations() {
           !agencyId && (
             <Button onClick={() => setEdit("new")}>
               <Plus />
-              {t("admin.newOrganization")}
+              {t("admin.newClient")}
             </Button>
           )
         }
@@ -798,7 +798,7 @@ export function Organizations() {
       <Modal
         open={!!edit}
         onOpenChange={(v) => !v && setEdit(undefined)}
-        title={t(edit === "new" ? "admin.newOrganization" : "common.change")}
+        title={t(edit === "new" ? "admin.newClient" : "common.change")}
         description={edit && edit !== "new" ? edit.name : undefined}
       >
         {edit && (

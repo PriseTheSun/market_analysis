@@ -33,8 +33,8 @@ const Members = lazy(() =>
 const Agencies = lazy(() =>
   import("./pages/admin").then((m) => ({ default: m.Agencies })),
 );
-const Organizations = lazy(() =>
-  import("./pages/admin").then((m) => ({ default: m.Organizations })),
+const Clients = lazy(() =>
+  import("./pages/admin").then((m) => ({ default: m.Clients })),
 );
 const UsersPage = lazy(() =>
   import("./pages/admin").then((m) => ({ default: m.UsersPage })),
@@ -114,12 +114,12 @@ function App() {
                     <Navigate to="/platform/agencies" replace />,
                   )}
                   {route("/platform/agencies", <Agencies />)}
-                  {route("/platform/organizations", <Organizations />)}
+                  {route("/platform/clients", <Clients />)}
                   {route("/platform/users", <UsersPage />)}
                   {route("/platform/requests", <Requests />)}
                   {route("/platform/notifications", <Notifications />)}
                   {route("/platform/preferences", <Preferences />)}
-                  {route("/agencies/:agencyId", <Organizations />)}
+                  {route("/agencies/:agencyId", <Clients />)}
                 </Route>
               </Route>
               <Route path="*" element={<NotFound />} />

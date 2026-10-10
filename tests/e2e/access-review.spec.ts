@@ -16,8 +16,8 @@ test("public request → global classification → approval → local email → 
     .fill("Pessoa da jornada");
   await page.getByRole("textbox", { name: "E-mail corporativo" }).fill(email);
   await page
-    .getByRole("textbox", { name: "Nome da agência ou organização" })
-    .fill("Organização independente");
+    .getByRole("textbox", { name: "Nome da agência ou cliente" })
+    .fill("Cliente independente");
   await page.getByRole("button", { name: "Enviar solicitação" }).click();
   await expect(
     page.getByRole("heading", { name: "Solicitação recebida" }),
@@ -44,7 +44,7 @@ test("public request → global classification → approval → local email → 
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("button", { name: "Classificar" }).click();
   await dialog
-    .getByRole("combobox", { name: "Organização", exact: true })
+    .getByRole("combobox", { name: "Cliente", exact: true })
     .selectOption({ label: "Agência Demo A · Aurora" });
   await dialog.getByRole("button", { name: "Confirmar", exact: true }).click();
   await dialog.getByRole("button", { name: "Aprovar e convidar" }).click();

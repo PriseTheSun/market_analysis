@@ -211,7 +211,7 @@ components:
 
 **Creative North Star: "Clareza operacional"**
 
-A identidade aprovada combina Montserrat local, ações azuis, superfícies sólidas e informação operacional legível. A marca vetorial e o vídeo fornecidos pelo usuário definem a presença visual da autenticação; as telas internas mantêm a atenção no contexto da organização, nos dados reais e na próxima ação.
+A identidade aprovada combina Montserrat local, ações azuis, superfícies sólidas e informação operacional legível. A marca vetorial e o vídeo fornecidos pelo usuário definem a presença visual da autenticação; as telas internas mantêm a atenção no contexto do cliente, nos dados reais e na próxima ação.
 
 Este registro atualiza o sistema existente a partir de apps/web/src/styles.css e dos componentes implementados. Preserva as decisões de PRODUCT.md, das referências em docs/references e da seção 9 do OpenSpec. A expressão é contida e funcional; a interface mantém visível o caráter demonstrativo das respostas do chat, sem transformar a apresentação visual em promessa de análise de mercado ou de arquivos.
 
@@ -326,7 +326,7 @@ Campos possuem altura mínima de 46px, borda de 1px, superfície sólida e paddi
 
 ### Navigation
 
-Itens têm padding de 12px, gap de 12px, texto secundário e canto de controle. Hover usa fundo de trabalho; o item ativo combina fundo suave e texto primário. A mesma linguagem aparece na navegação lateral e no drawer. O contexto da organização e o usuário permanecem partes distintas da navegação.
+Itens têm padding de 12px, gap de 12px, texto secundário e canto de controle. Hover usa fundo de trabalho; o item ativo combina fundo suave e texto primário. A mesma linguagem aparece na navegação lateral e no drawer. O contexto do cliente e o usuário permanecem partes distintas da navegação.
 
 ### Chat composer
 
@@ -361,7 +361,7 @@ Há um único Sonner no canto inferior esquerdo, com fechamento e duração padr
 
 ## Padrão compartilhado das rotas autenticadas — 10/10/2026
 
-Entrada por perfil: Global inicia no workspace de administração global (`/plataforma/agencias` em português), mesmo após visitar uma organização. A escolha explícita de uma organização continua disponível no seletor do cabeçalho. Os demais perfis mantêm a entrada na última organização autorizada ou na primeira disponível. `/app` e o endereço legado `/contexts` seguem a mesma regra.
+Entrada por perfil: Global inicia no workspace de administração global (`/plataforma/agencias` em português), mesmo após visitar um cliente. A escolha explícita de um cliente continua disponível no seletor do cabeçalho. Os demais perfis mantêm a entrada no último cliente autorizado ou no primeiro disponível. `/app` e o endereço legado `/contexts` seguem a mesma regra.
 
 A referência de Agências passa a reger o shell de toda a aplicação autenticada. A fonte de implementação é `apps/web/src/app-layout.css`, importada depois dos estilos base. As dimensões não devem depender da rota: sidebar 215 px (80 px recolhida), logo 128 × 36 px, cabeçalho 64 px, conteúdo com 23 px laterais no desktop. O seletor de contexto fica no cabeçalho e a conta no rodapé da lateral, sem seta. Preferências e Sair ficam no menu da conta, conforme acesso disponível. À direita do sino, todas as rotas autenticadas exibem o toggle de tema e o seletor de idioma, nessa ordem, com persistência na conta. O toggle usa sol/lua, tooltip e semântica de switch; ambos os controles acompanham o estado da página Preferências. No mobile, o cabeçalho mantém 64 px e compacta os controles e o seletor de contexto.
 
@@ -373,6 +373,13 @@ Títulos principais: 32 px/700 (26 px mobile); cabeçalhos de tabela 11 px/500; 
 
 Tooltips de navegação usam fundo e borda no azul de marca `--brand-blue: #2453ff`, com texto branco, nos dois temas. O azul de marca é independente do tom adaptado de `--primary` no tema escuro.
 
-Agências, Organizações, Contas e Solicitações usam `record-table` para a coluna de ações de 108 px, centralizada no desktop. Cada registro apresenta um único `RecordActions` com reticências horizontais; comandos ficam no dropdown e reutilizam os formulários existentes. Contas e Solicitações mantêm `RecordIdentity`, 12 registros por página e o padrão de tabela responsiva de Organizações. Solicitações preserva os estados de revisão e entrega do convite.
+Agências, Clientes, Contas e Solicitações usam `record-table` para a coluna de ações de 108 px, centralizada no desktop. Cada registro apresenta um único `RecordActions` com reticências horizontais; comandos ficam no dropdown e reutilizam os formulários existentes. Contas e Solicitações mantêm `RecordIdentity`, 12 registros por página e o padrão de tabela responsiva de Clientes. Solicitações preserva os estados de revisão e entrega do convite.
 
 A lateral abre e recolhe em 280 ms com Motion e curva `cubic-bezier(0.22, 1, 0.36, 1)`. Um único progresso sincroniza largura de 80–215 px, conteúdo, posição dos ícones, recorte da marca, opacidade dos rótulos e rotação do controle. Não há animação inicial ao restaurar a preferência; alternar durante a transição inverte a partir da posição atual. No mobile, o drawer desliza em 280 ms na entrada e 200 ms na saída, acompanhado do fade do backdrop. `useReducedMotion` elimina a transição desktop, e a regra CSS global de movimento reduzido limita as animações mobile a 0.01 ms.
+
+
+## Terminologia de agência e cliente — 10/10/2026
+
+A hierarquia visível é Agência → Cliente: Publicis → Nivea é um exemplo. Cada cliente pertence a uma agência. Menus, títulos, formulários, solicitações de acesso e mensagens usam Cliente/Clientes, Client/Clients e Cliente/Clientes nos três idiomas. A listagem identifica o cliente e sua agência em colunas separadas. A área Global permanece independente dos espaços dos clientes.
+
+A rota da listagem é `/plataforma/clientes` em português e espanhol e `/platform/clients` em inglês. Endereços antigos de organizações e `/platform/tenants` redirecionam preservando parâmetros e fragmentos. Os contratos internos de tenant e o campo legado de afiliação da solicitação de acesso permanecem compatíveis; esta alteração não modifica dados cadastrados.

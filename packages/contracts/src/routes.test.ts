@@ -8,17 +8,27 @@ import {
 
 describe("localized browser routes", () => {
   it.each([
-    ["pt-BR", "/plataforma/organizacoes"],
-    ["en", "/platform/organizations"],
-    ["es", "/plataforma/organizaciones"],
-  ])("renames old tenant links in %s", (locale, expected) => {
-    expect(localizedAppPath("/platform/tenants", locale)).toBe(expected);
-    expect(localizedAppPath("/platform/organizations", locale)).toBe(expected);
+    ["pt-BR", "/plataforma/clientes"],
+    ["en", "/platform/clients"],
+    ["es", "/plataforma/clientes"],
+  ])("resolves current and legacy client links in %s", (locale, expected) => {
+    for (const path of [
+      "/platform/clients",
+      "/plataforma/clientes",
+      "/platform/tenants",
+      "/platform/organizations",
+      "/plataforma/organizacoes",
+      "/plataforma/organizaciones",
+    ]) {
+      expect(localizedAppPath(path, locale)).toBe(expected);
+      expect(canonicalAppPath(path)).toBe("/platform/clients");
+      expect(appRoutePatterns("/platform/clients")).toContain(path);
+    }
   });
 
   it("uses the selected locale even when a link was written in another language", () => {
-    expect(localizedAppPath("/plataforma/organizacoes", "es")).toBe(
-      "/plataforma/organizaciones",
+    expect(localizedAppPath("/platform/clients", "es")).toBe(
+      "/plataforma/clientes",
     );
     expect(localizedAppPath("/app/client-a/preferences", "pt-BR")).toBe(
       "/app/client-a/preferencias",
@@ -47,12 +57,14 @@ describe("localized browser routes", () => {
         "en",
       ),
     ).toBe("/accept-invitation?source=platform#token=abc%2Ftenants%3D");
-    expect(
-      localizedAppPath(
-        "/platform/tenants/?search=files&page=2#results",
-        "pt-BR",
-      ),
-    ).toBe("/plataforma/organizacoes?search=files&page=2#results");
+    for (const path of ["/platform/tenants", "/plataforma/organizacoes"]) {
+      expect(
+        localizedAppPath(`${path}/?search=files&page=2#results`, "pt-BR"),
+      ).toBe("/plataforma/clientes?search=files&page=2#results");
+      expect(canonicalAppPath(`${path}?search=files&page=2#results`)).toBe(
+        "/platform/clients?search=files&page=2#results",
+      );
+    }
   });
 
   it("localizes authentication and preserves old entry links", () => {

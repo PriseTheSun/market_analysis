@@ -123,8 +123,8 @@ export function Requests() {
               <thead>
                 <tr>
                   <th>{t("auth.name")}</th>
-                  <th>{t("auth.organization")}</th>
-                  <th>{t("admin.organization")}</th>
+                  <th>{t("auth.agencyOrClient")}</th>
+                  <th>{t("admin.client")}</th>
                   <th>{t("common.status")}</th>
                   <th>{t("common.actions")}</th>
                 </tr>
@@ -135,10 +135,10 @@ export function Requests() {
                     <td data-label={t("auth.name")}>
                       <RecordIdentity name={r.name} detail={r.email} />
                     </td>
-                    <td data-label={t("auth.organization")}>
+                    <td data-label={t("auth.agencyOrClient")}>
                       {r.organization}
                     </td>
-                    <td data-label={t("admin.organization")}>
+                    <td data-label={t("admin.client")}>
                       {r.tenant?.name ?? t("requests.unscoped")}
                     </td>
                     <td data-label={t("common.status")}>
@@ -184,7 +184,7 @@ export function Requests() {
         {selected && (
           <>
             <dl className="request-details">
-              <dt>{t("auth.organization")}</dt>
+              <dt>{t("auth.agencyOrClient")}</dt>
               <dd>{selected.organization}</dd>
               {selected.message && (
                 <>
@@ -192,7 +192,7 @@ export function Requests() {
                   <dd>{selected.message}</dd>
                 </>
               )}
-              <dt>{t("admin.organization")}</dt>
+              <dt>{t("admin.client")}</dt>
               <dd>{selected.tenant?.name ?? t("requests.unscoped")}</dd>
               {selected.reason && (
                 <>
@@ -237,7 +237,7 @@ export function Requests() {
                 fields={[
                   {
                     name: "tenantId",
-                    label: t("admin.organization"),
+                    label: t("admin.client"),
                     options: [
                       { value: "", label: t("requests.unscoped") },
                       ...(tenants.data?.items

@@ -25,11 +25,7 @@ const segments: Record<string, Record<Locale, string>> = {
   },
   platform: { "pt-BR": "plataforma", en: "platform", es: "plataforma" },
   agencies: { "pt-BR": "agencias", en: "agencies", es: "agencias" },
-  organizations: {
-    "pt-BR": "organizacoes",
-    en: "organizations",
-    es: "organizaciones",
-  },
+  clients: { "pt-BR": "clientes", en: "clients", es: "clientes" },
   users: { "pt-BR": "contas", en: "accounts", es: "cuentas" },
   chat: { "pt-BR": "conversas", en: "conversations", es: "conversaciones" },
   files: { "pt-BR": "arquivos", en: "files", es: "archivos" },
@@ -66,7 +62,7 @@ export const appRouteTemplates = [
   "/app/:tenantId/audit",
   "/platform",
   "/platform/agencies",
-  "/platform/organizations",
+  "/platform/clients",
   "/platform/users",
   "/platform/requests",
   "/platform/notifications",
@@ -89,7 +85,14 @@ export function appRoutePatterns(template: AppRouteTemplate): string[] {
       ...(["pt-BR", "en", "es"] as const).map((locale) =>
         translateTemplate(template, locale),
       ),
-      ...(template === "/platform/organizations" ? ["/platform/tenants"] : []),
+      ...(template === "/platform/clients"
+        ? [
+            "/platform/tenants",
+            "/platform/organizations",
+            "/plataforma/organizacoes",
+            "/plataforma/organizaciones",
+          ]
+        : []),
       ...(template === "/app" ? ["/contexts"] : []),
     ]),
   ];
