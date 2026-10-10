@@ -1,0 +1,4 @@
+PASS stale operation recovery, partial persistence and explicit retry without duplicate question
+PASS SMTP failure/backoff, expired worker lease and redelivery without duplicate invitation
+PASS service restart retains login session, real file bytes and chat history
+PASS failed delete remains pending, worker resumes and abandoned quota reservation is released

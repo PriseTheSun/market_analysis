@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 1024" width="1536" height="1024" role="img" aria-label="Market Analysis">
+  <title>Market Analysis</title>
+  <style>
+    :root { --ink: #0a0a0a; --bg: #ffffff; }
+    .bg { fill: var(--bg); }
+    .ink { fill: var(--ink); }
+    .line { fill: none; stroke: var(--ink); stroke-width: 7; stroke-linejoin: miter; stroke-linecap: butt; }
+
+    /* Animação única (~3,5s), sem loop e sem saída */
+    .up   { transform-box: fill-box; transform-origin: 50% 100%; animation: up .8s cubic-bezier(.2,.8,.2,1) both; }
+    .m    { animation-delay: 0s; }
+    .b1   { animation-delay: .45s; }
+    .b2   { animation-delay: .6s; }
+    .b3   { animation-delay: .75s; }
+
+    .div  { transform-box: fill-box; transform-origin: 50% 50%; animation: up .7s cubic-bezier(.2,.8,.2,1) 1s both; }
+
+    .wipe { animation: wipe .9s cubic-bezier(.4,0,.2,1) 1.1s both; }
+
+    .L    { animation: rise .6s cubic-bezier(.2,.8,.2,1) both; }
+    .L1 { animation-delay: 1.3s; }  .L2 { animation-delay: 1.38s; } .L3 { animation-delay: 1.46s; }
+    .L4 { animation-delay: 1.54s; } .L5 { animation-delay: 1.62s; } .L6 { animation-delay: 1.70s; }
+
+    .draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw .55s ease-out both; }
+    .D1 { animation-delay: 1.9s; }  .D2 { animation-delay: 1.98s; } .D3 { animation-delay: 2.06s; }
+    .D4 { animation-delay: 2.14s; } .D5 { animation-delay: 2.22s; } .D6 { animation-delay: 2.30s; }
+    .D7 { animation-delay: 2.38s; } .D8 { animation-delay: 2.46s; }
+
+    @keyframes up   { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+    @keyframes wipe { from { width: 0; } to { width: 340px; } }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; }
+      .draw { stroke-dashoffset: 0; }
+    }
+  </style>
+
+  <defs>
+    <clipPath id="arrowClip">
+      <rect class="wipe" x="220" y="320" width="340" height="290"/>
+    </clipPath>
+  </defs>
+
+  <rect class="bg" width="1536" height="1024"/>
+
+  <!-- Símbolo: M -->
+  <polygon class="ink up m" points="113,334 277,446 440,334 440,396 377,451 277,520 179,452 179,625 113,674"/>
+
+  <!-- Barras (proporções originais) -->
+  <polygon class="ink up b1" points="217,612 291,576 291,674 217,674"/>
+  <polygon class="ink up b2" points="321,561 396,517 396,674 321,674"/>
+  <polygon class="ink up b3" points="427,497 502,446 502,674 427,674"/>
+
+  <!-- Seta ascendente -->
+  <g clip-path="url(#arrowClip)">
+    <path class="ink" d="M228,585 C320,532 425,460 486,377 L469,361 L546,341 L528,415 L512,401 C440,462 340,540 228,585 Z"/>
+  </g>
+
+  <!-- Divisor -->
+  <rect class="ink div" x="615" y="322" width="9" height="369"/>
+
+  <!-- MARKET (letras vetorizadas, sem dependência de fonte) -->
+  <g class="ink">
+    <!-- M -->
+    <polygon class="L L1" points="685,404 718,404 755,463 795,404 825,404 825,533 795,533 795,459 766,508 745,508 717,459 717,533 685,533"/>
+    <!-- A -->
+    <path class="L L2" fill-rule="evenodd" d="M888,404 H918 L970,533 H937 L927,507 H879 L872,533 H835 Z M903,442 L889,481 H918 Z"/>
+    <!-- R -->
+    <path class="L L3" fill-rule="evenodd" d="M981,404 H1040 C1068,404 1089,420 1089,445 C1089,466 1076,481 1058,486 L1093,533 H1057 L1026,489 H1013 V533 H981 Z M1013,432 V463 H1040 C1050,463 1056,456 1056,448 C1056,439 1050,432 1040,432 Z"/>
+    <!-- K -->
+    <path class="L L4" d="M1105,404 H1137 V458 L1182,404 H1222 L1170,461 L1224,533 H1185 L1148,482 L1137,493 V533 H1105 Z"/>
+    <!-- E -->
+    <path class="L L5" d="M1232,404 H1327 V432 H1265 V455 H1321 V482 H1265 V505 H1328 V533 H1232 Z"/>
+    <!-- T -->
+    <path class="L L6" d="M1337,404 H1449 V432 H1408 V533 H1376 V432 H1337 Z"/>
+  </g>
+
+  <!-- ANALYSIS (traços finos que se desenham) -->
+  <g class="line">
+    <path class="draw D1" pathLength="1" d="M696,617 L720,566 L744,617 M705,598 H735"/>
+    <path class="draw D2" pathLength="1" d="M811,617 V565 L849,615 V563"/>
+    <path class="draw D3" pathLength="1" d="M916,617 L940,566 L964,617 M925,598 H955"/>
+    <path class="draw D4" pathLength="1" d="M1027,563 V613.5 H1059"/>
+    <path class="draw D5" pathLength="1" d="M1103,564 L1130,597 L1157,564 M1130,597 V617"/>
+    <path class="draw D6" pathLength="1" d="M1246,574 C1240,566 1215,564 1215,576 C1215,590 1247,590 1247,604 C1247,617 1220,617 1213,608"/>
+    <path class="draw D7" pathLength="1" d="M1314.5,563 V617"/>
+    <path class="draw D8" pathLength="1" d="M1417,574 C1411,566 1386,564 1386,576 C1386,590 1418,590 1418,604 C1418,617 1391,617 1384,608"/>
+  </g>
+</svg>

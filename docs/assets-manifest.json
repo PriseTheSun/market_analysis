@@ -1,0 +1,47 @@
+[
+  {
+    "path": "assets/source/auth/bg_login.mp4",
+    "bytes": 7474740,
+    "sha256": "e295bf7266873b1cac28795859a99f28db4753c81e6532d8adfa3f88fd5d17bf"
+  },
+  {
+    "path": "assets/source/brand/main_logo.svg",
+    "bytes": 2182,
+    "sha256": "6d1e069e85d484eb48c7fcfb5833c4039320ad39a37f6efd6f2910415402d54e"
+  },
+  {
+    "path": "assets/source/brand/logo_transicao.svg",
+    "bytes": 4697,
+    "sha256": "7a3843a1c6a015942e8671e593ba7e37d6c0638ddfc71f7fc551175e9f59129d"
+  },
+  {
+    "path": "docs/references/login.png",
+    "bytes": 1622788,
+    "sha256": "f07251f57fa3de8720638299a26c0edd24f2123fb0196c52778ac8ff356d08e9"
+  },
+  {
+    "path": "docs/references/request-access.png",
+    "bytes": 1599708,
+    "sha256": "8cd10a162da95ef36ee63bb16578b7e4b09c36800e93534c06168431ccf88c0a"
+  },
+  {
+    "path": "apps/web/public/media/auth-background.mp4",
+    "bytes": 7347885,
+    "sha256": "c48ac41fca519b4a3e40d2a0ed50cb2bf310ff59bfe062110dd8536746121031"
+  },
+  {
+    "path": "apps/web/public/media/auth-poster.jpg",
+    "bytes": 79511,
+    "sha256": "23c1155f18523af7ecf376b928eed1dbaac0c52832302754e5de1e708100511c"
+  },
+  {
+    "path": "apps/web/public/brand/logo-dark.svg",
+    "bytes": 2108,
+    "sha256": "6515a176064a54dff04af1e9ef2206bdb2d92ca34907732e1b403588961b8587"
+  },
+  {
+    "path": "apps/web/public/brand/logo-light.svg",
+    "bytes": 2108,
+    "sha256": "acada2db5c3074e6f66d0aef51f8e0c3e6009a85ff4c075b9e2f2db77c24b9fa"
+  }
+]

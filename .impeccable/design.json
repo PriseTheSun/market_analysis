@@ -1,0 +1,551 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-10T06:08:51.068Z",
+  "title": "Design System: Market Analysis",
+  "extensions": {
+    "colorMeta": {
+      "bg": {
+        "role": "neutral",
+        "displayName": "Fundo de trabalho",
+        "tonalRamp": [
+          "oklch(15.00% 0.00453 258.32)",
+          "oklch(26.43% 0.00453 258.32)",
+          "oklch(37.86% 0.00453 258.32)",
+          "oklch(49.29% 0.00453 258.32)",
+          "oklch(60.71% 0.00453 258.32)",
+          "oklch(72.14% 0.00453 258.32)",
+          "oklch(83.57% 0.00453 258.32)",
+          "oklch(95.00% 0.00453 258.32)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Superfície",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 89.88)",
+          "oklch(26.43% 0.00000 89.88)",
+          "oklch(37.86% 0.00000 89.88)",
+          "oklch(49.29% 0.00000 89.88)",
+          "oklch(60.71% 0.00000 89.88)",
+          "oklch(72.14% 0.00000 89.88)",
+          "oklch(83.57% 0.00000 89.88)",
+          "oklch(95.00% 0.00000 89.88)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Texto principal",
+        "tonalRamp": [
+          "oklch(15.00% 0.03176 264.66)",
+          "oklch(26.43% 0.03176 264.66)",
+          "oklch(37.86% 0.03176 264.66)",
+          "oklch(49.29% 0.03176 264.66)",
+          "oklch(60.71% 0.03176 264.66)",
+          "oklch(72.14% 0.03176 264.66)",
+          "oklch(83.57% 0.03176 264.66)",
+          "oklch(95.00% 0.03176 264.66)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Texto secundário",
+        "tonalRamp": [
+          "oklch(15.00% 0.03926 259.36)",
+          "oklch(26.43% 0.03926 259.36)",
+          "oklch(37.86% 0.03926 259.36)",
+          "oklch(49.29% 0.03926 259.36)",
+          "oklch(60.71% 0.03926 259.36)",
+          "oklch(72.14% 0.03926 259.36)",
+          "oklch(83.57% 0.03926 259.36)",
+          "oklch(95.00% 0.03926 259.36)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Borda",
+        "tonalRamp": [
+          "oklch(15.00% 0.01563 257.20)",
+          "oklch(26.43% 0.01563 257.20)",
+          "oklch(37.86% 0.01563 257.20)",
+          "oklch(49.29% 0.01563 257.20)",
+          "oklch(60.71% 0.01563 257.20)",
+          "oklch(72.14% 0.01563 257.20)",
+          "oklch(83.57% 0.01563 257.20)",
+          "oklch(95.00% 0.01563 257.20)"
+        ]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Azul de ação",
+        "tonalRamp": [
+          "oklch(15.00% 0.19979 259.74)",
+          "oklch(26.43% 0.19979 259.74)",
+          "oklch(37.86% 0.19979 259.74)",
+          "oklch(49.29% 0.19979 259.74)",
+          "oklch(60.71% 0.19979 259.74)",
+          "oklch(72.14% 0.19979 259.74)",
+          "oklch(83.57% 0.19979 259.74)",
+          "oklch(95.00% 0.19979 259.74)"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Azul de interação",
+        "tonalRamp": [
+          "oklch(15.00% 0.17287 259.62)",
+          "oklch(26.43% 0.17287 259.62)",
+          "oklch(37.86% 0.17287 259.62)",
+          "oklch(49.29% 0.17287 259.62)",
+          "oklch(60.71% 0.17287 259.62)",
+          "oklch(72.14% 0.17287 259.62)",
+          "oklch(83.57% 0.17287 259.62)",
+          "oklch(95.00% 0.17287 259.62)"
+        ]
+      },
+      "soft": {
+        "role": "primary",
+        "displayName": "Azul suave",
+        "tonalRamp": [
+          "oklch(15.00% 0.01946 260.17)",
+          "oklch(26.43% 0.01946 260.17)",
+          "oklch(37.86% 0.01946 260.17)",
+          "oklch(49.29% 0.01946 260.17)",
+          "oklch(60.71% 0.01946 260.17)",
+          "oklch(72.14% 0.01946 260.17)",
+          "oklch(83.57% 0.01946 260.17)",
+          "oklch(95.00% 0.01946 260.17)"
+        ]
+      },
+      "danger": {
+        "role": "secondary",
+        "displayName": "Vermelho de erro",
+        "tonalRamp": [
+          "oklch(15.00% 0.18205 29.51)",
+          "oklch(26.43% 0.18205 29.51)",
+          "oklch(37.86% 0.18205 29.51)",
+          "oklch(49.29% 0.18205 29.51)",
+          "oklch(60.71% 0.18205 29.51)",
+          "oklch(72.14% 0.18205 29.51)",
+          "oklch(83.57% 0.18205 29.51)",
+          "oklch(95.00% 0.18205 29.51)"
+        ]
+      },
+      "success": {
+        "role": "secondary",
+        "displayName": "Verde de confirmação",
+        "tonalRamp": [
+          "oklch(15.00% 0.09461 161.75)",
+          "oklch(26.43% 0.09461 161.75)",
+          "oklch(37.86% 0.09461 161.75)",
+          "oklch(49.29% 0.09461 161.75)",
+          "oklch(60.71% 0.09461 161.75)",
+          "oklch(72.14% 0.09461 161.75)",
+          "oklch(83.57% 0.09461 161.75)",
+          "oklch(95.00% 0.09461 161.75)"
+        ]
+      },
+      "bg-dark": {
+        "role": "neutral",
+        "displayName": "Fundo de trabalho · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.03246 266.62)",
+          "oklch(26.43% 0.03246 266.62)",
+          "oklch(37.86% 0.03246 266.62)",
+          "oklch(49.29% 0.03246 266.62)",
+          "oklch(60.71% 0.03246 266.62)",
+          "oklch(72.14% 0.03246 266.62)",
+          "oklch(83.57% 0.03246 266.62)",
+          "oklch(95.00% 0.03246 266.62)"
+        ]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Superfície · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.03176 264.66)",
+          "oklch(26.43% 0.03176 264.66)",
+          "oklch(37.86% 0.03176 264.66)",
+          "oklch(49.29% 0.03176 264.66)",
+          "oklch(60.71% 0.03176 264.66)",
+          "oklch(72.14% 0.03176 264.66)",
+          "oklch(83.57% 0.03176 264.66)",
+          "oklch(95.00% 0.03176 264.66)"
+        ]
+      },
+      "text-dark": {
+        "role": "neutral",
+        "displayName": "Texto principal · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.00341 247.86)",
+          "oklch(26.43% 0.00341 247.86)",
+          "oklch(37.86% 0.00341 247.86)",
+          "oklch(49.29% 0.00341 247.86)",
+          "oklch(60.71% 0.00341 247.86)",
+          "oklch(72.14% 0.00341 247.86)",
+          "oklch(83.57% 0.00341 247.86)",
+          "oklch(95.00% 0.00341 247.86)"
+        ]
+      },
+      "muted-dark": {
+        "role": "neutral",
+        "displayName": "Texto secundário · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.02938 256.50)",
+          "oklch(26.43% 0.02938 256.50)",
+          "oklch(37.86% 0.02938 256.50)",
+          "oklch(49.29% 0.02938 256.50)",
+          "oklch(60.71% 0.02938 256.50)",
+          "oklch(72.14% 0.02938 256.50)",
+          "oklch(83.57% 0.02938 256.50)",
+          "oklch(95.00% 0.02938 256.50)"
+        ]
+      },
+      "border-dark": {
+        "role": "neutral",
+        "displayName": "Borda · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.03916 257.29)",
+          "oklch(26.43% 0.03916 257.29)",
+          "oklch(37.86% 0.03916 257.29)",
+          "oklch(49.29% 0.03916 257.29)",
+          "oklch(60.71% 0.03916 257.29)",
+          "oklch(72.14% 0.03916 257.29)",
+          "oklch(83.57% 0.03916 257.29)",
+          "oklch(95.00% 0.03916 257.29)"
+        ]
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Azul de ação · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.12762 255.53)",
+          "oklch(26.43% 0.12762 255.53)",
+          "oklch(37.86% 0.12762 255.53)",
+          "oklch(49.29% 0.12762 255.53)",
+          "oklch(60.71% 0.12762 255.53)",
+          "oklch(72.14% 0.12762 255.53)",
+          "oklch(83.57% 0.12762 255.53)",
+          "oklch(95.00% 0.12762 255.53)"
+        ]
+      },
+      "primary-hover-dark": {
+        "role": "primary",
+        "displayName": "Azul de interação · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.08814 255.49)",
+          "oklch(26.43% 0.08814 255.49)",
+          "oklch(37.86% 0.08814 255.49)",
+          "oklch(49.29% 0.08814 255.49)",
+          "oklch(60.71% 0.08814 255.49)",
+          "oklch(72.14% 0.08814 255.49)",
+          "oklch(83.57% 0.08814 255.49)",
+          "oklch(95.00% 0.08814 255.49)"
+        ]
+      },
+      "soft-dark": {
+        "role": "primary",
+        "displayName": "Azul suave · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.06053 255.09)",
+          "oklch(26.43% 0.06053 255.09)",
+          "oklch(37.86% 0.06053 255.09)",
+          "oklch(49.29% 0.06053 255.09)",
+          "oklch(60.71% 0.06053 255.09)",
+          "oklch(72.14% 0.06053 255.09)",
+          "oklch(83.57% 0.06053 255.09)",
+          "oklch(95.00% 0.06053 255.09)"
+        ]
+      },
+      "danger-dark": {
+        "role": "secondary",
+        "displayName": "Vermelho de erro · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.10127 23.95)",
+          "oklch(26.43% 0.10127 23.95)",
+          "oklch(37.86% 0.10127 23.95)",
+          "oklch(49.29% 0.10127 23.95)",
+          "oklch(60.71% 0.10127 23.95)",
+          "oklch(72.14% 0.10127 23.95)",
+          "oklch(83.57% 0.10127 23.95)",
+          "oklch(95.00% 0.10127 23.95)"
+        ]
+      },
+      "success-dark": {
+        "role": "secondary",
+        "displayName": "Verde de confirmação · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.11378 162.63)",
+          "oklch(26.43% 0.11378 162.63)",
+          "oklch(37.86% 0.11378 162.63)",
+          "oklch(49.29% 0.11378 162.63)",
+          "oklch(60.71% 0.11378 162.63)",
+          "oklch(72.14% 0.11378 162.63)",
+          "oklch(83.57% 0.11378 162.63)",
+          "oklch(95.00% 0.11378 162.63)"
+        ]
+      },
+      "on-action-dark": {
+        "role": "primary",
+        "displayName": "Texto sobre ação · escuro",
+        "tonalRamp": [
+          "oklch(15.00% 0.03539 254.57)",
+          "oklch(26.43% 0.03539 254.57)",
+          "oklch(37.86% 0.03539 254.57)",
+          "oklch(49.29% 0.03539 254.57)",
+          "oklch(60.71% 0.03539 254.57)",
+          "oklch(72.14% 0.03539 254.57)",
+          "oklch(83.57% 0.03539 254.57)",
+          "oklch(95.00% 0.03539 254.57)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "display",
+        "purpose": "Apresentação da autenticação."
+      },
+      "display-compact": {
+        "displayName": "display-compact",
+        "purpose": "Apresentação até 960px."
+      },
+      "headline": {
+        "displayName": "headline",
+        "purpose": "Título da página."
+      },
+      "headline-mobile": {
+        "displayName": "headline-mobile",
+        "purpose": "Título da página até 700px."
+      },
+      "title": {
+        "displayName": "title",
+        "purpose": "Título da seção."
+      },
+      "title-mobile": {
+        "displayName": "title-mobile",
+        "purpose": "Título de seção até 700px."
+      },
+      "subsection": {
+        "displayName": "subsection",
+        "purpose": "Título subordinado; mobile usa subsection-mobile."
+      },
+      "body": {
+        "displayName": "body",
+        "purpose": "Texto operacional."
+      },
+      "chat": {
+        "displayName": "chat",
+        "purpose": "Mensagens de conversa."
+      },
+      "label": {
+        "displayName": "label",
+        "purpose": "Labels de formulário, botões e navegação."
+      },
+      "input": {
+        "displayName": "input",
+        "purpose": "Valor do campo de formulário."
+      },
+      "input-mobile": {
+        "displayName": "input-mobile",
+        "purpose": "Campos até 700px."
+      },
+      "subsection-mobile": {
+        "displayName": "subsection-mobile",
+        "purpose": "Título subordinado até 700px."
+      },
+      "dialog-title": {
+        "displayName": "dialog-title",
+        "purpose": "Título compacto de diálogo."
+      },
+      "metadata": {
+        "displayName": "metadata",
+        "purpose": "Informação de apoio e textos pequenos."
+      },
+      "table-heading": {
+        "displayName": "table-heading",
+        "purpose": "Cabeçalhos de coluna."
+      }
+    },
+    "shadows": [
+      {
+        "name": "overlay-light",
+        "value": "0 16px 48px rgb(12 28 50 / 15%)",
+        "purpose": "Diálogos e menu de notificações no tema claro."
+      },
+      {
+        "name": "overlay-dark",
+        "value": "0 16px 48px rgb(0 0 0 / 40%)",
+        "purpose": "Diálogos e menu de notificações no tema escuro."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "background-color 0.16s, color 0.16s",
+        "purpose": "Transição dos botões."
+      },
+      {
+        "name": "block-entrance",
+        "value": "duration: 0.2; ease: easeOut; opacity: 0.85 → 1; y: 6 → 0; filter: blur(1px) → blur(0px)",
+        "purpose": "Formulários de autenticação e conteúdo de rota do app; reinicia por pathname no app e desativa o estado inicial com reduced motion."
+      },
+      {
+        "name": "loading-spin",
+        "value": "spin 1s linear infinite",
+        "purpose": "Indicador de carregamento; reduzido a uma iteração sob reduced motion."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation-duration: 0.01ms; animation-iteration-count: 1; transition-duration: 0.01ms; scroll-behavior: auto",
+        "purpose": "Preferência de redução de movimento."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-auth-min",
+        "value": "1600px"
+      },
+      {
+        "name": "compact-desktop-max",
+        "value": "1200px"
+      },
+      {
+        "name": "drawer-max",
+        "value": "960px"
+      },
+      {
+        "name": "mobile-max",
+        "value": "700px"
+      },
+      {
+        "name": "stacked-administration-max",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal em azul.",
+      "html": "<button class=\"ds-button-primary\" type=\"button\">Salvar</button>",
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;line-height:1.4;border:0;border-radius:8px;min-height:42px;padding:10px 16px;transition:background-color .16s,color .16s;text-decoration:none;cursor:pointer;font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;background:var(--primary,#0a5ed7);color:#fff;}.ds-button-primary:focus-visible{outline:2px solid var(--primary,#0a5ed7);outline-offset:4px;}.ds-button-primary:disabled{cursor:not-allowed;opacity:.55;}.ds-button-primary:hover:not(:disabled){background:var(--primary-hover,#084eb3);}:host-context([data-theme=\"dark\"]) .ds-button-primary{color:#081423;}@media(prefers-reduced-motion:reduce){.ds-button-primary{transition-duration:.01ms;}}"
+    },
+    {
+      "name": "Outline button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Ação secundária com contorno.",
+      "html": "<button class=\"ds-button-outline\" type=\"button\">Cancelar</button>",
+      "css": ".ds-button-outline{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;line-height:1.4;border:0;border-radius:8px;min-height:42px;padding:10px 16px;transition:background-color .16s,color .16s;text-decoration:none;cursor:pointer;font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;background:var(--surface,#fff);border:1px solid var(--border,#d8dfe9);color:var(--text,#111827);}.ds-button-outline:focus-visible{outline:2px solid var(--primary,#0a5ed7);outline-offset:4px;}.ds-button-outline:disabled{cursor:not-allowed;opacity:.55;}.ds-button-outline:hover:not(:disabled){background:var(--soft,#eaf2ff);}@media(prefers-reduced-motion:reduce){.ds-button-outline{transition-duration:.01ms;}}"
+    },
+    {
+      "name": "Ghost button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Ação de menor ênfase.",
+      "html": "<button class=\"ds-button-ghost\" type=\"button\">Voltar</button>",
+      "css": ".ds-button-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;line-height:1.4;border:0;border-radius:8px;min-height:42px;padding:10px 16px;transition:background-color .16s,color .16s;text-decoration:none;cursor:pointer;font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;background:transparent;color:var(--muted,#56647a);}.ds-button-ghost:focus-visible{outline:2px solid var(--primary,#0a5ed7);outline-offset:4px;}.ds-button-ghost:disabled{cursor:not-allowed;opacity:.55;}.ds-button-ghost:hover:not(:disabled){background:var(--soft,#eaf2ff);}@media(prefers-reduced-motion:reduce){.ds-button-ghost{transition-duration:.01ms;}}"
+    },
+    {
+      "name": "Destructive button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Ação destrutiva com cor de erro; a implementação não define hover próprio.",
+      "html": "<button class=\"ds-button-destructive\" type=\"button\">Remover</button>",
+      "css": ".ds-button-destructive{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;line-height:1.4;border:0;border-radius:8px;min-height:42px;padding:10px 16px;transition:background-color .16s,color .16s;text-decoration:none;cursor:pointer;font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;background:var(--danger,#b42318);color:#fff;}.ds-button-destructive:focus-visible{outline:2px solid var(--primary,#0a5ed7);outline-offset:4px;}.ds-button-destructive:disabled{cursor:not-allowed;opacity:.55;}@media(prefers-reduced-motion:reduce){.ds-button-destructive{transition-duration:.01ms;}}:host-context([data-theme=\"dark\"]) .ds-button-destructive{color:#081423;}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo com label, placeholder e foco externo.",
+      "html": "<label class=\"ds-field\"><span>E-mail</span><input class=\"ds-input\" type=\"email\" placeholder=\"nome@empresa.com\"></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:500;line-height:1.4;color:var(--text,#111827);font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;}.ds-input{width:100%;min-height:46px;border:1px solid var(--border,#d8dfe9);border-radius:8px;background:var(--surface,#fff);padding:12px 14px;color:var(--text,#111827);font-size:14px;line-height:1.4;font-weight:400;font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;}.ds-input::placeholder{color:var(--muted,#56647a);opacity:1;}.ds-input[aria-invalid=\"true\"]{border-color:var(--danger,#b42318);}.ds-input:focus-visible{outline:2px solid var(--primary,#0a5ed7);outline-offset:4px;}@media(max-width:700px){.ds-input{font-size:16px;}}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "navigation-item",
+      "description": "Navegação compartilhada pela sidebar e pelo drawer.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Área de trabalho\"><a href=\"#conversas\" aria-current=\"page\" class=\"ds-nav-active\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z\"/></svg><span>Conversas</span></a><a href=\"#arquivos\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 2h-4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8\"/><path d=\"M16.706 2.706A2.4 2.4 0 0 0 15 2v5a1 1 0 0 0 1 1h5a2.4 2.4 0 0 0-.706-1.706z\"/><path d=\"M5 7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 1.732-1\"/></svg><span>Arquivos</span></a></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:6px;}.ds-nav a{display:flex;align-items:center;gap:12px;padding:12px;color:var(--muted,#56647a);font-size:14px;font-weight:500;line-height:1.4;border-radius:8px;text-decoration:none;font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;}.ds-nav a:hover{background:var(--bg,#f7f9fc);}.ds-nav a.ds-nav-active{color:var(--primary,#0a5ed7);background:var(--soft,#eaf2ff);}.ds-nav a:focus-visible{outline:2px solid var(--primary,#0a5ed7);outline-offset:4px;}.ds-nav svg{width:20px;height:20px;flex-shrink:0;}"
+    },
+    {
+      "name": "Status badges",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Status textual neutro, positivo ou negativo; não é botão de filtro.",
+      "html": "<span class=\"ds-badge\">Pendente</span> <span class=\"ds-badge ds-positive\">Ativo</span> <span class=\"ds-badge ds-negative\">Desativado</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:6px;background:var(--soft,#eaf2ff);color:var(--primary,#0a5ed7);border-radius:5px;font-size:12px;font-weight:500;line-height:1.6;padding:4px 8px;white-space:nowrap;font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;}.ds-positive{color:var(--success,#176b4a);background:color-mix(in srgb,var(--success,#176b4a) 9%,var(--surface,#fff));}.ds-negative{color:var(--danger,#b42318);background:color-mix(in srgb,var(--danger,#b42318) 9%,var(--surface,#fff));}"
+    },
+    {
+      "name": "Context card",
+      "kind": "card",
+      "refersTo": "context-card",
+      "description": "Escolha de uma organização, como link de superfície sólida.",
+      "html": "<a class=\"ds-context\" href=\"#contexto\"><span class=\"ds-context-icon\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 12h4\"/><path d=\"M10 8h4\"/><path d=\"M14 21v-3a2 2 0 0 0-4 0v3\"/><path d=\"M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2\"/><path d=\"M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16\"/></svg></span><span><strong>Organização</strong><small>Agência · Admin</small></span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></a>",
+      "css": ".ds-context{display:flex;align-items:center;gap:16px;padding:20px;border:1px solid var(--border,#d8dfe9);border-radius:12px;color:var(--text,#111827);min-width:0;background:var(--surface,#fff);font-size:14px;line-height:1.6;text-decoration:none;font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;}.ds-context:hover{background:var(--soft,#eaf2ff);}.ds-context:focus-visible{outline:2px solid var(--primary,#0a5ed7);outline-offset:4px;}.ds-context strong{display:block;font-weight:600;}.ds-context small{display:block;font-size:12px;line-height:1.5;font-weight:400;color:var(--muted,#56647a);margin-top:4px;}.ds-context svg{width:20px;height:20px;flex-shrink:0;}.ds-context>svg:last-child{margin-left:auto;}.ds-context>span:nth-child(2){flex:1;}.ds-context-icon{padding:12px;background:var(--soft,#eaf2ff);border-radius:8px;color:var(--primary,#0a5ed7);}.ds-context-icon svg{display:block;}@media(max-width:700px){.ds-context{padding:16px;}}"
+    },
+    {
+      "name": "Chat composer",
+      "kind": "custom",
+      "refersTo": "chat-composer",
+      "description": "Área de escrita com foco ao redor de todo o contêiner.",
+      "html": "<div class=\"ds-composer\"><textarea aria-label=\"Mensagem\" placeholder=\"Escreva sua mensagem\"></textarea><div class=\"ds-composer-bottom\"><small>Respostas de demonstração</small><button type=\"button\">Enviar</button></div></div>",
+      "css": ".ds-composer{max-width:740px;border:1px solid var(--border,#d8dfe9);border-radius:14px;background:var(--surface,#fff);color:var(--text,#111827);font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;}.ds-composer:focus-within{outline:2px solid var(--primary,#0a5ed7);outline-offset:3px;}.ds-composer textarea{width:100%;border:0;border-radius:8px;background:none;resize:none;padding:16px 20px;font-size:15px;font-weight:400;line-height:1.6;min-height:84px;max-height:200px;color:var(--text,#111827);font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;}.ds-composer textarea::placeholder{color:var(--muted,#56647a);opacity:1;}.ds-composer textarea:focus-visible{outline:0;}.ds-composer-bottom{padding:0 12px 12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;}.ds-composer small{color:var(--muted,#56647a);font-size:12px;line-height:1.5;font-weight:400;}.ds-composer button{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;line-height:1.4;border:0;border-radius:8px;min-height:42px;padding:10px 16px;transition:background-color .16s,color .16s;text-decoration:none;cursor:pointer;font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;border-radius:10px;background:var(--primary,#0a5ed7);color:#fff;}.ds-composer button:hover:not(:disabled){background:var(--primary-hover,#084eb3);}.ds-composer button:focus-visible{outline:2px solid var(--primary,#0a5ed7);outline-offset:4px;}:host-context([data-theme=\"dark\"]) .ds-composer button{color:#081423;}@media(max-width:700px){.ds-composer textarea{font-size:16px;min-height:76px;}.ds-composer small{max-width:160px;}}@media(prefers-reduced-motion:reduce){.ds-composer button{transition-duration:.01ms;}}"
+    },
+    {
+      "name": "Responsive administration table",
+      "kind": "custom",
+      "refersTo": "administration-table",
+      "description": "Tabela no desktop; registros com campos rotulados até 600px.",
+      "html": "<div class=\"ds-table-wrap\"><table class=\"ds-table\" role=\"table\"><thead><tr><th>Nome</th><th>Papel</th><th>Status</th></tr></thead><tbody><tr><td data-label=\"Nome\"><strong>Nome da pessoa</strong><small>pessoa@empresa.com</small></td><td data-label=\"Papel\">User</td><td data-label=\"Status\">Ativo</td></tr></tbody></table></div>",
+      "css": ".ds-table-wrap{overflow-x:auto;border:1px solid var(--border,#d8dfe9);border-radius:12px;background:var(--surface,#fff);color:var(--text,#111827);font-family:\"Montserrat Variable\", Montserrat, Arial, sans-serif;}.ds-table{width:100%;border-collapse:collapse;text-align:left;font-size:14px;line-height:1.6;}.ds-table th{font-size:12px;font-weight:500;line-height:1.5;letter-spacing:.015em;color:var(--muted,#56647a);background:var(--bg,#f7f9fc);white-space:nowrap;}.ds-table td,.ds-table th{padding:16px 20px;border-bottom:1px solid var(--border,#d8dfe9);}.ds-table tr:last-child td{border-bottom:0;}.ds-table td{font-variant-numeric:tabular-nums;}.ds-table strong{font-weight:500;}.ds-table small{display:block;font-size:12px;line-height:1.5;font-weight:400;color:var(--muted,#56647a);margin-top:4px;}@media(max-width:700px){.ds-table-wrap{border-radius:8px;}.ds-table td,.ds-table th{padding:12px 16px;}.ds-table td{font-size:12px;}}@media(max-width:600px){.ds-table{display:block;min-width:0;width:100%;}.ds-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}.ds-table tbody{display:block;}.ds-table tr{display:block;padding:16px;border-bottom:1px solid var(--border,#d8dfe9);}.ds-table tr:last-child{border-bottom:0;}.ds-table td{display:block;width:100%;min-width:0;padding:8px 0;border:0;overflow-wrap:anywhere;}.ds-table td::before{content:attr(data-label);display:block;margin-bottom:4px;font-size:12px;font-weight:500;color:var(--muted,#56647a);}.ds-table td:first-child::before{display:none;}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Clareza operacional",
+    "overview": "A identidade aprovada combina Montserrat local, ações azuis, superfícies sólidas e informação operacional legível. A marca vetorial e o vídeo fornecidos pelo usuário definem a presença visual da autenticação; as telas internas mantêm a atenção no contexto da organização, nos dados reais e na próxima ação.\n\nEste registro atualiza o sistema existente a partir de apps/web/src/styles.css e dos componentes implementados. Preserva as decisões de PRODUCT.md, das referências em docs/references e da seção 9 do OpenSpec. A expressão é contida e funcional; a interface mantém visível o caráter demonstrativo das respostas do chat, sem transformar a apresentação visual em promessa de análise de mercado ou de arquivos.",
+    "keyCharacteristics": [
+      "Uma família tipográfica local, com pesos 400, 500 e 600.",
+      "Azul para ação, seleção e foco; estados acompanhados de texto.",
+      "Tema claro inicial e tema escuro escolhido pelo usuário.",
+      "Bordas discretas, cantos arredondados e sombras reservadas a superfícies sobrepostas.",
+      "Formulários sólidos; mídia de autenticação separada do conteúdo HTML.",
+      "Administração tabular no desktop e campos rotulados empilhados nas tabelas administrativas adaptadas ao mobile."
+    ],
+    "rules": [
+      {
+        "name": "The Ação e estado Rule",
+        "body": "Use primary para ações, links e seleção; use danger e success com rótulos explícitos. A cor reforça o significado do conteúdo.",
+        "section": "colors"
+      },
+      {
+        "name": "The Uma família Rule",
+        "body": "Use Montserrat local para a interface. Preserve a marca fornecida como SVG; o logotipo não é um título tipográfico reconstruído.",
+        "section": "typography"
+      },
+      {
+        "name": "The Elevação contextual Rule",
+        "body": "Use a sombra documentada em diálogos e no menu de notificações. As superfícies de trabalho se separam por fundo, borda e espaço.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do manter as associações semânticas dos tokens ao alternar entre os temas.",
+      "Do preservar a geometria da marca fornecida e o texto traduzível sobre a mídia de autenticação.",
+      "Do usar títulos, rótulos, estados e ações completos nas tabelas administrativas empilhadas.",
+      "Do manter foco visível, mensagens de erro próximas aos campos e nomes acessíveis nos controles de ícone.",
+      "Do respeitar reduced motion e economia de dados no vídeo e manter o formulário utilizável com o poster.",
+      "Do manter visível a indicação de demonstração no chat e apresentar estados vazios com uma próxima ação real."
+    ],
+    "donts": [
+      "Don't acrescentar métricas, gráficos ou capacidades de análise sem dados e implementação correspondentes.",
+      "Don't substituir Montserrat, redesenhar a marca ou gerar mídia para substituir os assets aprovados.",
+      "Don't animar letras, células ou tokens de resposta individualmente, nem bloquear o acesso com uma abertura de marca.",
+      "Don't inserir links institucionais sem conteúdo e destino fornecidos.",
+      "Don't usar uma restrição de largura para ocultar papel, status ou ações essenciais da administração mobile."
+    ]
+  }
+}

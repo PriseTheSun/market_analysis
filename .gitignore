@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+apps/api/src/generated/
+coverage/
+test-results/
+playwright-report/
+.DS_Store
+infra/local/
+.impeccable/review/
+
+.playwright-cli/
+output/

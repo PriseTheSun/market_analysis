@@ -1,0 +1,10 @@
+$ vitest run --config vitest.integration.config.ts
+
+ RUN  v5.0.3 /Users/erikaraujo/Documents/Publicis/market_analysis
+
+
+ Test Files  4 passed (4)
+      Tests  30 passed (30)
+   Start at  03:15:25
+   Duration  15.68s (tests 99%)
+

@@ -1,0 +1,42 @@
+{
+  "name": "market-analysis",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "packageManager": "pnpm@12.10.1",
+  "engines": {
+    "node": ">=24.16.0 <25"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "playwright test",
+    "dev": "docker compose up -d --wait db storage mailpit && pnpm --parallel --filter @market/api --filter @market/web run dev",
+    "dev:web": "pnpm --filter @market/web dev",
+    "dev:api": "pnpm --filter @market/api dev",
+    "db:generate": "pnpm --filter @market/api db:generate",
+    "db:migrate": "pnpm --filter @market/api db:migrate",
+    "db:seed": "pnpm --filter @market/api db:seed",
+    "setup:local": "node scripts/setup-local.mjs",
+    "format": "prettier --write apps/*/src packages/*/src tests scripts",
+    "format:check": "prettier --check apps/*/src packages/*/src tests scripts",
+    "test:resilience": "API_BASE_URL=http://localhost:8080/api/v1 tsx scripts/validate-resilience.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "dotenv": "18.0.7",
+    "eslint": "10.12.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "pg": "8.23.1",
+    "prettier": "3.9.9",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.1",
+    "vitest": "5.0.3"
+  }
+}

@@ -1,0 +1,178 @@
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Module,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
+import type { Request } from "express";
+import {
+  idSchema,
+  paginationSchema,
+  preferenceSchema,
+  tourSchema,
+} from "@market/contracts";
+import { AuthModule } from "../auth/auth.module.js";
+import { SessionGuard } from "../auth/auth.service.js";
+import { DatabaseService, type Tx } from "../database/database.service.js";
+import { AppError, parse } from "../common/errors.js";
+import type { Actor } from "../authorization/policy.js";
+@Controller()
+@UseGuards(SessionGuard)
+export class PersonalController {
+  constructor(@Inject(DatabaseService) private db: DatabaseService) {}
+  @Get("preferences") preferences(@Req() r: Request) {
+    return this.db.personal(
+      r.actor!,
+      async (tx) =>
+        (await tx.userPreference.findUnique({
+          where: { userId: r.actor!.id },
+        })) ?? { locale: "pt-BR", theme: null, timeZone: "America/Sao_Paulo" },
+    );
+  }
+  @Patch("preferences") updatePreferences(
+    @Req() r: Request,
+    @Body() b: unknown,
+  ) {
+    const data = parse(preferenceSchema, b);
+    return this.db.personal(r.actor!, (tx) =>
+      tx.userPreference.upsert({
+        where: { userId: r.actor!.id },
+        create: { userId: r.actor!.id, ...data },
+        update: data,
+      }),
+    );
+  }
+  @Get("tenants/:tenantId/tour") tour(
+    @Req() r: Request,
+    @Param("tenantId") t: string,
+  ) {
+    return this.db.tenant(
+      r.actor!,
+      parse(idSchema, t),
+      "chat",
+      r.requestId,
+      (tx) =>
+        tx.onboardingProgress.findMany({
+          where: { userId: r.actor!.id, tenantId: t },
+          orderBy: { version: "desc" },
+        }),
+    );
+  }
+  @Post("tenants/:tenantId/tour") updateTour(
+    @Req() r: Request,
+    @Param("tenantId") t: string,
+    @Body() b: unknown,
+  ) {
+    const data = parse(tourSchema, b);
+    return this.db.tenant(
+      r.actor!,
+      parse(idSchema, t),
+      "chat",
+      r.requestId,
+      (tx) =>
+        tx.onboardingProgress.upsert({
+          where: {
+            tenantId_userId_version: {
+              tenantId: t,
+              userId: r.actor!.id,
+              version: data.version,
+            },
+          },
+          create: { tenantId: t, userId: r.actor!.id, ...data },
+          update: data,
+        }),
+    );
+  }
+  private scope<T>(
+    r: Request,
+    tenantId: string | undefined,
+    fn: (tx: Tx, actor: Actor) => Promise<T>,
+  ) {
+    return tenantId
+      ? this.db.tenant(
+          r.actor!,
+          parse(idSchema, tenantId),
+          "chat",
+          r.requestId,
+          (tx, s) => fn(tx, s.actor),
+        )
+      : this.db.global(r.actor!, fn);
+  }
+  private async notificationWhere(tx: Tx, r: Request, t: string | undefined) {
+    const scope = t
+      ? await this.db.context(tx, r.actor!, t, "chat", r.requestId)
+      : null;
+    return {
+      recipientId: r.actor!.id,
+      tenantId: t ?? null,
+      ...(scope?.role === "USER"
+        ? {
+            type: {
+              notIn: [
+                "file.available",
+                "file.failed",
+                "access.assigned",
+                "access.reviewed",
+                "invitation.accepted",
+              ],
+            },
+          }
+        : {}),
+    };
+  }
+  @Get(["notifications", "tenants/:tenantId/notifications"]) notifications(
+    @Req() r: Request,
+    @Param("tenantId") t: string | undefined,
+    @Query() q: unknown,
+  ) {
+    const p = parse(paginationSchema, q);
+    return this.scope(r, t, async (tx) => {
+      const where = await this.notificationWhere(tx, r, t);
+      const [items, total, unread] = await Promise.all([
+        tx.notification.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          skip: (p.page - 1) * p.pageSize,
+          take: p.pageSize,
+        }),
+        tx.notification.count({ where }),
+        tx.notification.count({ where: { ...where, readAt: null } }),
+      ]);
+      return { items, total, unread, page: p.page, pageSize: p.pageSize };
+    });
+  }
+  @Post(["notifications/read-all", "tenants/:tenantId/notifications/read-all"])
+  readAll(@Req() r: Request, @Param("tenantId") t: string | undefined) {
+    return this.scope(r, t, async (tx) =>
+      tx.notification.updateMany({
+        where: { ...(await this.notificationWhere(tx, r, t)), readAt: null },
+        data: { readAt: new Date() },
+      }),
+    );
+  }
+  @Post(["notifications/:id/read", "tenants/:tenantId/notifications/:id/read"])
+  read(
+    @Req() r: Request,
+    @Param("tenantId") t: string | undefined,
+    @Param("id") id: string,
+  ) {
+    parse(idSchema, id);
+    return this.scope(r, t, async (tx) => {
+      const n = await tx.notification.updateMany({
+        where: { id, ...(await this.notificationWhere(tx, r, t)) },
+        data: { readAt: new Date() },
+      });
+      if (!n.count) throw new AppError(404, "NOT_FOUND");
+      return { ok: true };
+    });
+  }
+}
+@Module({ imports: [AuthModule], controllers: [PersonalController] })
+export class PersonalModule {}

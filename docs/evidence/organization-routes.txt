@@ -1,0 +1,22 @@
+Validação — Organizações e rotas por idioma — 2026-10-10
+
+Implementação:
+- Nomes públicos Organizações / Organizations / Organizaciones, incluindo criação, classificação de solicitações e erros.
+- Catálogo compartilhado de rotas do navegador, aliases antigos, links, navegação programática e links de convite/recuperação enviados por e-mail.
+- URLs no idioma selecionado, mantendo identificadores, parâmetros, fragmentos e estado de navegação.
+- Identidade estável da página durante mudanças de idioma; contratos da API e dados existentes preservados.
+
+Verificações concluídas:
+- pnpm test: 5 arquivos, 24 testes passaram, incluindo 9 casos de rotas localizadas.
+- pnpm typecheck: passou.
+- pnpm lint: passou.
+- pnpm build: passou; Vite mantém aviso sobre chunk maior que 500 kB.
+- Prettier nos arquivos alterados: passou.
+- BASE_URL=http://localhost:5173 pnpm exec playwright test tests/e2e/flows.spec.ts tests/e2e/existing-invite.spec.ts --project=chromium --reporter=list: 7 passaram.
+- BASE_URL=http://localhost:5173 pnpm exec playwright test tests/e2e/recovery.spec.ts --project=chromium --reporter=list: 1 passou.
+- Playwright CLI, navegador real: /platform/tenants redirecionou para /plataforma/organizacoes; mudança entre PT-BR, EN e ES atualizou URL, título, menu e botão de criação; filtro Aurora permaneceu preenchido e o link do menu manteve aria-current=page.
+- Formulário de login manteve o e-mail ao mudar de português para inglês.
+
+Limite da validação adicional:
+- tests/e2e/administration.spec.ts: 2 casos sem resultado aprovado no ambiente compartilhado. O caso Global concluiu criação e desativação da organização, mas falhou depois na área de agências durante alterações/recarregamentos do frontend; a captura de rede registrou 502 em /api/v1/auth/session. O caso Super Admin recebeu o estado sem espaços disponíveis. Não foram alteradas permissões nem restauradas fixtures para forçar esses testes.
+- Houve alterações simultâneas em arquivos da área de agências e recarregamentos de desenvolvimento durante a verificação; elas foram preservadas.

@@ -1,0 +1,88 @@
+name: market-analysis-local
+services:
+  db:
+    image: postgres:18.6-bookworm
+    entrypoint: [bash, -c, 'cp /opt/init-runtime.sh /docker-entrypoint-initdb.d/01-runtime.sh && chmod 0644 /docker-entrypoint-initdb.d/01-runtime.sh && exec /usr/local/bin/docker-entrypoint.sh postgres']
+    environment:
+      POSTGRES_USER: market_migrator
+      POSTGRES_PASSWORD: ${DB_MIGRATION_PASSWORD:?Run pnpm setup:local}
+      POSTGRES_DB: market_analysis
+      DB_RUNTIME_PASSWORD: ${DB_RUNTIME_PASSWORD:?Run pnpm setup:local}
+    ports: ['127.0.0.1:55432:5432']
+    volumes: [database:/var/lib/postgresql, ./infra/init-db.sh:/opt/init-runtime.sh:ro]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U market_migrator -d market_analysis']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  storage:
+    image: chrislusf/seaweedfs:4.48
+    command: 'server -dir=/data -s3 -s3.config=/etc/seaweedfs/s3.json -s3.port=8333 -ip=storage -ip.bind=0.0.0.0 -volume.max=20 -master.volumeSizeLimitMB=1024'
+    volumes: [storage:/data, ./infra/local/s3.json:/etc/seaweedfs/s3.json:ro]
+    ports: ['127.0.0.1:8333:8333']
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, 'http://localhost:8333/healthz']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  mailpit:
+    image: axllent/mailpit:v1.31.4
+    ports: ['127.0.0.1:8025:8025', '127.0.0.1:1025:1025']
+    volumes: [mail:/data]
+    environment: {MP_DATABASE: /data/mailpit.db}
+  migrate:
+    build: {context: ., dockerfile: infra/api.Dockerfile}
+    profiles: [tools]
+    env_file: .env
+    environment:
+      MIGRATION_DATABASE_URL: postgresql://market_migrator:${DB_MIGRATION_PASSWORD}@db:5432/market_analysis
+    command: [pnpm, --filter, '@market/api', db:migrate]
+    depends_on: {db: {condition: service_healthy}}
+  api:
+    restart: unless-stopped
+    build: {context: ., dockerfile: infra/api.Dockerfile}
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      APP_ORIGIN: ${APP_ORIGIN}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      SESSION_SECRET: ${SESSION_SECRET}
+      OUTBOX_KEY: ${OUTBOX_KEY}
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT}
+      S3_REGION: ${S3_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      UPLOAD_MAX_BYTES: ${UPLOAD_MAX_BYTES}
+      TENANT_STORAGE_MAX_BYTES: ${TENANT_STORAGE_MAX_BYTES}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURE: ${SMTP_SECURE}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      RATE_LIMITS_JSON: ${RATE_LIMITS_JSON:-{}}
+      CHAT_PROVIDER: ${CHAT_PROVIDER}
+      CHAT_TIMEOUT_MS: ${CHAT_TIMEOUT_MS}
+      CHAT_OUTPUT_MAX_CHARS: ${CHAT_OUTPUT_MAX_CHARS}
+      DATABASE_URL: postgresql://market_runtime:${DB_RUNTIME_PASSWORD}@db:5432/market_analysis
+      S3_ENDPOINT: http://storage:8333
+      SMTP_HOST: mailpit
+      PORT: '3000'
+    depends_on: {db: {condition: service_healthy}, storage: {condition: service_healthy}}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://localhost:3000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  web:
+    healthcheck:
+      test: [CMD, curl, -fsS, http://localhost:8080/]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    build: {context: ., dockerfile: infra/web.Dockerfile}
+    ports: ['127.0.0.1:8080:8080']
+    depends_on: {api: {condition: service_healthy}}
+volumes:
+  database:
+  storage:
+  mail:

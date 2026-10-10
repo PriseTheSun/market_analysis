@@ -1,0 +1,35 @@
+packages:
+  - apps/*
+  - packages/*
+minimumReleaseAgeExclude:
+  - '@aws-sdk/checksums@3.1001.2'
+  - '@aws-sdk/client-s3@3.1149.0'
+  - '@aws-sdk/core@3.978.2'
+  - '@aws-sdk/credential-provider-env@3.972.73'
+  - '@aws-sdk/credential-provider-http@3.972.75'
+  - '@aws-sdk/credential-provider-ini@3.973.18'
+  - '@aws-sdk/credential-provider-login@3.972.80'
+  - '@aws-sdk/credential-provider-node@3.972.85'
+  - '@aws-sdk/credential-provider-process@3.972.73'
+  - '@aws-sdk/credential-provider-sso@3.973.17'
+  - '@aws-sdk/credential-provider-web-identity@3.972.79'
+  - '@aws-sdk/middleware-sdk-s3@3.972.78'
+  - '@aws-sdk/nested-clients@3.997.47'
+  - '@aws-sdk/s3-presigned-post@3.1149.0'
+  - '@aws-sdk/s3-request-presigner@3.1149.0'
+  - '@aws-sdk/signature-v4-multi-region@3.996.48'
+  - '@aws-sdk/token-providers@3.1149.0'
+  - '@types/node@24.19.2'
+  - dotenv@18.0.7
+  - framer-motion@14.1.0
+  - lucide-react@1.54.0
+  - motion-dom@14.1.0
+  - motion-utils@14.1.0
+  - motion@14.1.0
+allowBuilds:
+  '@nestjs/core@11.2.7': true
+  '@prisma/engines@7.10.0': true
+  'argon2@0.45.1': true
+  'esbuild@0.28.2': true
+  'prisma@7.10.0': true
+  '@scarf/scarf': false

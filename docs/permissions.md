@@ -1,0 +1,25 @@
+# Permissões e isolamento
+
+| Operação | Global | Super Admin | Admin | User |
+| --- | --- | --- | --- | --- |
+| Agências/tenants/estado de conta/papel Global | Plataforma | Não | Não | Não |
+| Atribuir Super Admin | Plataforma | Não | Não | Não |
+| Triagem de pedido sem classificação | Plataforma | Não | Não | Não |
+| Revisar pedido já classificado | Qualquer tenant ativo | Sua agência | Seu tenant | Não |
+| Gerir Admin/User e convites | Qualquer tenant ativo | Sua agência | Seu tenant | Não |
+| Upload/lista/download/exclusão de arquivos | Qualquer tenant ativo | Sua agência | Seu tenant | Não |
+| Conversas pessoais | Apenas próprias | Apenas próprias | Apenas próprias | Apenas próprias |
+| Auditoria excepcional de conversas | Tela separada, motivo obrigatório | Não | Não | Não |
+| Preferências, notificações, tour | Próprios | Próprios | Próprios | Próprios |
+
+Global é atributo da identidade. Super Admin é vínculo de agência. Admin/User são vínculos de tenant; uma pessoa pode ter papéis diferentes em dois tenants. A política usa o contexto da requisição, não o maior papel da pessoa. Conta e vínculos são revalidados em cada operação; streams revalidam em heartbeat de 2 s, com teste de revogação abaixo de 5 s.
+
+A agência é derivada do tenant no servidor. Nome de organização no formulário público nunca concede acesso. Aprovar cria convite e entrega, sem sessão ou vínculo ativo antecipado. Uma identidade existente deve autenticar com o e-mail convidado; o aceite preserva senha e outros vínculos. Tenants novos ficam em provisioning até o primeiro Admin aceitar. Convite antigo não reativa tenant disabled.
+
+Alterações do grafo de acesso usam lock transacional compartilhado e validam que reste um Global ativo e um Admin com conta/vínculo ativos para cada tenant ativo, inclusive ao desativar uma conta com vários vínculos.
+
+PostgreSQL aplica RLS com FORCE ao conteúdo por tenant. O pool runtime não é owner, superuser nem BYPASSRLS; o contexto é definido com `set_config(..., true)` dentro de transações curtas. Relacionamentos compostos impedem mensagem ligada à conversa de outro tenant. Propriedade de conversa é validada no serviço; RLS complementa a fronteira de tenant e não substitui as políticas. O runtime mantém acesso às tabelas de identidade necessárias à autenticação, sem permissão de alterar schema. Auditoria é append-only para runtime.
+
+Notificações têm destinatário e escopo; escopo nulo exige Global. A consulta reavalia permissões e omite antigos eventos administrativos de arquivo/pedido/convite se a pessoa passar a User. Contagens e marcação usam os mesmos filtros. Um link S3 já emitido não pode ser revogado individualmente e permanece válido até a expiração de 60 s.
+
+As contas demo abrangentes servem para demonstrar navegação. A prova negativa usa agências A/B e tenants A1/A2/B1 restritos nos testes, incluindo papel Admin em A1 e User em A2.

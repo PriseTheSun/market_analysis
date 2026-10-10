@@ -1,0 +1,308 @@
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+datasource db {
+  provider = "postgresql"
+}
+
+enum TenantRole {
+  ADMIN
+  USER
+}
+enum PlatformRole {
+  GLOBAL
+}
+enum TenantStatus {
+  provisioning
+  active
+  disabled
+}
+enum RequestStatus {
+  pending
+  approved
+  rejected
+}
+enum FileStatus {
+  pending
+  uploading
+  available
+  failed
+  deleting
+  deleted
+}
+enum OperationStatus {
+  pending
+  streaming
+  completed
+  failed
+  cancelled
+  interrupted
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+  email String @unique @db.VarChar(254)
+  name String @db.VarChar(160)
+  passwordHash String
+  active Boolean @default(true)
+  platformRole PlatformRole?
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  agencies AgencyMembership[]
+  tenants TenantMembership[]
+  sessions Session[]
+  resets PasswordReset[]
+  preference UserPreference?
+  conversations Conversation[]
+  notifications Notification[]
+  progress OnboardingProgress[]
+  files StoredFile[]
+  @@index([active, platformRole])
+}
+model Agency {
+  id String @id @default(uuid()) @db.Uuid
+  name String @db.VarChar(160)
+  slug String @unique @db.VarChar(80)
+  active Boolean @default(true)
+  demo Boolean @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  members AgencyMembership[]
+  tenants Tenant[]
+}
+model AgencyMembership {
+  id String @id @default(uuid()) @db.Uuid
+  agencyId String @db.Uuid
+  userId String @db.Uuid
+  role String @default("SUPER_ADMIN")
+  active Boolean @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  agency Agency @relation(fields:[agencyId], references:[id], onDelete:Restrict)
+  user User @relation(fields:[userId], references:[id], onDelete:Restrict)
+  @@unique([agencyId,userId])
+  @@index([userId,active])
+}
+model Tenant {
+  id String @id @default(uuid()) @db.Uuid
+  agencyId String @db.Uuid
+  name String @db.VarChar(160)
+  slug String @db.VarChar(80)
+  status TenantStatus @default(provisioning)
+  demo Boolean @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  agency Agency @relation(fields:[agencyId],references:[id],onDelete:Restrict)
+  members TenantMembership[]
+  invitations Invitation[]
+  requests AccessRequest[]
+  files StoredFile[]
+  conversations Conversation[]
+  notifications Notification[]
+  progress OnboardingProgress[]
+  @@unique([agencyId,slug])
+  @@unique([agencyId,id])
+  @@index([agencyId,status])
+}
+model TenantMembership {
+  id String @id @default(uuid()) @db.Uuid
+  tenantId String @db.Uuid
+  userId String @db.Uuid
+  role TenantRole
+  active Boolean @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  tenant Tenant @relation(fields:[tenantId],references:[id],onDelete:Restrict)
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  @@unique([tenantId,userId])
+  @@index([userId,active])
+  @@index([tenantId,active,role])
+}
+model Invitation {
+  id String @id @default(uuid()) @db.Uuid
+  tenantId String @db.Uuid
+  email String @db.VarChar(254)
+  role TenantRole
+  tokenHash String @unique
+  createdBy String @db.Uuid
+  bootstrap Boolean @default(false)
+  expiresAt DateTime @db.Timestamptz
+  consumedAt DateTime? @db.Timestamptz
+  revokedAt DateTime? @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  tenant Tenant @relation(fields:[tenantId],references:[id],onDelete:Restrict)
+  request AccessRequest?
+  @@index([tenantId,email])
+}
+model AccessRequest {
+  id String @id @default(uuid()) @db.Uuid
+  name String @db.VarChar(160)
+  email String @db.VarChar(254)
+  organization String @db.VarChar(160)
+  message String? @db.VarChar(2000)
+  status RequestStatus @default(pending)
+  agencyId String? @db.Uuid
+  tenantId String? @db.Uuid
+  reviewedBy String? @db.Uuid
+  reviewedAt DateTime? @db.Timestamptz
+  reason String? @db.VarChar(1000)
+  invitationId String? @unique @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  tenant Tenant? @relation(fields:[agencyId,tenantId],references:[agencyId,id],onDelete:Restrict)
+  invitation Invitation? @relation(fields:[invitationId],references:[id],onDelete:Restrict)
+  @@index([tenantId,status,createdAt])
+  @@index([status,createdAt])
+}
+model Session {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  tokenHash String @unique
+  expiresAt DateTime @db.Timestamptz
+  revokedAt DateTime? @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  @@index([userId,expiresAt])
+}
+model PasswordReset {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  tokenHash String @unique
+  expiresAt DateTime @db.Timestamptz
+  consumedAt DateTime? @db.Timestamptz
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  createdAt DateTime @default(now()) @db.Timestamptz
+}
+model UserPreference {
+  userId String @id @db.Uuid
+  locale String @default("pt-BR")
+  theme String?
+  timeZone String @default("America/Sao_Paulo")
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+}
+model OnboardingProgress {
+  id String @id @default(uuid()) @db.Uuid
+  tenantId String @db.Uuid
+  userId String @db.Uuid
+  version Int
+  status String
+  step Int @default(0)
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  tenant Tenant @relation(fields:[tenantId],references:[id],onDelete:Restrict)
+  user User @relation(fields:[userId],references:[id],onDelete:Restrict)
+  @@unique([tenantId,userId,version])
+}
+model StoredFile {
+  id String @id @default(uuid()) @db.Uuid
+  tenantId String @db.Uuid
+  authorId String @db.Uuid
+  name String @db.VarChar(255)
+  type String @db.VarChar(160)
+  size Int
+  objectKey String @unique
+  temporaryKey String @unique
+  cleanedAt DateTime? @db.Timestamptz
+  status FileStatus @default(pending)
+  failureCode String?
+  expiresAt DateTime @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  tenant Tenant @relation(fields:[tenantId],references:[id],onDelete:Restrict)
+  author User @relation(fields:[authorId],references:[id],onDelete:Restrict)
+  @@index([tenantId,status,createdAt])
+}
+model Conversation {
+  id String @id @default(uuid()) @db.Uuid
+  tenantId String @db.Uuid
+  ownerId String @db.Uuid
+  title String @default("") @db.VarChar(160)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  tenant Tenant @relation(fields:[tenantId],references:[id],onDelete:Restrict)
+  owner User @relation(fields:[ownerId],references:[id],onDelete:Restrict)
+  messages Message[]
+  operations ChatOperation[]
+  @@unique([tenantId,id])
+  @@index([tenantId,ownerId,updatedAt])
+}
+model Message {
+  position Int
+  id String @id @default(uuid()) @db.Uuid
+  tenantId String @db.Uuid
+  conversationId String @db.Uuid
+  role String
+  content String
+  status OperationStatus
+  operationId String @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz
+  conversation Conversation @relation(fields:[tenantId,conversationId],references:[tenantId,id],onDelete:Restrict)
+  @@index([tenantId,conversationId,createdAt])
+  @@unique([tenantId,operationId,role])
+  @@unique([tenantId,conversationId,position])
+}
+model ChatOperation {
+  id String @id @db.Uuid
+  tenantId String @db.Uuid
+  conversationId String @db.Uuid
+  userId String @db.Uuid
+  userMessageId String @db.Uuid
+  status OperationStatus @default(pending)
+  failureCode String?
+  cancelRequested Boolean @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  conversation Conversation @relation(fields:[tenantId,conversationId],references:[tenantId,id],onDelete:Restrict)
+  @@index([tenantId,userId,status])
+}
+model Notification {
+  id String @id @default(uuid()) @db.Uuid
+  tenantId String? @db.Uuid
+  recipientId String @db.Uuid
+  type String
+  parameters Json
+  eventKey String
+  resourceId String? @db.Uuid
+  readAt DateTime? @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  tenant Tenant? @relation(fields:[tenantId],references:[id],onDelete:Restrict)
+  recipient User @relation(fields:[recipientId],references:[id],onDelete:Restrict)
+  @@unique([recipientId,eventKey])
+  @@index([recipientId,tenantId,readAt,createdAt])
+}
+model AuditLog {
+  id String @id @default(uuid()) @db.Uuid
+  actorId String? @db.Uuid
+  action String
+  tenantId String? @db.Uuid
+  agencyId String? @db.Uuid
+  resourceId String?
+  result String
+  requestId String
+  reason String?
+  createdAt DateTime @default(now()) @db.Timestamptz
+  @@index([tenantId,createdAt])
+  @@index([actorId,createdAt])
+}
+model EmailDelivery {
+  id String @id @default(uuid()) @db.Uuid
+  eventKey String @unique
+  recipient String
+  kind String
+  encryptedPayload String?
+  status String @default("pending")
+  attempts Int @default(0)
+  lastError String?
+  nextAttemptAt DateTime @default(now()) @db.Timestamptz
+  lockedUntil DateTime? @db.Timestamptz
+  expiresAt DateTime @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  @@index([status,nextAttemptAt])
+}
+model RateLimit {
+  key String @id
+  count Int
+  expiresAt DateTime @db.Timestamptz
+  @@index([expiresAt])
+}

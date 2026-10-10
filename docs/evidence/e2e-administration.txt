@@ -1,0 +1,13 @@
+
+Running 4 tests using 1 worker
+
+(node:37936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/administration.spec.ts:12:1 › Global creates agency and provisioning tenant, then disables both through scoped dialogs (2.9s)
+  ✓  2 [chromium] › tests/e2e/administration.spec.ts:76:1 › Super Admin enters agency and tenant management without platform mutation controls (1.2s)
+(node:37942) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [webkit] › tests/e2e/administration.spec.ts:12:1 › Global creates agency and provisioning tenant, then disables both through scoped dialogs (3.2s)
+  ✓  4 [webkit] › tests/e2e/administration.spec.ts:76:1 › Super Admin enters agency and tenant management without platform mutation controls (916ms)
+
+  4 passed (9.1s)

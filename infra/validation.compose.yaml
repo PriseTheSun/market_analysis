@@ -1,0 +1,16 @@
+services:
+  db:
+    ports: !reset []
+  storage:
+    ports: !reset []
+  mailpit:
+    ports: !reset []
+  migrate:
+    image: market-analysis-local-api
+  api:
+    image: market-analysis-local-api
+    environment:
+      S3_PUBLIC_ENDPOINT: http://storage:8333
+  web:
+    image: market-analysis-local-web
+    ports: !reset []
