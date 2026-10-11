@@ -1,0 +1,28 @@
+.blur-reveal-word {
+  display: inline-block;
+  animation: blur-reveal 850ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Keep the reveal at its first frame until the brand intro has cleared. */
+.login-entrance:not([data-phase="done"]) .blur-reveal-word {
+  animation-play-state: paused;
+}
+
+@keyframes blur-reveal {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blur-reveal-word {
+    animation: none;
+  }
+}

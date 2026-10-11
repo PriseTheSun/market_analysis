@@ -29,6 +29,7 @@ import { Language } from "../components/language";
 import { Button } from "../components/ui/button";
 import { Field, Password, Success } from "../components/ui/common";
 import { BlurFade } from "../components/magicui/blur-fade";
+import { BlurReveal } from "../components/blur-reveal";
 import { LoginEntrance } from "../components/login-entrance";
 export function AuthLayout({
   children,
@@ -103,8 +104,8 @@ export function AuthLayout({
           <img src="/brand/logo-light.svg" alt="Market Analysis" />
         </div>
         <div className="auth-pitch">
-          <p className="auth-headline">{t("auth.headline")}</p>
-          <p>{t("auth.description")}</p>
+          <BlurReveal className="auth-headline" text={t("auth.headline")} />
+          <BlurReveal text={t("auth.description")} delay={1450} stagger={35} />
         </div>
       </aside>
       <main className="auth-main">
