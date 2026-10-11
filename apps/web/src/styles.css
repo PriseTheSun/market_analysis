@@ -353,6 +353,9 @@ input[type="checkbox"] {
 }
 .auth-visual {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
   border-radius: 24px;
   overflow: hidden;
   background: #07130f;
@@ -387,12 +390,12 @@ input[type="checkbox"] {
   margin: 42px 48px 0;
 }
 .auth-brand img {
-  width: 244px;
+  width: 208px;
   display: block;
 }
 .auth-pitch {
   position: relative;
-  margin: 48px;
+  margin: auto 48px 48px;
   max-width: 470px;
 }
 .auth-headline {
@@ -408,23 +411,6 @@ input[type="checkbox"] {
   line-height: 1.65;
   max-width: 36ch;
   color: #eef5f3;
-}
-.video-control {
-  position: absolute;
-  bottom: 28px;
-  right: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.36);
-  border-radius: 8px;
-  background: #102520;
-  color: white;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  font-size: 12px;
-}
-.video-control:focus-visible {
-  outline-color: white;
 }
 .auth-main {
   display: flex;
@@ -1403,7 +1389,7 @@ td {
     margin: 56px 64px 0;
   }
   .auth-pitch {
-    margin: 64px;
+    margin: auto 64px 64px;
   }
   .auth-form-area {
     max-width: 480px;
@@ -1420,7 +1406,7 @@ td {
     margin: 36px 32px 0;
   }
   .auth-pitch {
-    margin: 40px 32px;
+    margin: auto 32px 40px;
   }
   .auth-main {
     padding-inline: 16px;
@@ -1460,10 +1446,10 @@ td {
     margin: 28px 24px 0;
   }
   .auth-brand img {
-    width: 210px;
+    width: 180px;
   }
   .auth-pitch {
-    margin: 40px 24px;
+    margin: auto 24px 40px;
   }
   .auth-pitch > p:last-child {
     font-size: 16px;
@@ -1528,8 +1514,8 @@ td {
   }
   .mobile-brand {
     display: block;
-    width: 150px;
-    height: 46px;
+    width: 128px;
+    height: 40px;
     object-fit: contain;
   }
   .language select {

@@ -1,6 +1,6 @@
 import { switchWorkspace } from "./workspace";
 import { test, expect } from "@playwright/test";
-test("supplied video pauses, reduced motion and network/autoplay failures preserve accessible form", async ({
+test("background video respects visibility, reduced motion and network/autoplay failures without playback controls", async ({
   browser,
 }) => {
   test.setTimeout(60000);
@@ -40,18 +40,15 @@ test("supplied video pauses, reduced motion and network/autoplay failures preser
       .fill("keyboard@example.test");
     await page.keyboard.press("Tab");
     await expect(page.locator("input[type=password]")).toBeFocused();
+    await expect(
+      page.getByRole("button", { name: /Pausar vídeo|Reproduzir vídeo/ }),
+    ).toHaveCount(0);
     if (mode === "normal") {
-      await expect(
-        page.getByRole("button", { name: "Pausar vídeo" }),
-      ).toBeVisible();
-      await page.getByRole("button", { name: "Pausar vídeo" }).click();
-      expect(
-        await page.locator("video").evaluate((e: HTMLVideoElement) => e.paused),
-      ).toBe(true);
-      await page.getByRole("button", { name: "Reproduzir vídeo" }).click();
-      await expect(
-        page.getByRole("button", { name: "Pausar vídeo" }),
-      ).toBeVisible();
+      await expect
+        .poll(() =>
+          page.locator("video").evaluate((e: HTMLVideoElement) => e.paused),
+        )
+        .toBe(false);
       await page.evaluate(() => {
         Object.defineProperty(document, "hidden", {
           configurable: true,
@@ -66,10 +63,12 @@ test("supplied video pauses, reduced motion and network/autoplay failures preser
       await expect(page.locator("video")).toHaveCount(0);
     } else if (mode === "saveData" || mode === "failure")
       await expect(page.locator("video")).toHaveCount(0);
-    else
-      await expect(
-        page.getByRole("button", { name: "Reproduzir vídeo" }),
-      ).toBeVisible();
+    else {
+      expect(
+        await page.locator("video").evaluate((e: HTMLVideoElement) => e.paused),
+      ).toBe(true);
+      await expect(page.locator(".auth-poster")).toBeVisible();
+    }
     expect(external).toEqual([]);
     await expect(
       page.getByRole("button", { name: "Entrar", exact: true }),

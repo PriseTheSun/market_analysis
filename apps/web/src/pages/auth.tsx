@@ -11,8 +11,6 @@ import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   ArrowRight,
-  Pause,
-  Play,
   Mail,
   UserRound,
   Building2,
@@ -34,10 +32,8 @@ import { BlurFade } from "../components/magicui/blur-fade";
 export function AuthLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const ref = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [failed, setFailed] = useState(false);
-  const manual = useRef(false);
   useEffect(() => {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
     const connection = (
@@ -47,7 +43,6 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       if (reduced.matches || connection?.saveData) {
         setEnabled(false);
         ref.current?.pause();
-        setPlaying(false);
       } else setEnabled(true);
     };
     update();
@@ -59,16 +54,14 @@ export function AuthLayout({ children }: { children: ReactNode }) {
     const video = ref.current;
     if (!video) return;
     const play = () => {
-      if (!document.hidden && !manual.current)
-        void video
-          .play()
-          .then(() => setPlaying(true))
-          .catch(() => setPlaying(false));
+      if (!document.hidden)
+        void video.play().catch(() => {
+          // Keep the poster visible when autoplay is blocked.
+        });
     };
     const visibility = () => {
       if (document.hidden) {
         video.pause();
-        setPlaying(false);
       } else play();
     };
     play();
@@ -92,10 +85,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             playsInline
             poster="/media/auth-poster.jpg"
             preload="metadata"
-            onError={() => {
-              setFailed(true);
-              setPlaying(false);
-            }}
+            onError={() => setFailed(true)}
             aria-hidden="true"
           />
         )}
@@ -107,28 +97,6 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           <p className="auth-headline">{t("auth.headline")}</p>
           <p>{t("auth.description")}</p>
         </div>
-        {enabled && !failed && (
-          <button
-            className="video-control"
-            aria-label={t(playing ? "common.pause" : "common.play")}
-            onClick={() => {
-              if (playing) {
-                manual.current = true;
-                ref.current?.pause();
-                setPlaying(false);
-              } else {
-                manual.current = false;
-                void ref.current
-                  ?.play()
-                  .then(() => setPlaying(true))
-                  .catch(() => setFailed(true));
-              }
-            }}
-          >
-            {playing ? <Pause /> : <Play />}
-            <span>{t(playing ? "common.pause" : "common.play")}</span>
-          </button>
-        )}
       </aside>
       <main className="auth-main">
         <header className="auth-top">
