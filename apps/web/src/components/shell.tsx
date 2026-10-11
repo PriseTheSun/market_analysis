@@ -26,6 +26,7 @@ import {
   ChevronsLeft,
   ArrowRight,
   ShieldCheck,
+  Search,
   Check,
   ChevronDown,
   X,
@@ -41,6 +42,7 @@ import {
   lastWorkspace,
   loadAllAgencies,
   groupWorkspaces,
+  searchWorkspaces,
   rememberWorkspace,
   workspaceDestination,
   type AgencyContext,
@@ -156,18 +158,23 @@ function WorkspaceSwitcher({
   const { t, i18n } = useTranslation();
   const { agencyId } = useParams();
   const agencies = useAgencies(user.id);
-  const currentAgencyId = tenant?.agencyId ?? agencyId;
-  const [expandedId, setExpandedId] = useState(currentAgencyId);
+  const [search, setSearch] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const groups = useMemo(
     () => groupWorkspaces(agencies.data ?? [], contexts, i18n.language),
     [agencies.data, contexts, i18n.language],
+  );
+  const visibleGroups = useMemo(
+    () => searchWorkspaces(groups, search),
+    [groups, search],
   );
   const agency = groups.find((item) => item.id === agencyId);
   return (
     <Dropdown.Root
       onOpenChange={(open) => {
         if (open) {
-          setExpandedId(currentAgencyId);
+          setSearch("");
           void agencies.refetch();
           void queryClient.invalidateQueries({
             queryKey: [user.id, "contexts"],
@@ -200,151 +207,186 @@ function WorkspaceSwitcher({
       </Dropdown.Trigger>
       <Dropdown.Portal>
         <Dropdown.Content
+          ref={menuRef}
           className="workspace-menu"
           align="start"
           sideOffset={8}
-          collisionPadding={16}
+          collisionPadding={12}
           aria-label={t("shell.switch")}
+          onKeyDown={(event) => {
+            if (event.key === "Tab") {
+              event.preventDefault();
+              searchRef.current?.focus();
+            }
+          }}
         >
-          <Dropdown.Label className="workspace-label">
+          <Dropdown.Label className="workspace-title">
             {t("shell.switch")}
           </Dropdown.Label>
-          {(user.platformRole === "GLOBAL" ||
-            groups.some((group) => group.canManage)) && (
-            <>
-              <Dropdown.Item asChild>
-                <Link
-                  to="/platform/management"
-                  aria-current={!tenant && !agencyId ? "page" : undefined}
-                >
-                  <ShieldCheck aria-hidden="true" />
-                  <span>
-                    {t(
-                      user.platformRole === "GLOBAL"
-                        ? "shell.platform"
-                        : "management.title",
+          <div className="workspace-search">
+            <Search aria-hidden="true" />
+            <input
+              ref={searchRef}
+              type="search"
+              autoComplete="off"
+              aria-label={t("shell.workspaceSearch")}
+              placeholder={t("shell.workspaceSearch")}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              onKeyDown={(event) => {
+                // Let text editing stay in the search field instead of menu typeahead.
+                if (event.key === "Escape") return;
+                event.stopPropagation();
+                if (["ArrowDown", "ArrowUp", "Tab"].includes(event.key)) {
+                  event.preventDefault();
+                  const items = menuRef.current?.querySelectorAll<HTMLElement>(
+                    '[role="menuitem"]:not([data-disabled])',
+                  );
+                  const last =
+                    event.key === "ArrowUp" ||
+                    (event.key === "Tab" && event.shiftKey);
+                  (last ? items?.[items.length - 1] : items?.[0])?.focus();
+                }
+              }}
+            />
+          </div>
+          <div className="workspace-options">
+            {(user.platformRole === "GLOBAL" ||
+              groups.some((group) => group.canManage)) && (
+              <>
+                <Dropdown.Item asChild>
+                  <Link
+                    className="workspace-platform"
+                    to="/platform/management"
+                    aria-current={!tenant && !agencyId ? "page" : undefined}
+                  >
+                    <ShieldCheck aria-hidden="true" />
+                    <span className="workspace-name">
+                      {t(
+                        user.platformRole === "GLOBAL"
+                          ? "shell.platform"
+                          : "management.title",
+                      )}
+                    </span>
+                    {!tenant && !agencyId && (
+                      <Check className="workspace-current" aria-hidden="true" />
                     )}
+                  </Link>
+                </Dropdown.Item>
+                <Dropdown.Separator />
+              </>
+            )}
+            <Dropdown.Label className="workspace-label">
+              {t("shell.agenciesAndClients")}
+            </Dropdown.Label>
+            {visibleGroups.map((item) => {
+              const summary = (
+                <>
+                  <Building2 aria-hidden="true" />
+                  <strong className="workspace-name">{item.name}</strong>
+                  <span className="workspace-badge">
+                    {item.active === false
+                      ? t("common.inactive")
+                      : t(
+                          item.clients.length === 1
+                            ? "shell.clientCountOne"
+                            : "shell.clientCount",
+                          { count: item.clients.length },
+                        )}
                   </span>
-                  {!tenant && !agencyId && (
+                  {agencyId === item.id && (
                     <Check className="workspace-current" aria-hidden="true" />
                   )}
-                </Link>
-              </Dropdown.Item>
-              <Dropdown.Separator />
-            </>
-          )}
-          <Dropdown.Label className="workspace-label">
-            {t("shell.agencies")}
-          </Dropdown.Label>
-          {groups.map((item) => {
-            const expanded = expandedId === item.id;
-            return (
-              <Dropdown.Group key={item.id}>
-                <Dropdown.Item
-                  className="workspace-agency"
-                  textValue={item.name}
-                  disabled={item.active === false}
-                  aria-expanded={expanded}
-                  aria-controls={
-                    expanded ? `workspace-clients-${item.id}` : undefined
-                  }
-                  data-current={currentAgencyId === item.id || undefined}
-                  onSelect={(event) => {
-                    event.preventDefault();
-                    setExpandedId(expanded ? undefined : item.id);
-                  }}
+                </>
+              );
+              return (
+                <Dropdown.Group
+                  className="workspace-group"
+                  key={item.id}
+                  aria-label={item.name}
                 >
-                  <Building2 aria-hidden="true" />
-                  <span>
-                    <strong>{item.name}</strong>
-                    <small>
-                      {item.active === false
-                        ? t("common.inactive")
-                        : t(
-                            item.clients.length === 1
-                              ? "shell.clientCountOne"
-                              : "shell.clientCount",
-                            { count: item.clients.length },
-                          )}
-                    </small>
-                  </span>
-                  <ChevronDown
-                    className="workspace-expand"
-                    aria-hidden="true"
-                  />
-                </Dropdown.Item>
-                {expanded && item.active !== false && (
-                  <Dropdown.Group
-                    className="workspace-clients"
-                    id={`workspace-clients-${item.id}`}
-                    aria-label={t("shell.agencyClients", { name: item.name })}
-                  >
-                    {item.canManage && (
-                      <Dropdown.Item asChild>
-                        <Link
-                          to={`/agencies/${item.id}`}
-                          aria-current={
-                            agencyId === item.id ? "page" : undefined
-                          }
+                  {item.canManage ? (
+                    <Dropdown.Item asChild textValue={item.name}>
+                      <Link
+                        className="workspace-agency"
+                        to={`/agencies/${item.id}`}
+                        aria-current={agencyId === item.id ? "page" : undefined}
+                      >
+                        {summary}
+                      </Link>
+                    </Dropdown.Item>
+                  ) : (
+                    <div
+                      className="workspace-agency"
+                      aria-disabled={item.active === false || undefined}
+                    >
+                      {summary}
+                    </div>
+                  )}
+                  {item.active !== false && (
+                    <Dropdown.Group
+                      className="workspace-clients"
+                      aria-label={t("shell.agencyClients", { name: item.name })}
+                    >
+                      {item.matchingClients.map((client) => (
+                        <Dropdown.Item
+                          key={client.id}
+                          asChild
+                          textValue={client.name}
                         >
-                          <Layers aria-hidden="true" />
-                          <span>{t("shell.openAgency")}</span>
-                          {agencyId === item.id && (
-                            <Check
-                              className="workspace-current"
-                              aria-hidden="true"
-                            />
-                          )}
-                        </Link>
-                      </Dropdown.Item>
-                    )}
-                    {item.clients.map((client) => (
-                      <Dropdown.Item key={client.id} asChild>
-                        <Link
-                          to={`/app/${client.id}/chat`}
-                          aria-current={
-                            tenant?.id === client.id ? "page" : undefined
-                          }
-                        >
-                          <span
-                            className="workspace-client-avatar"
-                            aria-hidden="true"
+                          <Link
+                            to={`/app/${client.id}/chat`}
+                            aria-current={
+                              tenant?.id === client.id ? "page" : undefined
+                            }
                           >
-                            {client.name.slice(0, 2).toUpperCase()}
-                          </span>
-                          <span>
-                            <strong>{client.name}</strong>
-                            <small>{t("admin.client")}</small>
-                          </span>
-                          {tenant?.id === client.id && (
-                            <Check
-                              className="workspace-current"
+                            <span
+                              className="workspace-client-avatar"
                               aria-hidden="true"
-                            />
-                          )}
-                        </Link>
-                      </Dropdown.Item>
-                    ))}
-                    {!item.clients.length && (
-                      <p className="workspace-empty">
-                        {t("shell.noAgencyClients")}
-                      </p>
-                    )}
-                  </Dropdown.Group>
-                )}
-              </Dropdown.Group>
-            );
-          })}
-          {agencies.isPending && <Loading />}
-          {agencies.isError && (
-            <ErrorState
-              error={agencies.error}
-              retry={() => void agencies.refetch()}
-            />
-          )}
-          {agencies.isSuccess && !groups.length && (
-            <p className="workspace-empty">{t("shell.noAccess")}</p>
-          )}
+                            >
+                              {client.name.slice(0, 2).toUpperCase()}
+                            </span>
+                            <span className="workspace-name">
+                              {client.name}
+                            </span>
+                            <span className="workspace-badge workspace-client-badge">
+                              {t("admin.client")}
+                            </span>
+                            {tenant?.id === client.id && (
+                              <Check
+                                className="workspace-current"
+                                aria-hidden="true"
+                              />
+                            )}
+                          </Link>
+                        </Dropdown.Item>
+                      ))}
+                      {!item.clients.length && (
+                        <p className="workspace-empty">
+                          {t("shell.noAgencyClients")}
+                        </p>
+                      )}
+                    </Dropdown.Group>
+                  )}
+                </Dropdown.Group>
+              );
+            })}
+            {agencies.isPending && <Loading />}
+            {agencies.isError && (
+              <ErrorState
+                error={agencies.error}
+                retry={() => void agencies.refetch()}
+              />
+            )}
+            {!visibleGroups.length && groups.length > 0 && (
+              <p className="workspace-empty" role="status">
+                {t("shell.noWorkspaceResults")}
+              </p>
+            )}
+            {agencies.isSuccess && !groups.length && (
+              <p className="workspace-empty">{t("shell.noAccess")}</p>
+            )}
+          </div>
         </Dropdown.Content>
       </Dropdown.Portal>
     </Dropdown.Root>

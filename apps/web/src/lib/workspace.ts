@@ -62,6 +62,27 @@ export function groupWorkspaces(
   return [...groups.values()].sort(byName);
 }
 
+/** Keep agency context and total counts when a search matches only a client. */
+export function searchWorkspaces(groups: AgencyWorkspace[], search: string) {
+  const normalize = (value: string) =>
+    value.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+  const query = normalize(search.trim());
+  return groups
+    .map((agency) => ({
+      ...agency,
+      matchingClients: normalize(agency.name).includes(query)
+        ? agency.clients
+        : agency.clients.filter((client) =>
+            normalize(client.name).includes(query),
+          ),
+    }))
+    .filter(
+      (agency) =>
+        normalize(agency.name).includes(query) ||
+        agency.matchingClients.length > 0,
+    );
+}
+
 export function workspaceDestination(
   user: PublicUser,
   contexts: Context[],

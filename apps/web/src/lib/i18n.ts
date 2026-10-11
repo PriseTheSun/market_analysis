@@ -518,15 +518,26 @@ const copy: Record<string, [string, string, string]> = {
   ],
   "shell.agencyArea": ["Minhas agências", "My agencies", "Mis agencias"],
   "shell.switch": ["Trocar espaço", "Switch workspace", "Cambiar espacio"],
-  "shell.clientCountOne": [
-    "1 cliente disponível",
-    "1 available client",
-    "1 cliente disponible",
+  "shell.workspaceSearch": [
+    "Buscar agência ou cliente...",
+    "Search agencies or clients...",
+    "Buscar agencia o cliente...",
   ],
+  "shell.agenciesAndClients": [
+    "Agências e clientes",
+    "Agencies and clients",
+    "Agencias y clientes",
+  ],
+  "shell.noWorkspaceResults": [
+    "Nenhuma agência ou cliente encontrado.",
+    "No agencies or clients found.",
+    "No se encontraron agencias ni clientes.",
+  ],
+  "shell.clientCountOne": ["1 cliente", "1 client", "1 cliente"],
   "shell.clientCount": [
-    "{{count}} clientes disponíveis",
-    "{{count}} available clients",
-    "{{count}} clientes disponibles",
+    "{{count}} clientes",
+    "{{count}} clients",
+    "{{count}} clientes",
   ],
   "shell.agencyClients": [
     "Clientes de {{name}}",

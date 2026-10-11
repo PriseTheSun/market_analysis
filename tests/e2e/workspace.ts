@@ -11,11 +11,8 @@ export async function switchWorkspace(
   if (!(await page.locator(".scope-switch").first().isVisible()))
     await page.locator(".menu-toggle").click();
   await page.locator(".scope-switch:visible").click();
-  const agencyItem = page.getByRole("menuitem").filter({ hasText: agency });
-  if ((await agencyItem.getAttribute("aria-expanded")) !== "true")
-    await agencyItem.click();
   await page
-    .locator(".workspace-clients")
+    .getByRole("group", { name: `Clientes de ${agency}`, exact: true })
     .getByRole("menuitem")
     .filter({ hasText: name })
     .click();

@@ -3,6 +3,7 @@ import type { Context, PublicUser } from "@market/contracts";
 import {
   groupWorkspaces,
   loadAllAgencies,
+  searchWorkspaces,
   workspaceDestination,
 } from "./workspace";
 
@@ -84,6 +85,36 @@ describe("direct workspace entry", () => {
 });
 
 describe("agency workspace hierarchy", () => {
+  it("searches agencies without accents or case and keeps their authorized clients", () => {
+    const groups = groupWorkspaces([], contexts, "pt-BR");
+    const results = searchWorkspaces(groups, "  AGENCIA  ");
+    expect(results).toHaveLength(1);
+    expect(results[0]?.matchingClients.map((client) => client.id)).toEqual([
+      "atlas",
+      "aurora",
+    ]);
+    expect(results[0]?.canManage).toBe(false);
+    expect(searchWorkspaces(groups, "   ")).toEqual(results);
+  });
+
+  it("finds a client within its agency without changing total counts or the source list", () => {
+    const groups = groupWorkspaces(
+      [{ id: "empty", name: "Outra agência" }],
+      contexts,
+      "pt-BR",
+    );
+    const results = searchWorkspaces(groups, "AUR");
+    expect(results).toHaveLength(1);
+    expect(results[0]?.matchingClients.map((client) => client.id)).toEqual([
+      "aurora",
+    ]);
+    expect(results[0]?.clients).toHaveLength(2);
+    expect(groups.find((group) => group.id === "agency")?.clients).toHaveLength(
+      2,
+    );
+    expect(searchWorkspaces(groups, "missing")).toEqual([]);
+  });
+
   it("groups clients by agency ID and keeps agencies without clients", () => {
     const groups = groupWorkspaces(
       [
