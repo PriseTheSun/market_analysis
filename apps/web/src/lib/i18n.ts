@@ -2,6 +2,16 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import type { Locale } from "@market/contracts";
 const copy: Record<string, [string, string, string]> = {
+  "auth.intro": [
+    "Apresentação Market Analysis",
+    "Market Analysis introduction",
+    "Presentación de Market Analysis",
+  ],
+  "auth.skipIntro": [
+    "Pular introdução",
+    "Skip introduction",
+    "Omitir introducción",
+  ],
   "role.GLOBAL": ["Global", "Global", "Global"],
   "role.SUPER_ADMIN": ["Super Admin", "Super Admin", "Super Admin"],
   "role.ADMIN": ["Admin", "Admin", "Admin"],

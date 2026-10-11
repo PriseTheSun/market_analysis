@@ -86,13 +86,7 @@ function App() {
       <SessionProvider>
         <BrowserRouter>
           <LocalizedAddress />
-          <Suspense
-            fallback={
-              <div className="state" role="status">
-                Market Analysis
-              </div>
-            }
-          >
+          <Suspense fallback={null}>
             <Routes>
               {route("/", <Navigate to="/app" replace />)}
               {route("/login", <AuthPage key="login" mode="login" />)}

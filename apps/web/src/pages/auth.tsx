@@ -29,6 +29,7 @@ import { Language } from "../components/language";
 import { Button } from "../components/ui/button";
 import { Field, Password, Success } from "../components/ui/common";
 import { BlurFade } from "../components/magicui/blur-fade";
+import { LoginEntrance } from "../components/login-entrance";
 export function AuthLayout({
   children,
   compact = false,
@@ -123,6 +124,16 @@ export function AuthLayout({
 }
 type AuthMode = "login" | "request" | "recover" | "reset" | "invite";
 export function AuthPage({ mode }: { mode: AuthMode }) {
+  return mode === "login" ? (
+    <LoginEntrance>
+      <AuthContent mode={mode} />
+    </LoginEntrance>
+  ) : (
+    <AuthContent mode={mode} />
+  );
+}
+
+function AuthContent({ mode }: { mode: AuthMode }) {
   const { t } = useTranslation();
   const { session } = useSession();
   const navigate = useNavigate(),
