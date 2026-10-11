@@ -22,6 +22,8 @@ import {
   managementUserSchema,
   managementAgencySchema,
   managementClientSchema,
+  canonicalManagementTab,
+  localizedManagementTab,
   permissionSchema,
   type ManagementKind,
   type ManagementUser,
@@ -67,15 +69,15 @@ const archived = (item: RecordItem) =>
 const summary = (names: string[]) => [...new Set(names)].join(", ") || "—";
 
 export function Management() {
-  const { t } = useTranslation(),
+  const { t, i18n } = useTranslation(),
     scope = useScope();
   const tabs =
     scope.user.platformRole === "GLOBAL"
       ? managementTabs
       : managementTabs.filter((tab) => tab.key === "permissions");
   const [params, setParams] = useSearchParams();
-  const tab =
-    tabs.find((x) => x.key === params.get("tab"))?.key ?? tabs[0]!.key;
+  const requestedTab = canonicalManagementTab(params.get("tab"));
+  const tab = tabs.find((x) => x.key === requestedTab)?.key ?? tabs[0]!.key;
   const [search, setSearch] = useState("");
   const [agency, setAgency] = useState("");
   const [view, setView] = useState<"current" | "archived">("current");
@@ -118,7 +120,7 @@ export function Management() {
   }
   const switchTab = (next: ManagementKind) => {
     setParams((p) => {
-      p.set("tab", next);
+      p.set("tab", localizedManagementTab(next, i18n.language));
       return p;
     });
     setSearch("");
@@ -139,8 +141,10 @@ export function Management() {
           </span>
         ) : "active" in item ? (
           <ActiveStatus active={item.active} />
-        ) : (
+        ) : item.status === "provisioning" ? (
           <Badge status={item.status} />
+        ) : (
+          <ActiveStatus active={item.status === "active"} />
         )}
       </td>
     );

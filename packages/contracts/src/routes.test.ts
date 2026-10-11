@@ -3,8 +3,63 @@ import {
   appRoutePatterns,
   appRouteTemplates,
   canonicalAppPath,
+  canonicalManagementTab,
   localizedAppPath,
+  localizedManagementTab,
 } from "./routes.js";
+
+describe("localized management tabs", () => {
+  it.each([
+    ["users", "usuarios", "usuarios"],
+    ["permissions", "permissoes", "permisos"],
+    ["agencies", "agencias", "agencias"],
+    ["clients", "clientes", "clientes"],
+  ] as const)(
+    "keeps the %s tab selected across languages and old links",
+    (tab, pt, es) => {
+      for (const value of [tab, pt, es]) {
+        expect(canonicalManagementTab(value)).toBe(tab);
+        for (const [locale, pathname, expected] of [
+          ["pt-BR", "/plataforma/gestao", pt],
+          ["en", "/platform/management", tab],
+          ["es", "/plataforma/gestion", es],
+        ] as const) {
+          const url = localizedAppPath(
+            `/plataforma/gestao?tab=${value}&search=files&page=2#results`,
+            locale,
+          );
+          expect(url).toBe(
+            `${pathname}?tab=${expected}&search=files&page=2#results`,
+          );
+          expect(localizedAppPath(url, locale)).toBe(url);
+          expect(canonicalAppPath(url)).toBe(
+            `/platform/management?tab=${tab}&search=files&page=2#results`,
+          );
+          expect(localizedManagementTab(tab, locale)).toBe(expected);
+        }
+      }
+    },
+  );
+
+  it("only translates recognized management tabs on the management page", () => {
+    for (const query of [
+      "",
+      "?tab=unknown",
+      "?tab=",
+      "?search=clients#tab=users",
+    ]) {
+      expect(localizedAppPath(`/platform/management${query}`, "pt-BR")).toBe(
+        `/plataforma/gestao${query}`,
+      );
+    }
+    expect(canonicalManagementTab(null)).toBeUndefined();
+    expect(canonicalManagementTab("unknown")).toBeUndefined();
+    expect(localizedAppPath("/app/clients/files?tab=clients", "pt-BR")).toBe(
+      "/app/clients/arquivos?tab=clients",
+    );
+    expect(localizedManagementTab("permissions", "en-US")).toBe("permissions");
+  });
+});
 
 describe("localized browser routes", () => {
   it.each([

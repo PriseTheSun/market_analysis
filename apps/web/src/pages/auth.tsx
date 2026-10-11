@@ -29,7 +29,13 @@ import { Language } from "../components/language";
 import { Button } from "../components/ui/button";
 import { Field, Password, Success } from "../components/ui/common";
 import { BlurFade } from "../components/magicui/blur-fade";
-export function AuthLayout({ children }: { children: ReactNode }) {
+export function AuthLayout({
+  children,
+  compact = false,
+}: {
+  children: ReactNode;
+  compact?: boolean;
+}) {
   const { t } = useTranslation();
   const ref = useRef<HTMLVideoElement>(null);
   const [enabled, setEnabled] = useState(false);
@@ -72,7 +78,9 @@ export function AuthLayout({ children }: { children: ReactNode }) {
     };
   }, [enabled, failed]);
   return (
-    <div className="auth-layout">
+    <div
+      className={compact ? "auth-layout auth-layout-compact" : "auth-layout"}
+    >
       <aside className="auth-visual">
         <img className="auth-poster" src="/media/auth-poster.jpg" alt="" />
         {enabled && !failed && (
@@ -159,7 +167,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
       ...(mode === "login"
         ? { email: "", password: "", remember: false }
         : mode === "request"
-          ? { name: "", email: "", organization: "", message: "" }
+          ? { name: "", email: "", organization: "" }
           : mode === "recover"
             ? { email: "" }
             : mode === "reset"
@@ -256,7 +264,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
       </AuthLayout>
     );
   return (
-    <AuthLayout>
+    <AuthLayout compact={mode === "request"}>
       {mode !== "login" && (
         <Link className="back-link" to="/login">
           <ArrowLeft />
@@ -307,29 +315,20 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
           </Field>
         )}
         {mode === "request" && (
-          <>
-            <Field
-              label={t("auth.agencyOrClient")}
-              error={invalid("organization")}
-            >
-              <span className="input-icon">
-                <Building2 />
-                <input
-                  {...form.register("organization")}
-                  autoComplete="organization"
-                  placeholder={t("auth.agencyOrClientPlaceholder")}
-                  aria-invalid={!!invalid("organization")}
-                />
-              </span>
-            </Field>
-            <Field label={t("auth.message")} error={invalid("message")}>
-              <textarea
-                {...form.register("message")}
-                rows={2}
-                maxLength={2000}
+          <Field
+            label={t("auth.agencyOrClient")}
+            error={invalid("organization")}
+          >
+            <span className="input-icon">
+              <Building2 />
+              <input
+                {...form.register("organization")}
+                autoComplete="organization"
+                placeholder={t("auth.agencyOrClientPlaceholder")}
+                aria-invalid={!!invalid("organization")}
               />
-            </Field>
-          </>
+            </span>
+          </Field>
         )}
         {(mode === "login" ||
           mode === "reset" ||

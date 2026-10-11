@@ -55,18 +55,16 @@ export function LocalizedAddress() {
   const location = useLocation();
   const navigate = useLocalizedNavigate();
   const { i18n } = useTranslation();
-  const pathname = localizedAppPath(location.pathname, i18n.language);
+  const path = location.pathname + location.search + location.hash;
+  const localizedPath = localizedAppPath(path, i18n.language);
   // BrowserRouter subscribes to history in a layout effect. Redirect after that
   // subscription so its location always stays in sync with the address bar.
   useEffect(() => {
-    if (pathname !== location.pathname)
-      void navigate(
-        { pathname, search: location.search, hash: location.hash },
-        {
-          replace: true,
-          state: location.state,
-        },
-      );
-  }, [location, pathname, navigate]);
+    if (localizedPath !== path)
+      void navigate(localizedPath, {
+        replace: true,
+        state: location.state,
+      });
+  }, [location, path, localizedPath, navigate]);
   return null;
 }

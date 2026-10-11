@@ -432,6 +432,9 @@ input[type="checkbox"] {
   margin: auto;
   padding: 48px 0;
 }
+.auth-layout-compact .auth-form-area {
+  padding-block: 32px;
+}
 .auth-subtitle {
   color: var(--muted);
   margin-top: 12px;

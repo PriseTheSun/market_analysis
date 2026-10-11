@@ -1,4 +1,35 @@
 import type { Locale } from "./index.js";
+import type { ManagementKind } from "./management.js";
+
+const managementTabs: Record<ManagementKind, Record<Locale, string>> = {
+  users: { "pt-BR": "usuarios", en: "users", es: "usuarios" },
+  permissions: { "pt-BR": "permissoes", en: "permissions", es: "permisos" },
+  agencies: { "pt-BR": "agencias", en: "agencies", es: "agencias" },
+  clients: { "pt-BR": "clientes", en: "clients", es: "clientes" },
+};
+
+export function canonicalManagementTab(value: string | null) {
+  return (Object.keys(managementTabs) as ManagementKind[]).find((key) =>
+    Object.values(managementTabs[key]).some((tab) => tab === value),
+  );
+}
+
+export function localizedManagementTab(tab: ManagementKind, language: string) {
+  return managementTabs[tab][routeLocale(language)];
+}
+
+function managementSuffix(suffix: string, locale?: Locale) {
+  const hashIndex = suffix.indexOf("#");
+  const search = hashIndex < 0 ? suffix : suffix.slice(0, hashIndex);
+  const hash = hashIndex < 0 ? "" : suffix.slice(hashIndex);
+  const params = new URLSearchParams(search);
+  const tab = canonicalManagementTab(params.get("tab"));
+  if (!tab) return suffix;
+  const value = locale ? localizedManagementTab(tab, locale) : tab;
+  if (params.get("tab") === value) return suffix;
+  params.set("tab", value);
+  return `?${params}${hash}`;
+}
 
 // These are browser routes. API endpoints and persisted identifiers are stable.
 const segments: Record<string, Record<Locale, string>> = {
@@ -125,7 +156,10 @@ function resolveAppPath(path: string, locale?: Locale) {
     template
       .split("/")
       .map((part, index) => (part.startsWith(":") ? parts[index] : part))
-      .join("/") + suffix
+      .join("/") +
+    (route.template === "/platform/management"
+      ? managementSuffix(suffix, locale)
+      : suffix)
   );
 }
 
@@ -137,7 +171,7 @@ export function routeLocale(language: string): Locale {
       : "pt-BR";
 }
 
-/** Translate only recognized route segments, preserving IDs, queries and fragments. */
+/** Translate recognized routes and management tabs, preserving IDs and other parameters. */
 export function localizedAppPath(path: string, language: string): string {
   return resolveAppPath(path, routeLocale(language));
 }
