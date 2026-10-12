@@ -34,6 +34,40 @@ export const accessRequestSchema = z.strictObject({
   message: z.string().trim().max(2000).optional(),
 });
 export const classifySchema = z.strictObject({ tenantId: idSchema });
+export const requestAssignmentSchema = z.strictObject({
+  agencyId: idSchema,
+  tenantId: idSchema,
+  role: roleSchema.default("USER"),
+  approve: z.boolean().default(false),
+});
+export type RequestAssignmentInput = z.infer<typeof requestAssignmentSchema>;
+export interface AccessRequestOptions {
+  agencies: { id: string; name: string }[];
+  clients: { id: string; name: string; agencyId: string }[];
+}
+export interface AccessRequestRecord {
+  id: string;
+  name: string;
+  email: string;
+  organization: string;
+  message: string | null;
+  status: "pending" | "approved" | "rejected";
+  agencyId: string | null;
+  tenantId: string | null;
+  tenant: {
+    name: string;
+    agencyId: string;
+    agency: { id: string; name: string };
+  } | null;
+  reason: string | null;
+  invitationId: string | null;
+  invitation: {
+    role: TenantRole;
+    consumedAt: string | null;
+    revokedAt: string | null;
+    expiresAt: string;
+  } | null;
+}
 export const reviewSchema = z.strictObject({
   decision: z.enum(["approved", "rejected"]),
   role: roleSchema.default("USER"),

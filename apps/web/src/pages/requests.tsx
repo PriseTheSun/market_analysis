@@ -9,13 +9,18 @@ import {
   RecordActions,
 } from "../components/ui/table";
 import { PAGE_SIZE } from "../lib/pagination";
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ArrowRight } from "lucide-react";
+import { ChevronDown, Mail, Pencil, X } from "lucide-react";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
-import { classifySchema, reviewSchema, type Page } from "@market/contracts";
+import type {
+  AccessRequestRecord,
+  AccessRequestOptions,
+  TenantRole,
+  Page,
+} from "@market/contracts";
 import { api, errorText, queryClient } from "../lib/api";
 import { useScope, PageHeading } from "../components/shell";
 import { Button } from "../components/ui/button";
@@ -23,27 +28,21 @@ import {
   Loading,
   ErrorState,
   Empty,
-  Badge,
+  Field,
   Modal,
   Pagination,
 } from "../components/ui/common";
-import { EditForm } from "./admin";
-interface AccessRequest {
-  id: string;
-  name: string;
-  email: string;
-  organization: string;
-  message: string | null;
-  status: string;
-  tenantId: string | null;
-  tenant: { name: string } | null;
-  reviewedBy: string | null;
-  reviewedAt: string | null;
-  reason: string | null;
-  invitationId: string | null;
-  reviewer?: { name: string } | null;
-  deliveryStatus?: string | null;
+import "./requests.css";
+
+function RequestSelect(props: ComponentProps<"select">) {
+  return (
+    <span className="request-select">
+      <select {...props} />
+      <ChevronDown aria-hidden="true" />
+    </span>
+  );
 }
+
 export function Requests() {
   const s = useScope(),
     { t } = useTranslation();
@@ -55,12 +54,15 @@ export function Requests() {
   const [page, setPage] = useState(1),
     [search, setSearch] = useState(""),
     [status, setStatus] = useState(""),
-    [selected, setSelected] = useState<AccessRequest>(),
-    [action, setAction] = useState<"classify" | "approved" | "rejected">();
+    [selected, setSelected] = useState<{
+      item: AccessRequestRecord;
+      action: "edit" | "reject";
+    }>(),
+    [resending, setResending] = useState<string>();
   const q = useQuery({
     queryKey: [...s.key, path, page, search, status, PAGE_SIZE],
     queryFn: ({ signal }) =>
-      api<Page<AccessRequest>>(
+      api<Page<AccessRequestRecord>>(
         path +
           `?page=${page}&pageSize=${PAGE_SIZE}&search=${encodeURIComponent(search)}${status ? "&status=" + status : ""}`,
         "GET",
@@ -69,23 +71,35 @@ export function Requests() {
       ),
     enabled: s.tenant?.role !== "USER",
   });
-  const tenants = useQuery({
-    queryKey: [...s.key, "requestTenantOptions"],
-    queryFn: ({ signal }) =>
-      api<
-        Page<{
-          id: string;
-          name: string;
-          status: string;
-          agency: { name: string };
-        }>
-      >("/platform/tenants?pageSize=100", "GET", undefined, signal),
-    enabled: global,
-  });
   const refresh = () => queryClient.invalidateQueries({ queryKey: s.key });
+  async function saved(rejected = false) {
+    setSelected(undefined);
+    if (
+      rejected &&
+      q.data?.items.length === 1 &&
+      page > 1 &&
+      status !== "rejected"
+    )
+      setPage(page - 1);
+    await refresh();
+    toast.success(t(rejected ? "requests.rejected" : "common.saved"));
+  }
+  async function resend(item: AccessRequestRecord) {
+    if (resending) return;
+    setResending(item.id);
+    try {
+      await s.call(`${path}/${item.id}/resend`, "POST", {});
+      await refresh();
+      toast.success(t("admin.inviteSent"));
+    } catch (e) {
+      toast.error(errorText(e));
+    } finally {
+      setResending(undefined);
+    }
+  }
   if (s.tenant?.role === "USER") return <Empty title={t("shell.forbidden")} />;
   return (
-    <main className="page">
+    <main className="page requests-page">
       <PageHeading
         title={t("shell.requests")}
         description={t("requests.sub")}
@@ -100,7 +114,7 @@ export function Requests() {
             setPage(1);
           }}
         />
-        <select
+        <RequestSelect
           aria-label={t("common.status")}
           value={status}
           onChange={(e) => {
@@ -111,10 +125,10 @@ export function Requests() {
           <option value="">{t("common.status")}</option>
           {["pending", "approved", "rejected"].map((x) => (
             <option key={x} value={x}>
-              {t("status." + x)}
+              {t("requests.status." + x)}
             </option>
           ))}
-        </select>
+        </RequestSelect>
         <ViewToggle {...display} />
       </div>
       {q.isPending ? (
@@ -130,44 +144,75 @@ export function Requests() {
             label={t("shell.requests")}
             columns={[
               { label: t("auth.name"), role: "identity" },
-              { label: t("auth.agencyOrClient") },
+              { label: t("requests.agencyName") },
               { label: t("admin.client") },
               { label: t("common.status"), role: "status" },
               { label: t("common.actions"), role: "actions" },
             ]}
           >
-            {q.data.items.map((r) => (
-              <tr key={r.id}>
-                <td data-label={t("auth.name")}>
-                  <RecordIdentity name={r.name} detail={r.email} />
-                </td>
-                <td data-label={t("auth.agencyOrClient")}>{r.organization}</td>
-                <td data-label={t("admin.client")}>
-                  {r.tenant?.name ?? t("requests.unscoped")}
-                </td>
-                <td data-label={t("common.status")}>
-                  <Badge status={r.status} />
-                  {r.deliveryStatus && (
-                    <small>
-                      <Badge status={r.deliveryStatus} />
-                    </small>
-                  )}
-                </td>
-                <td data-label={t("common.actions")}>
-                  <RecordActions name={r.name}>
-                    <Dropdown.Item
-                      onSelect={() => {
-                        setSelected(r);
-                        setAction(undefined);
-                      }}
-                    >
-                      <ArrowRight aria-hidden="true" />
-                      {t("common.open")}
-                    </Dropdown.Item>
-                  </RecordActions>
-                </td>
-              </tr>
-            ))}
+            {q.data.items.map((r) => {
+              const accepted = !!r.invitation?.consumedAt;
+              const closed = r.status === "rejected" || accepted;
+              return (
+                <tr key={r.id}>
+                  <td data-label={t("auth.name")}>
+                    <RecordIdentity name={r.name} detail={r.email} />
+                  </td>
+                  <td data-label={t("requests.agencyName")}>
+                    {r.tenant?.agency?.name ?? t("requests.noAgency")}
+                  </td>
+                  <td data-label={t("admin.client")}>
+                    {r.tenant?.name ?? t("requests.unscoped")}
+                  </td>
+                  <td data-label={t("common.status")}>
+                    <span className={"badge status-" + r.status}>
+                      {t("requests.status." + r.status)}
+                    </span>
+                  </td>
+                  <td data-label={t("common.actions")}>
+                    <RecordActions name={r.name} disabled={resending === r.id}>
+                      <Dropdown.Item
+                        disabled={
+                          !!resending ||
+                          closed ||
+                          r.status !== "approved" ||
+                          !r.invitationId ||
+                          !!r.invitation?.revokedAt
+                        }
+                        onSelect={() => void resend(r)}
+                      >
+                        <Mail aria-hidden="true" />
+                        {t("requests.resend")}
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        disabled={closed || (!global && r.status !== "pending")}
+                        onSelect={() =>
+                          setSelected({ item: r, action: "edit" })
+                        }
+                      >
+                        <Pencil aria-hidden="true" />
+                        {t("management.edit")}
+                      </Dropdown.Item>
+                      <Dropdown.Item
+                        className="danger"
+                        disabled={closed}
+                        onSelect={() =>
+                          setSelected({ item: r, action: "reject" })
+                        }
+                      >
+                        <X aria-hidden="true" />
+                        {t("requests.rejectAction")}
+                      </Dropdown.Item>
+                      {accepted && (
+                        <Dropdown.Label className="request-action-note">
+                          {t("requests.acceptedHint")}
+                        </Dropdown.Label>
+                      )}
+                    </RecordActions>
+                  </td>
+                </tr>
+              );
+            })}
           </RecordCollection>
           <Pagination
             page={page}
@@ -177,160 +222,294 @@ export function Requests() {
           />
         </>
       )}
-      <Modal
-        open={!!selected}
-        onOpenChange={(v) => !v && setSelected(undefined)}
-        title={selected?.name ?? ""}
-        description={selected?.email}
+      {selected?.action === "edit" && (
+        <RequestEditor
+          item={selected.item}
+          global={global}
+          path={path}
+          onClose={() => setSelected(undefined)}
+          onSaved={() => saved()}
+        />
+      )}
+      {selected?.action === "reject" && (
+        <RequestRejection
+          item={selected.item}
+          path={path}
+          onClose={() => setSelected(undefined)}
+          onSaved={() => saved(true)}
+        />
+      )}
+    </main>
+  );
+}
+
+function RequestEditor({
+  item,
+  global,
+  path,
+  onClose,
+  onSaved,
+}: {
+  item: AccessRequestRecord;
+  global: boolean;
+  path: string;
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const s = useScope();
+  const [agencyId, setAgencyId] = useState(
+    item.agencyId ?? item.tenant?.agencyId ?? "",
+  );
+  const [tenantId, setTenantId] = useState(item.tenantId ?? "");
+  const [role, setRole] = useState<TenantRole>(item.invitation?.role ?? "USER");
+  const [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const options = useQuery({
+    queryKey: [...s.key, "requestAssignmentOptions"],
+    queryFn: ({ signal }) =>
+      api<AccessRequestOptions>(
+        "/platform/access-requests/options",
+        "GET",
+        undefined,
+        signal,
+      ),
+    enabled: global,
+  });
+  const clients =
+    options.data?.clients.filter((client) => client.agencyId === agencyId) ??
+    [];
+  const available = global
+    ? clients.some((client) => client.id === tenantId)
+    : !!tenantId;
+  async function save() {
+    if (busy || !available) return;
+    setBusy(true);
+    setError("");
+    try {
+      if (global)
+        await s.call(`${path}/${item.id}/assignment`, "PATCH", {
+          agencyId,
+          tenantId,
+          role,
+          approve: item.status === "pending",
+        });
+      else
+        await s.call(`${path}/${item.id}/review`, "POST", {
+          decision: "approved",
+          role,
+        });
+      await onSaved();
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Modal
+      open
+      onOpenChange={(open) => !open && !busy && onClose()}
+      title={t("requests.edit")}
+      description={`${item.name} · ${item.email}`}
+    >
+      <form
+        className="form-stack request-editor"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void save();
+        }}
       >
-        {selected && (
+        <p className="request-organization">
+          {t("requests.reportedOrganization")}:{" "}
+          <strong>{item.organization}</strong>
+        </p>
+        {global && options.isPending ? (
+          <Loading />
+        ) : global && options.isError ? (
+          <ErrorState
+            error={options.error}
+            retry={() => void options.refetch()}
+          />
+        ) : (
           <>
-            <dl className="request-details">
-              <dt>{t("auth.agencyOrClient")}</dt>
-              <dd>{selected.organization}</dd>
-              {selected.message && (
-                <>
-                  <dt>{t("auth.message")}</dt>
-                  <dd>{selected.message}</dd>
-                </>
-              )}
-              <dt>{t("admin.client")}</dt>
-              <dd>{selected.tenant?.name ?? t("requests.unscoped")}</dd>
-              {selected.reason && (
-                <>
-                  <dt>{t("admin.reason")}</dt>
-                  <dd>{selected.reason}</dd>
-                </>
-              )}
-              {selected.reviewer && (
-                <>
-                  <dt>{t("requests.reviewer")}</dt>
-                  <dd>{selected.reviewer.name}</dd>
-                </>
-              )}
-            </dl>
-            {selected.status === "pending" && !action && (
-              <div className="dialog-actions wrap">
-                {global && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setAction("classify")}
-                  >
-                    {t("requests.classify")}
-                  </Button>
-                )}
-                <Button
-                  disabled={!selected.tenantId}
-                  onClick={() => setAction("approved")}
-                >
-                  {t("requests.approve")}
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => setAction("rejected")}
-                >
-                  {t("requests.reject")}
-                </Button>
-              </div>
-            )}
-            {action === "classify" && (
-              <EditForm
-                schema={classifySchema}
-                fields={[
-                  {
-                    name: "tenantId",
-                    label: t("admin.client"),
-                    options: [
-                      { value: "", label: t("requests.unscoped") },
-                      ...(tenants.data?.items
-                        .filter((x) => x.status === "active")
-                        .map((x) => ({
-                          value: x.id,
-                          label: x.agency.name + " · " + x.name,
-                        })) ?? []),
-                    ],
-                  },
-                ]}
-                defaults={{ tenantId: selected.tenantId ?? "" }}
-                onSave={async (data) => {
-                  const item = await s.call<AccessRequest>(
-                    path + "/" + selected.id + "/classify",
-                    "POST",
-                    data,
-                  );
-                  setSelected({
-                    ...selected,
-                    ...item,
-                    tenant:
-                      tenants.data?.items.find((x) => x.id === data.tenantId) ??
-                      null,
-                  });
-                  setAction(undefined);
-                  await refresh();
-                  toast.success(t("common.saved"));
+            <Field label={t("admin.agency")}>
+              <RequestSelect
+                value={agencyId}
+                disabled={busy || !global}
+                required
+                onChange={(e) => {
+                  setAgencyId(e.target.value);
+                  setTenantId("");
                 }}
-              />
-            )}
-            {(action === "approved" || action === "rejected") && (
-              <>
-                <p>{t("requests.roleHint")}</p>
-                <EditForm
-                  key={action}
-                  schema={reviewSchema}
-                  fields={[
-                    ...(action === "approved"
-                      ? [
-                          {
-                            name: "role",
-                            label: t("common.role"),
-                            options: [
-                              { value: "USER", label: "User" },
-                              { value: "ADMIN", label: "Admin" },
-                            ],
-                          },
-                        ]
-                      : []),
-                    {
-                      name: "reason",
-                      label: t("admin.reason"),
-                      type: "textarea",
-                    },
-                  ]}
-                  defaults={{ decision: action, role: "USER", reason: "" }}
-                  onSave={async (data) => {
-                    await s.call(
-                      path + "/" + selected.id + "/review",
-                      "POST",
-                      data,
-                    );
-                    setSelected(undefined);
-                    setAction(undefined);
-                    await refresh();
-                    toast.success(t("common.saved"));
-                  }}
-                />
-              </>
-            )}
-            {selected.invitationId && selected.tenantId && (
-              <Button
-                variant="outline"
-                onClick={() =>
-                  void s
-                    .call(
-                      `/tenants/${selected.tenantId}/invitations/${selected.invitationId}/resend`,
-                      "POST",
-                      {},
-                    )
-                    .then(() => toast.success(t("admin.inviteSent")))
-                    .catch((e) => toast.error(errorText(e)))
-                }
               >
-                {t("admin.resend")}
-              </Button>
-            )}
+                <option value="">{t("management.selectAgency")}</option>
+                {item.tenant &&
+                  !options.data?.agencies.some(
+                    (agency) => agency.id === item.tenant!.agencyId,
+                  ) && (
+                    <option value={item.tenant.agencyId} disabled={global}>
+                      {item.tenant.agency.name}
+                    </option>
+                  )}
+                {options.data?.agencies.map((agency) => (
+                  <option key={agency.id} value={agency.id}>
+                    {agency.name}
+                  </option>
+                ))}
+              </RequestSelect>
+            </Field>
+            <Field label={t("admin.client")}>
+              <RequestSelect
+                value={tenantId}
+                disabled={busy || !global || !agencyId}
+                required
+                onChange={(e) => setTenantId(e.target.value)}
+              >
+                <option value="">{t("management.selectClient")}</option>
+                {item.tenantId &&
+                  item.tenant &&
+                  item.tenant.agencyId === agencyId &&
+                  !clients.some((client) => client.id === item.tenantId) && (
+                    <option value={item.tenantId} disabled={global}>
+                      {item.tenant.name}
+                    </option>
+                  )}
+                {clients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name}
+                  </option>
+                ))}
+              </RequestSelect>
+            </Field>
+            <Field label={t("common.role")}>
+              <RequestSelect
+                value={role}
+                disabled={busy}
+                onChange={(e) => setRole(e.target.value as TenantRole)}
+              >
+                <option value="USER">User</option>
+                <option value="ADMIN">Admin</option>
+              </RequestSelect>
+            </Field>
+            <p className="request-form-hint">
+              {t(
+                item.status === "approved"
+                  ? "requests.reassignHint"
+                  : "requests.roleHint",
+              )}
+            </p>
           </>
         )}
-      </Modal>
-    </main>
+        {error && (
+          <p className="field-error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="dialog-actions wrap">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={onClose}
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            disabled={
+              busy ||
+              !available ||
+              (global && (options.isPending || options.isError))
+            }
+          >
+            {t(
+              busy
+                ? "common.saving"
+                : item.status === "pending"
+                  ? "requests.approve"
+                  : "management.save",
+            )}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function RequestRejection({
+  item,
+  path,
+  onClose,
+  onSaved,
+}: {
+  item: AccessRequestRecord;
+  path: string;
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const { t } = useTranslation(),
+    s = useScope();
+  const [reason, setReason] = useState(""),
+    [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function reject() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await s.call(`${path}/${item.id}/review`, "POST", {
+        decision: "rejected",
+        reason,
+      });
+      await onSaved();
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Modal
+      open
+      onOpenChange={(open) => !open && !busy && onClose()}
+      title={t("requests.reject")}
+      description={`${item.name} · ${item.email}`}
+    >
+      <form
+        className="form-stack request-editor"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void reject();
+        }}
+      >
+        <p className="request-form-hint">{t("requests.rejectHint")}</p>
+        <Field label={t("admin.reason")}>
+          <textarea
+            value={reason}
+            maxLength={1000}
+            disabled={busy}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </Field>
+        {error && (
+          <p className="field-error" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="dialog-actions">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={onClose}
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button variant="destructive" disabled={busy}>
+            {t(busy ? "common.saving" : "requests.rejectAction")}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

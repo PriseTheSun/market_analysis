@@ -1,0 +1,66 @@
+.request-select {
+  display: block;
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+.table-toolbar > .request-select {
+  max-width: 240px;
+}
+.requests-page .table-toolbar .request-select select {
+  max-width: none;
+}
+.request-select select {
+  width: 100%;
+  appearance: none;
+  padding-right: 42px;
+}
+.request-select > svg {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--muted);
+}
+.request-select select:disabled + svg {
+  opacity: 0.6;
+}
+.request-editor .field > .request-select {
+  font-weight: 400;
+}
+.request-form-hint,
+.request-organization {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+.request-organization {
+  overflow-wrap: anywhere;
+}
+.request-editor .dialog-actions {
+  margin-top: 8px;
+}
+.request-action-note {
+  max-width: 250px;
+  padding: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 700px) {
+  .requests-page .table-toolbar {
+    flex-wrap: wrap;
+  }
+  .requests-page .table-search {
+    flex-basis: 100%;
+  }
+  .requests-page .table-toolbar > .request-select {
+    flex: 1 1 160px;
+    max-width: none;
+  }
+}

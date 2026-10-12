@@ -29,11 +29,11 @@ test("public request → global classification → approval → local email → 
   await page.locator("input[type=password]").fill("MarketGlobal#2027");
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page
-    .getByRole("link", { name: "Administração global", exact: true })
-    .click();
-  await page
     .getByRole("link", { name: "Solicitações de acesso", exact: true })
     .click();
+  await expect(
+    page.getByRole("heading", { name: "Solicitações de acesso", exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Tabela", exact: true }).click();
   await page.getByRole("textbox", { name: "Buscar", exact: true }).fill(email);
   await page
@@ -41,23 +41,23 @@ test("public request → global classification → approval → local email → 
     .filter({ hasText: email })
     .getByRole("button", { name: "Ações de Pessoa da jornada", exact: true })
     .click();
-  await page.getByRole("menuitem", { name: "Abrir", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Editar", exact: true }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByRole("button", { name: "Classificar" }).click();
+  await dialog
+    .getByRole("combobox", { name: "Agência", exact: true })
+    .selectOption({ label: "Agência Demo A" });
   await dialog
     .getByRole("combobox", { name: "Cliente", exact: true })
-    .selectOption({ label: "Agência Demo A · Aurora" });
-  await dialog.getByRole("button", { name: "Confirmar", exact: true }).click();
-  await dialog.getByRole("button", { name: "Aprovar e convidar" }).click();
+    .selectOption({ label: "Aurora" });
   await expect(
     dialog.getByRole("combobox", { name: "Perfil", exact: true }),
   ).toHaveValue("USER");
-  await dialog.getByRole("button", { name: "Confirmar", exact: true }).click();
+  await dialog.getByRole("button", { name: "Aprovar e convidar" }).click();
   await expect(
     page
       .getByRole("row")
       .filter({ hasText: email })
-      .getByText("Aprovada", { exact: true }),
+      .getByText("Aprovado", { exact: true }),
   ).toBeVisible();
   const token = await mailToken(email, "invitation");
   const context = await browser.newContext({ locale: "pt-BR" });
@@ -81,5 +81,24 @@ test("public request → global classification → approval → local email → 
   await expect(
     invited.getByRole("link", { name: "Membros", exact: true }),
   ).toHaveCount(0);
+  await page.reload();
+  await page
+    .getByRole("heading", { name: "Solicitações de acesso", exact: true })
+    .waitFor();
+  await page.getByRole("textbox", { name: "Buscar", exact: true }).fill(email);
+  await page
+    .getByRole("button", { name: "Ações de Pessoa da jornada", exact: true })
+    .click();
+  for (const name of ["Reenviar e-mail", "Editar", "Rejeitar"]) {
+    await expect(
+      page.getByRole("menuitem", { name, exact: true }),
+    ).toBeDisabled();
+  }
+  await expect(
+    page.getByText(
+      "Convite já aceito. Gerencie os vínculos do usuário na Central de gestão.",
+      { exact: true },
+    ),
+  ).toBeVisible();
   await context.close();
 });

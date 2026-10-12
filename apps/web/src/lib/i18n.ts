@@ -887,6 +887,47 @@ const copy: Record<string, [string, string, string]> = {
     "Revisa la solicitud, define el espacio y envía una invitación. El acceso comienza tras la aceptación.",
   ],
   "requests.unscoped": ["Sem classificação", "Unclassified", "Sin clasificar"],
+  "requests.agencyName": [
+    "Nome da agência",
+    "Agency name",
+    "Nombre de la agencia",
+  ],
+  "requests.noAgency": [
+    "Sem agência atribuída",
+    "No agency assigned",
+    "Sin agencia asignada",
+  ],
+  "requests.status.pending": ["Pendente", "Pending", "Pendiente"],
+  "requests.status.approved": ["Aprovado", "Approved", "Aprobado"],
+  "requests.status.rejected": ["Rejeitado", "Rejected", "Rechazado"],
+  "requests.resend": ["Reenviar e-mail", "Resend email", "Reenviar correo"],
+  "requests.edit": ["Editar solicitação", "Edit request", "Editar solicitud"],
+  "requests.rejectAction": ["Rejeitar", "Reject", "Rechazar"],
+  "requests.rejected": [
+    "Solicitação rejeitada.",
+    "Request rejected.",
+    "Solicitud rechazada.",
+  ],
+  "requests.reportedOrganization": [
+    "Organização informada",
+    "Reported organization",
+    "Organización informada",
+  ],
+  "requests.acceptedHint": [
+    "Convite já aceito. Gerencie os vínculos do usuário na Central de gestão.",
+    "Invitation already accepted. Manage the user's access in the Management center.",
+    "Invitación ya aceptada. Gestiona los accesos del usuario en el Centro de gestión.",
+  ],
+  "requests.reassignHint": [
+    "Ao alterar a agência, o cliente ou a permissão, o convite anterior será invalidado e um novo será enviado por e-mail.",
+    "Changing the agency, client or role invalidates the previous invitation and sends a new email.",
+    "Al cambiar la agencia, el cliente o el rol, se invalida la invitación anterior y se envía un nuevo correo.",
+  ],
+  "requests.rejectHint": [
+    "A solicitação sairá da listagem principal e ficará disponível no filtro Rejeitado. Um convite ainda não aceito será cancelado.",
+    "The request will leave the main list and remain available under Rejected. Any invitation not yet accepted will be cancelled.",
+    "La solicitud saldrá de la lista principal y seguirá disponible en el filtro Rechazado. Se cancelará cualquier invitación aún no aceptada.",
+  ],
   "requests.classify": ["Classificar", "Classify", "Clasificar"],
   "requests.approve": [
     "Aprovar e convidar",

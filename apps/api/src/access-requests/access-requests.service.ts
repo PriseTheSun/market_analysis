@@ -4,13 +4,14 @@ import { DatabaseService, type Tx } from "../database/database.service.js";
 import { AuditService } from "../audit/audit.service.js";
 import { EventsService } from "../notifications/events.service.js";
 import { AuthService } from "../auth/auth.service.js";
+import { MailService } from "../mail/mail.service.js";
 import { AppError } from "../common/errors.js";
 import {
   pageArgs,
   resultPage,
   type Pagination,
 } from "../administration/administration.service.js";
-import type { TenantRole } from "@market/contracts";
+import type { TenantRole, RequestAssignmentInput } from "@market/contracts";
 @Injectable()
 export class AccessRequestsService {
   constructor(
@@ -18,6 +19,7 @@ export class AccessRequestsService {
     @Inject(AuditService) private audit: AuditService,
     @Inject(EventsService) private events: EventsService,
     @Inject(AuthService) private auth: AuthService,
+    @Inject(MailService) private mail: MailService,
   ) {}
   async submit(data: {
     name: string;
@@ -55,12 +57,24 @@ export class AccessRequestsService {
     const run = async (tx: Tx) => {
       const where = {
         ...(tenantId ? { tenantId } : {}),
-        ...(p.status ? { status: p.status } : {}),
+        status: p.status ?? { not: "rejected" as const },
         OR: [
           { name: { contains: p.search, mode: "insensitive" as const } },
           { email: { contains: p.search, mode: "insensitive" as const } },
           {
             organization: { contains: p.search, mode: "insensitive" as const },
+          },
+          {
+            tenant: {
+              agency: {
+                name: { contains: p.search, mode: "insensitive" as const },
+              },
+            },
+          },
+          {
+            tenant: {
+              name: { contains: p.search, mode: "insensitive" as const },
+            },
           },
         ],
       };
@@ -68,7 +82,23 @@ export class AccessRequestsService {
         where,
         ...pageArgs(p),
         orderBy: { createdAt: "desc" },
-        include: { tenant: { select: { name: true, agencyId: true } } },
+        include: {
+          tenant: {
+            select: {
+              name: true,
+              agencyId: true,
+              agency: { select: { id: true, name: true } },
+            },
+          },
+          invitation: {
+            select: {
+              role: true,
+              consumedAt: true,
+              revokedAt: true,
+              expiresAt: true,
+            },
+          },
+        },
       });
       const reviewers = await tx.user.findMany({
         where: {
@@ -137,6 +167,167 @@ export class AccessRequestsService {
       true,
     );
   }
+  options(actor: Actor) {
+    return this.db.global(actor, async (tx) => ({
+      agencies: await tx.agency.findMany({
+        where: { active: true, archivedAt: null },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      clients: await tx.tenant.findMany({
+        where: {
+          status: "active",
+          archivedAt: null,
+          agency: { active: true, archivedAt: null },
+        },
+        select: { id: true, name: true, agencyId: true },
+        orderBy: { name: "asc" },
+      }),
+    }));
+  }
+  private async revokeInvitation(tx: Tx, id: string) {
+    await tx.invitation.update({
+      where: { id },
+      data: { revokedAt: new Date() },
+    });
+    await tx.emailDelivery.updateMany({
+      where: { eventKey: "invitation:" + id },
+      data: { status: "expired", encryptedPayload: null },
+    });
+  }
+  assign(
+    actor: Actor,
+    id: string,
+    data: RequestAssignmentInput,
+    requestId: string,
+  ) {
+    return this.db.global(
+      actor,
+      async (tx, current) => {
+        const item = await tx.accessRequest.findUnique({
+          where: { id },
+          include: { invitation: true },
+        });
+        if (!item) throw new AppError(404, "NOT_FOUND");
+        if (item.status === "rejected" || item.invitation?.consumedAt)
+          throw new AppError(409, "CONFLICT");
+        const tenant = await tx.tenant.findFirst({
+          where: {
+            id: data.tenantId,
+            agencyId: data.agencyId,
+            status: "active",
+            archivedAt: null,
+            agency: { active: true, archivedAt: null },
+          },
+        });
+        if (!tenant) throw new AppError(404, "NOT_FOUND");
+        if (
+          item.status === "approved" &&
+          item.tenantId === tenant.id &&
+          item.invitation?.role === data.role
+        ) {
+          return { id, status: item.status };
+        }
+        await this.db.setContext(tx, current, tenant.id);
+        const approved = data.approve || item.status === "approved";
+        let invitationId = item.invitationId;
+        if (approved) {
+          if (invitationId) await this.revokeInvitation(tx, invitationId);
+          invitationId = (
+            await this.auth.issue(tx, current, tenant.id, item.email, data.role)
+          ).id;
+        }
+        const value = await tx.accessRequest.update({
+          where: { id },
+          data: {
+            tenantId: tenant.id,
+            agencyId: tenant.agencyId,
+            ...(approved
+              ? {
+                  status: "approved",
+                  invitationId,
+                  reviewedBy: current.id,
+                  reviewedAt: new Date(),
+                }
+              : {}),
+          },
+        });
+        await this.audit.record(
+          tx,
+          current,
+          approved
+            ? item.status === "approved"
+              ? "access.updated"
+              : "access.approved"
+            : "access.classified",
+          requestId,
+          { tenantId: tenant.id, resourceId: id },
+        );
+        await this.events.notify(
+          tx,
+          await this.events.reviewers(tx, tenant.id),
+          tenant.id,
+          approved ? "access.reviewed" : "access.assigned",
+          "access.assigned:" + id + ":" + value.updatedAt.toISOString(),
+          { name: item.name, ...(approved ? { status: "approved" } : {}) },
+          id,
+        );
+        return { id, status: value.status };
+      },
+      true,
+    );
+  }
+  resend(actor: Actor, id: string, requestId: string, tenantId?: string) {
+    const run = async (tx: Tx, current: Actor) => {
+      const item = await tx.accessRequest.findUnique({
+        where: { id },
+        include: { invitation: true },
+      });
+      if (!item || (tenantId && item.tenantId !== tenantId))
+        throw new AppError(404, "NOT_FOUND");
+      if (
+        item.status !== "approved" ||
+        !item.tenantId ||
+        !item.invitation ||
+        item.invitation.consumedAt ||
+        item.invitation.revokedAt
+      )
+        throw new AppError(409, "CONFLICT");
+      await this.db.context(tx, current, item.tenantId, "requests", requestId);
+      await this.db.setContext(tx, current, item.tenantId);
+      if (item.invitation.expiresAt <= new Date()) {
+        await this.revokeInvitation(tx, item.invitation.id);
+        const invitation = await this.auth.issue(
+          tx,
+          current,
+          item.tenantId,
+          item.email,
+          item.invitation.role,
+        );
+        await tx.accessRequest.update({
+          where: { id },
+          data: { invitationId: invitation.id },
+        });
+      } else {
+        await this.mail.resend(tx, "invitation:" + item.invitation.id);
+      }
+      await this.audit.record(tx, current, "invitation.resent", requestId, {
+        tenantId: item.tenantId,
+        resourceId: id,
+      });
+      return { queued: true };
+    };
+    return tenantId
+      ? this.db.tenant(
+          actor,
+          tenantId,
+          "requests",
+          requestId,
+          (tx, scope) => run(tx, scope.actor),
+          true,
+        )
+      : this.db.global(actor, run, true);
+  }
   review(
     actor: Actor,
     id: string,
@@ -151,7 +342,10 @@ export class AccessRequestsService {
     return this.db.metadata.$transaction(async (tx) => {
       await this.db.lockAccess(tx);
       const current = await this.db.actor(tx, actor);
-      const item = await tx.accessRequest.findUnique({ where: { id } });
+      const item = await tx.accessRequest.findUnique({
+        where: { id },
+        include: { invitation: true },
+      });
       if (!item || (tenantId && tenantId !== item.tenantId))
         throw new AppError(404, "NOT_FOUND");
       if (current.platformRole !== "GLOBAL") {
@@ -167,18 +361,21 @@ export class AccessRequestsService {
       if (!tenantId && current.platformRole !== "GLOBAL")
         throw new AppError(403, "FORBIDDEN");
       await this.db.setContext(tx, current, item.tenantId);
-      if (item.status !== "pending") {
-        if (item.status !== data.decision) throw new AppError(409, "CONFLICT");
-        if (item.invitationId) {
-          const invitation = await tx.invitation.findUnique({
-            where: { id: item.invitationId },
-          });
-          if (invitation?.role !== data.role)
-            throw new AppError(409, "CONFLICT");
-        }
+      const rejectingInvitation =
+        item.status === "approved" &&
+        data.decision === "rejected" &&
+        !item.invitation?.consumedAt;
+      if (item.status !== "pending" && !rejectingInvitation) {
+        if (
+          item.status !== data.decision ||
+          (data.decision === "approved" && item.invitation?.role !== data.role)
+        )
+          throw new AppError(409, "CONFLICT");
         return { id: item.id, status: item.status };
       }
       let invitationId: string | undefined;
+      if (data.decision === "rejected" && item.invitationId)
+        await this.revokeInvitation(tx, item.invitationId);
       if (data.decision === "approved") {
         if (!item.tenantId) throw new AppError(409, "CONFLICT");
         await this.db.context(
@@ -224,7 +421,7 @@ export class AccessRequestsService {
         await this.events.reviewers(tx, item.tenantId),
         item.tenantId,
         "access.reviewed",
-        "access.reviewed:" + id,
+        "access.reviewed:" + id + ":" + data.decision,
         { name: item.name, status: data.decision },
         id,
       );

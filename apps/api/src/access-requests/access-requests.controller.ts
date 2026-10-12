@@ -5,6 +5,7 @@ import {
   Inject,
   Param,
   Post,
+  Patch,
   Query,
   Req,
   UseGuards,
@@ -15,6 +16,7 @@ import type { Request } from "express";
 import {
   accessRequestSchema,
   classifySchema,
+  requestAssignmentSchema,
   reviewSchema,
   requestListSchema,
   idSchema,
@@ -57,6 +59,27 @@ export class AccessRequestsController {
       r.requestId,
     );
   }
+  @Get("platform/access-requests/options") @UseGuards(SessionGuard) options(
+    @Req() r: Request,
+  ) {
+    return this.service.options(r.actor!);
+  }
+  @Patch("platform/access-requests/:id/assignment")
+  @UseGuards(SessionGuard)
+  assign(@Req() r: Request, @Param("id") id: string, @Body() b: unknown) {
+    return this.service.assign(
+      r.actor!,
+      parse(idSchema, id),
+      parse(requestAssignmentSchema, b),
+      r.requestId,
+    );
+  }
+  @Post("platform/access-requests/:id/resend")
+  @UseGuards(SessionGuard)
+  async resend(@Req() r: Request, @Param("id") id: string) {
+    await this.security.limit(r, "invite.resend", 10);
+    return this.service.resend(r.actor!, parse(idSchema, id), r.requestId);
+  }
   @Post("platform/access-requests/:id/review") @UseGuards(SessionGuard) review(
     @Req() r: Request,
     @Param("id") id: string,
@@ -93,6 +116,21 @@ export class AccessRequestsController {
       r.actor!,
       parse(idSchema, id),
       parse(reviewSchema, b),
+      r.requestId,
+      parse(idSchema, t),
+    );
+  }
+  @Post("tenants/:tenantId/access-requests/:id/resend")
+  @UseGuards(SessionGuard)
+  async tenantResend(
+    @Req() r: Request,
+    @Param("tenantId") t: string,
+    @Param("id") id: string,
+  ) {
+    await this.security.limit(r, "invite.resend", 10);
+    return this.service.resend(
+      r.actor!,
+      parse(idSchema, id),
       r.requestId,
       parse(idSchema, t),
     );
