@@ -1,18 +1,16 @@
 import {
+  RecordCollection,
+  ViewToggle,
+  useRecordView,
+} from "../components/ui/collection";
+import {
   TableSearch,
   RecordIdentity,
   ActiveStatus,
   RecordActions,
 } from "../components/ui/table";
 import { PAGE_SIZE } from "../lib/pagination";
-import {
-  Children,
-  cloneElement,
-  isValidElement,
-  useState,
-  type ReactNode,
-  type ReactElement,
-} from "react";
+import { useState, type ReactNode } from "react";
 import { useParams } from "react-router-dom";
 import { LocalizedLink as Link } from "../lib/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -187,6 +185,7 @@ function AdminTable<T>({
 }) {
   const s = useScope(),
     { t } = useTranslation();
+  const display = useRecordView();
   const [page, setPage] = useState(1),
     [search, setSearch] = useState("");
   const q = useQuery({
@@ -216,6 +215,7 @@ function AdminTable<T>({
           }}
         />
         {toolbar}
+        <ViewToggle {...display} />
       </div>
       {q.isPending ? (
         <Loading />
@@ -225,37 +225,24 @@ function AdminTable<T>({
         <Empty />
       ) : (
         <>
-          <div
-            className={["table-scroll", tableClassName]
-              .filter(Boolean)
-              .join(" ")}
+          <RecordCollection
+            view={display.view}
+            label={title}
+            tableClassName={tableClassName}
+            columns={columns.map((label, index) => ({
+              label,
+              role:
+                index === 0
+                  ? "identity"
+                  : index === columns.length - 1
+                    ? "actions"
+                    : label === t("common.status")
+                      ? "status"
+                      : "detail",
+            }))}
           >
-            <table className="responsive-table" role="table">
-              <thead>
-                <tr>
-                  {columns.map((c) => (
-                    <th key={c}>{c}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {q.data.items.map((item) => {
-                  const row = render(item) as ReactElement<{
-                    children: ReactNode;
-                  }>;
-                  return cloneElement(
-                    row,
-                    {},
-                    Children.map(row.props.children, (cell, index) =>
-                      isValidElement<{ "data-label"?: string }>(cell)
-                        ? cloneElement(cell, { "data-label": columns[index] })
-                        : cell,
-                    ),
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+            {q.data.items.map(render)}
+          </RecordCollection>
           <Pagination
             page={page}
             total={q.data.total}
@@ -268,6 +255,7 @@ function AdminTable<T>({
   );
 }
 export function Members() {
+  const display = useRecordView();
   const s = useScope(),
     { t } = useTranslation();
   const [invite, setInvite] = useState(false),
@@ -342,7 +330,10 @@ export function Members() {
         )}
       />
       <section className="page supplemental">
-        <h2>{t("admin.invitations")}</h2>
+        <div className="collection-heading">
+          <h2>{t("admin.invitations")}</h2>
+          <ViewToggle {...display} />
+        </div>
         {invitations.isPending ? (
           <Loading />
         ) : invitations.isError ? (
@@ -351,66 +342,62 @@ export function Members() {
           <Empty />
         ) : (
           <>
-            <div className="table-scroll">
-              <table className="responsive-table" role="table">
-                <thead>
-                  <tr>
-                    <th>{t("common.email")}</th>
-                    <th>{t("common.role")}</th>
-                    <th>{t("common.status")}</th>
-                    <th>{t("common.actions")}</th>
+            <RecordCollection
+              view={display.view}
+              label={t("admin.invitations")}
+              columns={[
+                { label: t("common.email"), role: "identity" },
+                { label: t("common.role") },
+                { label: t("common.status"), role: "status" },
+                { label: t("common.actions"), role: "actions" },
+              ]}
+            >
+              {invitations.data
+                .slice(
+                  (visibleInvitationPage - 1) * PAGE_SIZE,
+                  visibleInvitationPage * PAGE_SIZE,
+                )
+                .map((i) => (
+                  <tr key={i.id}>
+                    <td data-label={t("common.email")}>{i.email}</td>
+                    <td data-label={t("common.role")}>
+                      {i.role === "ADMIN" ? "Admin" : "User"}
+                    </td>
+                    <td data-label={t("common.status")}>
+                      {i.consumedAt ? (
+                        t("auth.inviteSuccess")
+                      ) : (
+                        <Badge status={i.deliveryStatus} />
+                      )}
+                    </td>
+                    <td data-label={t("common.actions")}>
+                      <Button
+                        variant="ghost"
+                        size="small"
+                        disabled={
+                          !!i.consumedAt || new Date(i.expiresAt) < new Date()
+                        }
+                        onClick={() =>
+                          void s
+                            .call(
+                              `${s.prefix}/invitations/${i.id}/resend`,
+                              "POST",
+                              {},
+                            )
+                            .then(() => {
+                              toast.success(t("admin.inviteSent"));
+                              return refresh();
+                            })
+                            .catch((e) => toast.error(errorText(e)))
+                        }
+                      >
+                        <Mail />
+                        {t("admin.resend")}
+                      </Button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {invitations.data
-                    .slice(
-                      (visibleInvitationPage - 1) * PAGE_SIZE,
-                      visibleInvitationPage * PAGE_SIZE,
-                    )
-                    .map((i) => (
-                      <tr key={i.id}>
-                        <td data-label={t("common.email")}>{i.email}</td>
-                        <td data-label={t("common.role")}>
-                          {i.role === "ADMIN" ? "Admin" : "User"}
-                        </td>
-                        <td data-label={t("common.status")}>
-                          {i.consumedAt ? (
-                            t("auth.inviteSuccess")
-                          ) : (
-                            <Badge status={i.deliveryStatus} />
-                          )}
-                        </td>
-                        <td data-label={t("common.actions")}>
-                          <Button
-                            variant="ghost"
-                            size="small"
-                            disabled={
-                              !!i.consumedAt ||
-                              new Date(i.expiresAt) < new Date()
-                            }
-                            onClick={() =>
-                              void s
-                                .call(
-                                  `${s.prefix}/invitations/${i.id}/resend`,
-                                  "POST",
-                                  {},
-                                )
-                                .then(() => {
-                                  toast.success(t("admin.inviteSent"));
-                                  return refresh();
-                                })
-                                .catch((e) => toast.error(errorText(e)))
-                            }
-                          >
-                            <Mail />
-                            {t("admin.resend")}
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+            </RecordCollection>
             <Pagination
               page={visibleInvitationPage}
               total={invitations.data.length}
@@ -484,6 +471,7 @@ export function Members() {
   );
 }
 export function Agencies() {
+  const display = useRecordView();
   const s = useScope(),
     { t } = useTranslation();
   const [edit, setEdit] = useState<Agency | "new">(),
@@ -543,6 +531,7 @@ export function Agencies() {
             </select>
             <ChevronDown aria-hidden="true" />
           </label>
+          <ViewToggle {...display} />
         </div>
         {q.isPending ? (
           <Loading />
@@ -550,50 +539,45 @@ export function Agencies() {
           <ErrorState error={q.error} retry={() => void q.refetch()} />
         ) : (
           <>
-            <div className="table-scroll agencies-table record-table">
-              <table aria-label={t("shell.agencies")}>
-                <thead>
-                  <tr>
-                    <th>{t("admin.agency")}</th>
-                    <th>{t("common.status")}</th>
-                    <th>{t("common.actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {q.data.items.map((agency) => (
-                    <tr key={agency.id}>
-                      <td>
-                        <RecordIdentity
-                          name={agency.name}
-                          detail={agency.slug}
-                        />
-                      </td>
-                      <td>
-                        <ActiveStatus active={agency.active} />
-                      </td>
-                      <td>
-                        <RecordActions name={agency.name}>
-                          <Dropdown.Item onSelect={() => setEdit(agency)}>
-                            <Pencil aria-hidden="true" />
-                            {t("common.change")}
-                          </Dropdown.Item>
-                          <Dropdown.Item onSelect={() => setManage(agency)}>
-                            <ShieldCheck aria-hidden="true" />
-                            {t("admin.superAdmins")}
-                          </Dropdown.Item>
-                        </RecordActions>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {!q.data.items.length && (
-                <Empty
-                  title={t("admin.noAgencies")}
-                  description={t("admin.noAgenciesSub")}
-                />
-              )}
-            </div>
+            <RecordCollection
+              view={display.view}
+              label={t("shell.agencies")}
+              tableClassName="agencies-table"
+              columns={[
+                { label: t("admin.agency"), role: "identity" },
+                { label: t("common.status"), role: "status" },
+                { label: t("common.actions"), role: "actions" },
+              ]}
+            >
+              {q.data.items.map((agency) => (
+                <tr key={agency.id}>
+                  <td>
+                    <RecordIdentity name={agency.name} detail={agency.slug} />
+                  </td>
+                  <td>
+                    <ActiveStatus active={agency.active} />
+                  </td>
+                  <td>
+                    <RecordActions name={agency.name}>
+                      <Dropdown.Item onSelect={() => setEdit(agency)}>
+                        <Pencil aria-hidden="true" />
+                        {t("common.change")}
+                      </Dropdown.Item>
+                      <Dropdown.Item onSelect={() => setManage(agency)}>
+                        <ShieldCheck aria-hidden="true" />
+                        {t("admin.superAdmins")}
+                      </Dropdown.Item>
+                    </RecordActions>
+                  </td>
+                </tr>
+              ))}
+            </RecordCollection>
+            {!q.data.items.length && (
+              <Empty
+                title={t("admin.noAgencies")}
+                description={t("admin.noAgenciesSub")}
+              />
+            )}
             <div className="agencies-footer">
               <p role="status">
                 {t("admin.agencyCount", { count: q.data.items.length })}

@@ -113,6 +113,7 @@ test("admin uploads real file, reloads metadata, downloads and deletes", async (
     mimeType: "text/plain",
     buffer: Buffer.from("Arquivo de integração pelo navegador\n"),
   });
+  await page.getByRole("button", { name: "Tabela", exact: true }).click();
   const row = page.getByRole("row").filter({ hasText: name });
   await expect(row.getByText("Disponível", { exact: true })).toBeVisible({
     timeout: 20000,

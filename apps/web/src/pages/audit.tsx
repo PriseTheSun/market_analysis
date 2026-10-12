@@ -1,3 +1,9 @@
+import {
+  RecordCollection,
+  ViewToggle,
+  useRecordView,
+} from "../components/ui/collection";
+import { RecordIdentity } from "../components/ui/table";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { auditReadSchema } from "@market/contracts";
@@ -7,6 +13,7 @@ import { Button } from "../components/ui/button";
 import { Empty, ErrorState } from "../components/ui/common";
 import { Markdown } from "./chat";
 export function Audit() {
+  const display = useRecordView();
   const s = useScope(),
     { t } = useTranslation();
   const [items, setItems] = useState<
@@ -38,29 +45,55 @@ export function Audit() {
           setDetail(undefined);
         }}
       />
-      {items.map((c) => (
-        <div className="context-row" key={c.id}>
-          <span>
-            <strong>{c.title || t("chat.untitled")}</strong>
-            <small>{c.owner.email}</small>
-          </span>
-          <Button
-            variant="outline"
-            onClick={() =>
-              void s
-                .call<typeof detail>(
-                  `/platform${s.prefix}/conversations/${c.id}/audit`,
-                  "POST",
-                  { reason },
-                )
-                .then(setDetail)
-                .catch(setError)
-            }
-          >
-            {t("common.open")}
-          </Button>
-        </div>
-      ))}
+      {reason && (
+        <>
+          <div className="table-toolbar audit-collection-toolbar">
+            <ViewToggle {...display} />
+          </div>
+          {items.length === 0 ? (
+            <Empty />
+          ) : (
+            <RecordCollection
+              view={display.view}
+              label={t("admin.audit")}
+              columns={[
+                { label: t("common.name"), role: "identity" },
+                { label: t("common.email") },
+                { label: t("common.actions"), role: "actions" },
+              ]}
+            >
+              {items.map((c) => (
+                <tr key={c.id}>
+                  <td>
+                    <RecordIdentity
+                      name={c.title || t("chat.untitled")}
+                      detail=""
+                    />
+                  </td>
+                  <td>{c.owner.email}</td>
+                  <td>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        void s
+                          .call<typeof detail>(
+                            `/platform${s.prefix}/conversations/${c.id}/audit`,
+                            "POST",
+                            { reason },
+                          )
+                          .then(setDetail)
+                          .catch(setError)
+                      }
+                    >
+                      {t("common.open")}
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </RecordCollection>
+          )}
+        </>
+      )}
       {error != null && <ErrorState error={error} />}
       <div className="audit-messages">
         {detail?.messages.map((m) => (

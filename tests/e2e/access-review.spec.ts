@@ -34,6 +34,7 @@ test("public request → global classification → approval → local email → 
   await page
     .getByRole("link", { name: "Solicitações de acesso", exact: true })
     .click();
+  await page.getByRole("button", { name: "Tabela", exact: true }).click();
   await page.getByRole("textbox", { name: "Buscar", exact: true }).fill(email);
   await page
     .getByRole("row")

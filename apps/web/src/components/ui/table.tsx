@@ -68,7 +68,7 @@ export function RecordIdentity({
       </span>
       <span>
         <strong>{name}</strong>
-        <small>{detail}</small>
+        <small title={detail}>{detail}</small>
       </span>
     </div>
   );

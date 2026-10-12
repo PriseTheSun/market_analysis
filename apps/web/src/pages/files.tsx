@@ -1,3 +1,8 @@
+import {
+  RecordCollection,
+  ViewToggle,
+  useRecordView,
+} from "../components/ui/collection";
 import { TableSearch } from "../components/ui/table";
 import { PAGE_SIZE } from "../lib/pagination";
 import { useEffect, useRef, useState } from "react";
@@ -26,6 +31,7 @@ interface StoredFile {
   createdAt: string;
 }
 export function FilesPage() {
+  const display = useRecordView();
   const s = useScope();
   const { t, i18n } = useTranslation();
   const [page, setPage] = useState(1),
@@ -205,6 +211,7 @@ export function FilesPage() {
             setPage(1);
           }}
         />
+        <ViewToggle {...display} />
       </div>
       {q.isPending ? (
         <Loading />
@@ -214,75 +221,72 @@ export function FilesPage() {
         <Empty />
       ) : (
         <>
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>{t("common.name")}</th>
-                  <th>{t("files.size")}</th>
-                  <th>{t("common.status")}</th>
-                  <th>{t("common.actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {q.data.items.map((f) => (
-                  <tr key={f.id}>
-                    <td>
-                      <span className="file-name">
-                        <FileText />
-                        {f.name}
-                      </span>
-                    </td>
-                    <td>
-                      {new Intl.NumberFormat(i18n.language, {
-                        maximumFractionDigits: 1,
-                      }).format(f.size / 1024)}{" "}
-                      KiB
-                    </td>
-                    <td>
-                      <Badge status={f.status} />
-                    </td>
-                    <td>
-                      <div className="row-actions">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          disabled={f.status !== "available"}
-                          aria-label={t("files.download") + " " + f.name}
-                          onClick={() =>
-                            void s
-                              .call<{ url: string }>(
-                                `${s.prefix}/files/${f.id}/download`,
-                                "POST",
-                                {},
-                              )
-                              .then(({ url }) => {
-                                const a = document.createElement("a");
-                                a.href = url;
-                                a.download = f.name;
-                                a.rel = "noreferrer";
-                                a.click();
-                              })
-                              .catch((e) => toast.error(errorText(e)))
-                          }
-                        >
-                          <Download />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={t("common.delete") + " " + f.name}
-                          onClick={() => setDeleting(f)}
-                        >
-                          <Trash2 />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <RecordCollection
+            view={display.view}
+            label={t("shell.files")}
+            columns={[
+              { label: t("common.name"), role: "identity" },
+              { label: t("files.size") },
+              { label: t("common.status"), role: "status" },
+              { label: t("common.actions"), role: "actions" },
+            ]}
+          >
+            {q.data.items.map((f) => (
+              <tr key={f.id}>
+                <td>
+                  <span className="file-name">
+                    <FileText />
+                    {f.name}
+                  </span>
+                </td>
+                <td>
+                  {new Intl.NumberFormat(i18n.language, {
+                    maximumFractionDigits: 1,
+                  }).format(f.size / 1024)}{" "}
+                  KiB
+                </td>
+                <td>
+                  <Badge status={f.status} />
+                </td>
+                <td>
+                  <div className="row-actions">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={f.status !== "available"}
+                      aria-label={t("files.download") + " " + f.name}
+                      onClick={() =>
+                        void s
+                          .call<{ url: string }>(
+                            `${s.prefix}/files/${f.id}/download`,
+                            "POST",
+                            {},
+                          )
+                          .then(({ url }) => {
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = f.name;
+                            a.rel = "noreferrer";
+                            a.click();
+                          })
+                          .catch((e) => toast.error(errorText(e)))
+                      }
+                    >
+                      <Download />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t("common.delete") + " " + f.name}
+                      onClick={() => setDeleting(f)}
+                    >
+                      <Trash2 />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </RecordCollection>
           <Pagination
             page={page}
             total={q.data.total}

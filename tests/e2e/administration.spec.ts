@@ -18,6 +18,7 @@ test("Global manages agencies and clients in one route with archive and restorat
     agency = "Agência E2E " + suffix,
     client = "Cliente E2E " + suffix;
   await signIn(page, "global");
+  await page.getByRole("button", { name: "Tabela", exact: true }).click();
   await page.getByRole("tab", { name: "Agências", exact: true }).click();
   await page
     .getByRole("button", { name: "Criar agência", exact: true })
@@ -116,6 +117,7 @@ test("Super Admin enters agency and tenant management without platform mutation 
   await expect(
     page.getByRole("button", { name: "Criar cliente", exact: true }),
   ).toHaveCount(0);
+  await page.getByRole("button", { name: "Tabela", exact: true }).click();
   await page
     .getByRole("row")
     .filter({ hasText: "Aurora" })

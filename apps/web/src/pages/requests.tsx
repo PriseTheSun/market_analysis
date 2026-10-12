@@ -1,4 +1,9 @@
 import {
+  RecordCollection,
+  ViewToggle,
+  useRecordView,
+} from "../components/ui/collection";
+import {
   TableSearch,
   RecordIdentity,
   RecordActions,
@@ -42,6 +47,7 @@ interface AccessRequest {
 export function Requests() {
   const s = useScope(),
     { t } = useTranslation();
+  const display = useRecordView();
   const global = s.user.platformRole === "GLOBAL" && !s.tenant;
   const path = global
     ? "/platform/access-requests"
@@ -109,6 +115,7 @@ export function Requests() {
             </option>
           ))}
         </select>
+        <ViewToggle {...display} />
       </div>
       {q.isPending ? (
         <Loading />
@@ -118,55 +125,50 @@ export function Requests() {
         <Empty />
       ) : (
         <>
-          <div className="table-scroll record-table">
-            <table className="responsive-table" role="table">
-              <thead>
-                <tr>
-                  <th>{t("auth.name")}</th>
-                  <th>{t("auth.agencyOrClient")}</th>
-                  <th>{t("admin.client")}</th>
-                  <th>{t("common.status")}</th>
-                  <th>{t("common.actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {q.data.items.map((r) => (
-                  <tr key={r.id}>
-                    <td data-label={t("auth.name")}>
-                      <RecordIdentity name={r.name} detail={r.email} />
-                    </td>
-                    <td data-label={t("auth.agencyOrClient")}>
-                      {r.organization}
-                    </td>
-                    <td data-label={t("admin.client")}>
-                      {r.tenant?.name ?? t("requests.unscoped")}
-                    </td>
-                    <td data-label={t("common.status")}>
-                      <Badge status={r.status} />
-                      {r.deliveryStatus && (
-                        <small>
-                          <Badge status={r.deliveryStatus} />
-                        </small>
-                      )}
-                    </td>
-                    <td data-label={t("common.actions")}>
-                      <RecordActions name={r.name}>
-                        <Dropdown.Item
-                          onSelect={() => {
-                            setSelected(r);
-                            setAction(undefined);
-                          }}
-                        >
-                          <ArrowRight aria-hidden="true" />
-                          {t("common.open")}
-                        </Dropdown.Item>
-                      </RecordActions>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <RecordCollection
+            view={display.view}
+            label={t("shell.requests")}
+            columns={[
+              { label: t("auth.name"), role: "identity" },
+              { label: t("auth.agencyOrClient") },
+              { label: t("admin.client") },
+              { label: t("common.status"), role: "status" },
+              { label: t("common.actions"), role: "actions" },
+            ]}
+          >
+            {q.data.items.map((r) => (
+              <tr key={r.id}>
+                <td data-label={t("auth.name")}>
+                  <RecordIdentity name={r.name} detail={r.email} />
+                </td>
+                <td data-label={t("auth.agencyOrClient")}>{r.organization}</td>
+                <td data-label={t("admin.client")}>
+                  {r.tenant?.name ?? t("requests.unscoped")}
+                </td>
+                <td data-label={t("common.status")}>
+                  <Badge status={r.status} />
+                  {r.deliveryStatus && (
+                    <small>
+                      <Badge status={r.deliveryStatus} />
+                    </small>
+                  )}
+                </td>
+                <td data-label={t("common.actions")}>
+                  <RecordActions name={r.name}>
+                    <Dropdown.Item
+                      onSelect={() => {
+                        setSelected(r);
+                        setAction(undefined);
+                      }}
+                    >
+                      <ArrowRight aria-hidden="true" />
+                      {t("common.open")}
+                    </Dropdown.Item>
+                  </RecordActions>
+                </td>
+              </tr>
+            ))}
+          </RecordCollection>
           <Pagination
             page={page}
             total={q.data.total}

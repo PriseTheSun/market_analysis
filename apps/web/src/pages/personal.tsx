@@ -1,3 +1,8 @@
+import {
+  RecordCollection,
+  ViewToggle,
+  useRecordView,
+} from "../components/ui/collection";
 import { PAGE_SIZE } from "../lib/pagination";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,6 +20,7 @@ import {
 } from "../components/ui/common";
 export function Notifications() {
   const { t, i18n } = useTranslation();
+  const display = useRecordView();
   const [page, setPage] = useState(1);
   const [reading, setReading] = useState(false);
   const s = useScope(),
@@ -51,6 +57,9 @@ export function Notifications() {
           {t("notifications.readAll")}
         </Button>
       </PageHeading>
+      <div className="table-toolbar">
+        <ViewToggle {...display} />
+      </div>
       {q.isPending ? (
         <Loading />
       ) : q.isError ? (
@@ -61,38 +70,48 @@ export function Notifications() {
           description={t("notifications.emptySub")}
         />
       ) : (
-        <ul className="notification-list">
+        <RecordCollection
+          view={display.view}
+          label={t("shell.notifications")}
+          columns={[
+            { label: t("shell.notifications"), role: "identity" },
+            { label: t("collection.date") },
+            { label: t("common.actions"), role: "actions" },
+          ]}
+        >
           {q.data.items.map((n) => (
-            <li key={n.id} className={n.readAt ? "read" : "unread"}>
-              <div>
-                <p>
-                  {t("notification." + n.type, {
-                    ...n.parameters,
-                    defaultValue: t("shell.notifications"),
-                  })}
-                </p>
-                <time>
+            <tr key={n.id}>
+              <td>
+                {t("notification." + n.type, {
+                  ...n.parameters,
+                  defaultValue: t("shell.notifications"),
+                })}
+              </td>
+              <td>
+                <time dateTime={n.createdAt}>
                   {new Intl.DateTimeFormat(i18n.language, {
                     dateStyle: "medium",
                     timeStyle: "short",
                     timeZone: session!.preference.timeZone,
                   }).format(new Date(n.createdAt))}
                 </time>
-              </div>
-              {!n.readAt && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={t("notifications.read")}
-                  disabled={reading}
-                  onClick={() => void read(n.id)}
-                >
-                  <Check />
-                </Button>
-              )}
-            </li>
+              </td>
+              <td>
+                {!n.readAt && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={t("notifications.read")}
+                    disabled={reading}
+                    onClick={() => void read(n.id)}
+                  >
+                    <Check />
+                  </Button>
+                )}
+              </td>
+            </tr>
           ))}
-        </ul>
+        </RecordCollection>
       )}
       {q.data && q.data.total > 0 && (
         <Pagination

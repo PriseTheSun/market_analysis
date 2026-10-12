@@ -1,3 +1,9 @@
+import {
+  RecordCollection,
+  ViewToggle,
+  useRecordView,
+  RecordChips,
+} from "../components/ui/collection";
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -66,11 +72,11 @@ const recordName = (item: RecordItem) =>
   "user" in item ? item.user.name : item.name;
 const archived = (item: RecordItem) =>
   "archivedAt" in item && !!item.archivedAt;
-const summary = (names: string[]) => [...new Set(names)].join(", ") || "—";
 
 export function Management() {
   const { t, i18n } = useTranslation(),
     scope = useScope();
+  const display = useRecordView();
   const tabs =
     scope.user.platformRole === "GLOBAL"
       ? managementTabs
@@ -162,11 +168,19 @@ export function Management() {
               <RecordIdentity name={user.name} detail={user.email} />
             </button>
           </td>
-          <td data-label={t("admin.agency")}>
-            {summary(user.tenants.map((m) => m.tenant.agency.name))}
+          <td data-label={t("management.agencies")}>
+            <RecordChips
+              names={user.tenants.map((m) => m.tenant.agency.name)}
+              tone="agency"
+              empty={t("collection.noAgencies")}
+            />
           </td>
-          <td data-label={t("admin.client")}>
-            {summary(user.tenants.map((m) => m.tenant.name))}
+          <td data-label={t("management.clients")}>
+            <RecordChips
+              names={user.tenants.map((m) => m.tenant.name)}
+              tone="client"
+              empty={t("collection.noClients")}
+            />
           </td>
           {statusCell(user)}
         </>
@@ -241,7 +255,12 @@ export function Management() {
   }
   const columns =
     tab === "users"
-      ? ["management.user", "admin.agency", "admin.client", "common.status"]
+      ? [
+          "management.user",
+          "management.agencies",
+          "management.clients",
+          "common.status",
+        ]
       : tab === "permissions"
         ? ["management.user", "management.permission", "management.scope"]
         : tab === "agencies"
@@ -352,6 +371,7 @@ export function Management() {
               </select>
             </label>
           )}
+          <ViewToggle {...display} />
           <Button onClick={() => setEdit({ kind: tab })}>
             <Plus aria-hidden="true" />
             {t(`management.create.${tab}`)}
@@ -367,62 +387,63 @@ export function Management() {
             description={t("management.emptyHint")}
           />
         ) : (
-          <div className="table-scroll">
-            <table
-              className="record-table management-table"
-              data-kind={tab}
-              aria-label={t(`management.${tab}`)}
-            >
-              <thead>
-                <tr>
-                  {columns.map((c) => (
-                    <th key={c}>{t(c)}</th>
-                  ))}
-                  <th>{t("common.actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {list.data.items.map((item) => (
-                  <tr
-                    key={item.id}
-                    data-selected={edit?.item?.id === item.id || undefined}
-                  >
-                    {cells(item)}
-                    <td data-label={t("common.actions")}>
-                      <RecordActions name={recordName(item)}>
-                        {archived(item) ? (
-                          <Dropdown.Item
-                            onSelect={() => setEdit({ kind: tab, item })}
-                          >
-                            <RotateCcw aria-hidden="true" />
-                            {t("management.restore")}
-                          </Dropdown.Item>
-                        ) : (
-                          <>
-                            <Dropdown.Item
-                              onSelect={() => setEdit({ kind: tab, item })}
-                            >
-                              <Pencil aria-hidden="true" />
-                              {t("management.edit")}
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                              className="danger"
-                              onSelect={() =>
-                                setEdit({ kind: tab, item, remove: true })
-                              }
-                            >
-                              <Trash2 aria-hidden="true" />
-                              {t("management.delete")}
-                            </Dropdown.Item>
-                          </>
-                        )}
-                      </RecordActions>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <RecordCollection
+            view={display.view}
+            label={t(`management.${tab}`)}
+            kind={tab}
+            tableClassName="management-table"
+            columns={[
+              ...columns.map((c, index) => ({
+                label: t(c),
+                role:
+                  index === 0
+                    ? ("identity" as const)
+                    : c === "common.status"
+                      ? ("status" as const)
+                      : ("detail" as const),
+              })),
+              { label: t("common.actions"), role: "actions" },
+            ]}
+          >
+            {list.data.items.map((item) => (
+              <tr
+                key={item.id}
+                data-selected={edit?.item?.id === item.id || undefined}
+              >
+                {cells(item)}
+                <td data-label={t("common.actions")}>
+                  <RecordActions name={recordName(item)}>
+                    {archived(item) ? (
+                      <Dropdown.Item
+                        onSelect={() => setEdit({ kind: tab, item })}
+                      >
+                        <RotateCcw aria-hidden="true" />
+                        {t("management.restore")}
+                      </Dropdown.Item>
+                    ) : (
+                      <>
+                        <Dropdown.Item
+                          onSelect={() => setEdit({ kind: tab, item })}
+                        >
+                          <Pencil aria-hidden="true" />
+                          {t("management.edit")}
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          className="danger"
+                          onSelect={() =>
+                            setEdit({ kind: tab, item, remove: true })
+                          }
+                        >
+                          <Trash2 aria-hidden="true" />
+                          {t("management.delete")}
+                        </Dropdown.Item>
+                      </>
+                    )}
+                  </RecordActions>
+                </td>
+              </tr>
+            ))}
+          </RecordCollection>
         )}
         <div className="management-list-footer">
           <div>

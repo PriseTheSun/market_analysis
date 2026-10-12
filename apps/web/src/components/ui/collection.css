@@ -1,0 +1,213 @@
+.view-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-self: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.view-toggle button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 13px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.view-toggle button:first-child {
+  border-radius: 5px 0 0 5px;
+}
+.view-toggle button:last-child {
+  border-radius: 0 5px 5px 0;
+  border-left: 1px solid var(--border);
+}
+.view-toggle button[aria-pressed="true"] {
+  background: var(--soft);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--primary) 28%, transparent);
+}
+.view-toggle button:hover {
+  background: var(--soft);
+}
+.view-toggle svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.collection-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.collection-heading h2 {
+  margin: 0;
+}
+.record-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, max(310px, calc((100% - 36px) / 3))), 1fr)
+  );
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.record-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+}
+.record-card[data-selected] {
+  border-color: var(--primary);
+  background: var(--soft);
+}
+.record-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.record-card-identity {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+.record-card-identity .management-identity {
+  width: 100%;
+}
+.record-card .record-identity {
+  min-width: 0;
+  gap: 18px;
+}
+.record-card .record-avatar {
+  width: 52px;
+  height: 52px;
+  font-size: 16px;
+}
+.record-card .record-identity > span:last-child {
+  min-width: 0;
+}
+.record-card .record-identity strong {
+  font-size: 16px;
+  line-height: 1.45;
+}
+.record-card .record-identity small {
+  color: var(--muted);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.record-card-actions {
+  flex-shrink: 0;
+}
+.record-card-actions .record-actions {
+  width: 28px;
+  height: 28px;
+}
+.record-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.record-card-details dt {
+  margin-bottom: 3px;
+}
+.record-card-details dd {
+  margin: 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.record-card-details dd select {
+  max-width: 100%;
+}
+.record-card-status {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.record-grid[data-kind="users"] .record-card {
+  min-height: 272px;
+}
+.record-card .record-status {
+  font-size: 14px;
+  padding: 5px 13px;
+}
+.record-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.record-chips > span {
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+  overflow-wrap: anywhere;
+}
+.record-chips.client > span {
+  background: #eee8ff;
+  color: #6141c4;
+}
+:root[data-theme="dark"] .record-chips.client > span {
+  background: #382859;
+  color: #d6c6ff;
+}
+.record-no-links {
+  color: var(--muted);
+}
+.collection-scroll .collection-table {
+  min-width: 640px;
+}
+.collection-scroll:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.table-toolbar:has(.view-toggle) {
+  flex-wrap: wrap;
+}
+.audit-collection-toolbar {
+  margin-top: 24px;
+}
+@media (max-width: 700px) {
+  .record-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .record-card {
+    padding: 18px;
+  }
+  .record-card .record-identity {
+    gap: 12px;
+  }
+  .view-toggle button {
+    min-height: 44px;
+    padding-inline: 10px;
+  }
+}

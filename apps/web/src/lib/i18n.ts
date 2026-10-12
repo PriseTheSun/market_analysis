@@ -4,6 +4,20 @@ import type { Locale } from "@market/contracts";
 import { aiCopy } from "./ai-copy";
 const copy: Record<string, [string, string, string]> = {
   ...aiCopy,
+  "collection.view": [
+    "Visualização da listagem",
+    "List view",
+    "Vista de la lista",
+  ],
+  "collection.cards": ["Cards", "Cards", "Tarjetas"],
+  "collection.table": ["Tabela", "Table", "Tabla"],
+  "collection.noAgencies": [
+    "Nenhuma agência",
+    "No agencies",
+    "Ninguna agencia",
+  ],
+  "collection.noClients": ["Nenhum cliente", "No clients", "Ningún cliente"],
+  "collection.date": ["Data", "Date", "Fecha"],
   "auth.intro": [
     "Apresentação Market Analysis",
     "Market Analysis introduction",
