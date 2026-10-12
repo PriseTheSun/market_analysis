@@ -51,6 +51,9 @@ const Preferences = lazy(() =>
 const Notifications = lazy(() =>
   import("./pages/personal").then((m) => ({ default: m.Notifications })),
 );
+const AiSettingsPage = lazy(() =>
+  import("./pages/ai-settings").then((m) => ({ default: m.AiSettingsPage })),
+);
 const Audit = lazy(() =>
   import("./pages/audit").then((m) => ({ default: m.Audit })),
 );
@@ -129,6 +132,7 @@ function App() {
                   )}
                   {route("/platform/users", <ManagementRedirect tab="users" />)}
                   {route("/platform/requests", <Requests />)}
+                  {route("/platform/ai-settings", <AiSettingsPage />)}
                   {route("/platform/notifications", <Notifications />)}
                   {route("/platform/preferences", <Preferences />)}
                   {route("/agencies/:agencyId", <Clients />)}

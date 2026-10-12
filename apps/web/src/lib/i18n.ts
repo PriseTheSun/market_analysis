@@ -1,7 +1,9 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import type { Locale } from "@market/contracts";
+import { aiCopy } from "./ai-copy";
 const copy: Record<string, [string, string, string]> = {
+  ...aiCopy,
   "auth.intro": [
     "Apresentação Market Analysis",
     "Market Analysis introduction",
@@ -635,6 +637,26 @@ const copy: Record<string, [string, string, string]> = {
     "El asistente no está disponible. Tus conversaciones siguen guardadas.",
   ],
   "chat.you": ["Você", "You", "Tú"],
+  "chat.reconnectGlobal": [
+    "Você pode continuar escrevendo. Para enviar, restabeleça a conexão em Configurações de IA.",
+    "You can keep writing. To send, restore the connection in AI settings.",
+    "Puedes seguir escribiendo. Para enviar, restablece la conexión en Configuración de IA.",
+  ],
+  "chat.reconnectAdmin": [
+    "Você pode continuar escrevendo. Para enviar, peça ao administrador que restabeleça a conexão de IA.",
+    "You can keep writing. To send, ask your administrator to restore the AI connection.",
+    "Puedes seguir escribiendo. Para enviar, pide al administrador que restablezca la conexión de IA.",
+  ],
+  "chat.openSettings": [
+    "Abrir configurações em outra aba",
+    "Open settings in another tab",
+    "Abrir configuración en otra pestaña",
+  ],
+  "chat.checkConnection": [
+    "Verificar conexão",
+    "Check connection",
+    "Verificar conexión",
+  ],
   "chat.assistant": ["Assistente", "Assistant", "Asistente"],
   "chat.partial": [
     "Resposta interrompida. O conteúdo parcial foi salvo.",

@@ -166,3 +166,16 @@ describe("localized browser routes", () => {
     }
   });
 });
+
+describe("AI settings routes", () => {
+  it("localizes deep links and keeps their canonical identity", () => {
+    for (const [locale, path] of [
+      ["pt-BR", "/plataforma/configuracoes-ia"],
+      ["en", "/platform/ai-settings"],
+      ["es", "/plataforma/configuracion-ia"],
+    ]) {
+      expect(localizedAppPath("/platform/ai-settings", locale!)).toBe(path);
+      expect(canonicalAppPath(path!)).toBe("/platform/ai-settings");
+    }
+  });
+});

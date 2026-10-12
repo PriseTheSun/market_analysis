@@ -1,0 +1,578 @@
+.ai-page {
+  padding: 20px 30px 16px;
+  max-width: 1680px;
+  margin: 0 auto;
+  width: 100%;
+}
+.ai-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.ai-breadcrumb a {
+  color: var(--muted);
+}
+.ai-heading {
+  margin-bottom: 20px;
+}
+.ai-title-row,
+.ai-feature-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.ai-heading p {
+  color: var(--muted);
+  margin-top: 3px;
+  font-size: 15px;
+}
+.ai-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 30px;
+  padding: 3px 12px;
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--muted);
+  background: var(--bg);
+}
+.ai-local {
+  color: #975000;
+  background: #fff0d3;
+}
+.ai-local::before,
+.ai-connected::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 8px;
+}
+.ai-connected {
+  color: #147846;
+  background: #e6f8ee;
+}
+.ai-text-pill {
+  color: var(--primary);
+  background: var(--soft);
+}
+.ai-image-pill {
+  color: #7038ad;
+  background: #efe2ff;
+}
+.ai-info {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.ai-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 20px;
+  min-width: 0;
+}
+.ai-page h2,
+.ai-page h3 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.ai-section-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.ai-source-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 1008px;
+}
+.ai-source {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+  min-width: 0;
+}
+.ai-source.selected {
+  background: var(--soft);
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+}
+.ai-source input {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  margin: 3px 0 0;
+  accent-color: var(--primary);
+}
+.ai-source strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+.ai-source.selected strong {
+  color: var(--primary);
+}
+.ai-source small {
+  display: block;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.ai-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.62fr) minmax(320px, 1fr);
+  gap: 18px;
+  margin-top: 16px;
+  align-items: start;
+}
+.ai-feature-intro {
+  margin: 8px 0 14px;
+}
+.ai-feature-intro p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 3px;
+}
+.ai-feature-card {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 12px;
+  padding: 18px 20px 15px;
+}
+.ai-feature-icon {
+  background: var(--bg);
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ai-feature-icon svg {
+  width: 25px;
+  height: 25px;
+}
+.ai-feature-content {
+  flex: 1;
+  min-width: 0;
+}
+.ai-feature-content > p,
+.ai-panel-heading p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 3px 0 10px;
+}
+.ai-page .field {
+  gap: 4px;
+  font-size: 12px;
+  margin: 0;
+}
+.ai-page .field > span {
+  font-weight: 600;
+}
+.ai-page select,
+.ai-page input[type="password"] {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.ai-page select:disabled {
+  color: var(--muted);
+  opacity: 0.8;
+}
+.ai-page input::placeholder {
+  color: var(--muted);
+}
+.ai-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ai-model-test > .ai-actions {
+  margin-top: 12px;
+}
+.ai-page .button.small {
+  min-height: 34px;
+  font-size: 12px;
+  padding: 6px 12px;
+}
+.ai-page .button.small svg {
+  width: 17px;
+  height: 17px;
+}
+.ai-panel-heading {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.ai-panel-heading > svg {
+  width: 25px;
+  height: 25px;
+  margin-top: 2px;
+}
+.ai-panel-heading .ai-feature-title {
+  gap: 10px;
+}
+.ai-connection-panel {
+  padding: 17px 21px;
+}
+.ai-credential {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 8px;
+  margin-top: 7px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 12px;
+}
+.ai-credential > span {
+  flex: 1;
+}
+.ai-expiry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+.ai-revoke {
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  font-size: 11px;
+  padding: 4px 0;
+  text-decoration: underline;
+}
+.ai-token-form {
+  margin-top: 10px;
+}
+.ai-fine-print {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+.ai-token-form .ai-actions {
+  margin-top: 10px;
+}
+.ai-usage {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
+}
+.ai-usage .ai-section-heading {
+  margin-bottom: 2px;
+}
+.ai-usage-total {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 16px;
+  margin: 0 0 4px;
+}
+.ai-usage-total strong {
+  font-size: 29px;
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.ai-usage progress {
+  display: block;
+  appearance: none;
+  border: 0;
+  height: 11px;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--border);
+}
+.ai-usage progress::-webkit-progress-bar {
+  background: var(--border);
+  border-radius: 20px;
+}
+.ai-usage progress::-webkit-progress-value {
+  background: var(--primary);
+  border-radius: 20px;
+}
+.ai-usage progress::-moz-progress-bar {
+  background: var(--primary);
+}
+.ai-usage-caption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin: 5px 0 10px;
+}
+.ai-usage-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 7px;
+}
+.ai-usage-metrics > div {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 14px;
+}
+.ai-usage-metrics small,
+.ai-usage-metrics strong {
+  display: block;
+}
+.ai-usage-metrics small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.ai-usage-metrics strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.ai-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.ai-toggle-row input {
+  appearance: none;
+  width: 38px;
+  height: 23px;
+  border-radius: 20px;
+  background: var(--border);
+  margin: 0;
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+}
+.ai-toggle-row input::after {
+  content: "";
+  display: block;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--surface);
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.15s;
+}
+.ai-toggle-row input:checked {
+  background: var(--primary);
+}
+.ai-toggle-row input:checked::after {
+  transform: translateX(15px);
+}
+.ai-notice {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  margin: 10px 0;
+  color: var(--muted);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ai-test-result {
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+.ai-test-result p {
+  white-space: pre-wrap;
+  margin-top: 6px;
+}
+.ai-test-result img {
+  display: block;
+  max-height: 260px;
+  margin: 10px auto;
+  border-radius: 6px;
+}
+.ai-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.ai-footer .button {
+  font-size: 12px;
+}
+@media (min-width: 1200px) {
+  .ai-page {
+    min-height: calc(100dvh - 64px);
+    display: flex;
+    flex-direction: column;
+  }
+  .ai-footer {
+    margin-top: auto;
+  }
+  .ai-columns {
+    margin-bottom: 15px;
+  }
+}
+@media (max-width: 1100px) {
+  .ai-columns {
+    grid-template-columns: minmax(0, 1.3fr) minmax(290px, 1fr);
+  }
+  .ai-feature-card {
+    gap: 12px;
+    padding: 16px;
+  }
+  .ai-page {
+    padding: 20px;
+  }
+}
+@media (max-width: 850px) {
+  .ai-columns {
+    grid-template-columns: 1fr;
+  }
+  .ai-source-options {
+    grid-template-columns: 1fr;
+  }
+  .ai-feature-intro {
+    margin-top: 0;
+  }
+  .ai-connection-panel {
+    grid-row: 1;
+  }
+}
+@media (max-width: 480px) {
+  .ai-page {
+    padding: 16px;
+  }
+  .ai-heading h1 {
+    font-size: 25px;
+  }
+  .ai-card {
+    padding: 15px;
+  }
+  .ai-feature-card {
+    gap: 10px;
+  }
+  .ai-feature-icon {
+    width: 32px;
+    height: 32px;
+  }
+  .ai-feature-icon svg {
+    width: 21px;
+    height: 21px;
+  }
+  .ai-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .ai-footer .ai-actions {
+    width: 100%;
+  }
+  .ai-footer .button {
+    flex: 1;
+  }
+  .ai-page h2,
+  .ai-page h3 {
+    font-size: 14px;
+  }
+  .ai-title-row {
+    gap: 8px;
+  }
+  .ai-feature-title {
+    gap: 7px;
+  }
+}
+/* Override generic form minimums so compact reference controls keep their size. */
+.ai-source input {
+  min-height: 19px;
+  padding: 0;
+}
+.ai-page select,
+.ai-page input[type="password"] {
+  min-height: 38px;
+}
+.ai-toggle-row input {
+  min-height: 23px;
+  padding: 0;
+}
+.ai-heading {
+  margin-bottom: 18px;
+}
+.ai-page {
+  padding-top: 16px;
+}
+.ai-origin {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+.ai-source {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.ai-expiry {
+  display: inline-flex;
+}
+.ai-revoke {
+  margin-left: 12px;
+}
+.ai-connection-panel .ai-usage {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+.ai-usage > .ai-fine-print {
+  font-size: 10px;
+  margin-top: 5px;
+  line-height: 1.4;
+}
+.ai-usage-metrics {
+  margin-bottom: 0;
+}
+.ai-page .ai-origin .ai-section-heading {
+  margin-bottom: 8px;
+}

@@ -14,6 +14,7 @@
  },
  "dependencies": {
   "@aws-sdk/client-s3": "3.1149.0",
+  "@aws-sdk/client-secrets-manager": "3.1149.0",
   "@aws-sdk/s3-presigned-post": "3.1149.0",
   "@aws-sdk/s3-request-presigner": "3.1149.0",
   "@market/contracts": "workspace:*",
@@ -26,6 +27,7 @@
   "argon2": "0.45.1",
   "cookie-parser": "1.4.7",
   "dotenv": "18.0.7",
+  "express": "5.2.1",
   "fflate": "0.8.3",
   "file-type": "22.1.1",
   "helmet": "8.3.0",

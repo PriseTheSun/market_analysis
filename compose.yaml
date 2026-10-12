@@ -43,6 +43,13 @@ services:
     build: {context: ., dockerfile: infra/api.Dockerfile}
     environment:
       NODE_ENV: ${NODE_ENV:-development}
+      APP_ENV: ${APP_ENV:-unknown}
+      BIND_HOST: '0.0.0.0'
+      AI_GEMINI_ENABLED: ${AI_GEMINI_ENABLED:-false}
+      AI_LOCAL_TOKEN_ENABLED: ${AI_LOCAL_TOKEN_ENABLED:-false}
+      AI_GEMINI_SECRET_ID: ${AI_GEMINI_SECRET_ID:-}
+      AI_GEMINI_SECRET_REGION: ${AI_GEMINI_SECRET_REGION:-}
+      AI_GEMINI_SECRET_KEY_FIELD: ${AI_GEMINI_SECRET_KEY_FIELD:-apiKey}
       APP_ORIGIN: ${APP_ORIGIN}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       SESSION_SECRET: ${SESSION_SECRET}
@@ -62,7 +69,6 @@ services:
       RATE_LIMITS_JSON: ${RATE_LIMITS_JSON:-{}}
       CHAT_PROVIDER: ${CHAT_PROVIDER}
       CHAT_TIMEOUT_MS: ${CHAT_TIMEOUT_MS}
-      CHAT_OUTPUT_MAX_CHARS: ${CHAT_OUTPUT_MAX_CHARS}
       DATABASE_URL: postgresql://market_runtime:${DB_RUNTIME_PASSWORD}@db:5432/market_analysis
       S3_ENDPOINT: http://storage:8333
       SMTP_HOST: mailpit

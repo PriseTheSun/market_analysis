@@ -16,6 +16,8 @@ import { AuditService } from "../audit/audit.service.js";
 import type { Actor } from "../authorization/policy.js";
 import { createProvider, type ChatProvider } from "./chat.provider.js";
 import type { OperationStatus } from "../generated/prisma/enums.js";
+import { AiService } from "../ai/ai.service.js";
+import type { AiContent } from "../ai/ai.provider.js";
 @Injectable()
 export class ChatService implements OnModuleInit, OnModuleDestroy {
   readonly provider: ChatProvider;
@@ -27,6 +29,7 @@ export class ChatService implements OnModuleInit, OnModuleDestroy {
     @Inject(DatabaseService) private db: DatabaseService,
     @Inject(AuthService) private auth: AuthService,
     @Inject(AuditService) private audit: AuditService,
+    @Inject(AiService) private ai: AiService,
   ) {
     this.provider = createProvider(config.CHAT_PROVIDER, config.NODE_ENV);
   }
@@ -57,15 +60,28 @@ export class ChatService implements OnModuleInit, OnModuleDestroy {
     if (!c) throw new AppError(404, "NOT_FOUND");
     return c;
   }
-  list(actor: Actor, t: string, requestId: string) {
-    return this.db.tenant(actor, t, "chat", requestId, async (tx) => ({
-      items: await tx.conversation.findMany({
-        where: { tenantId: t, ownerId: actor.id },
-        orderBy: { updatedAt: "desc" },
-        take: 100,
+  async list(actor: Actor, t: string, requestId: string, sessionId: string) {
+    const result = await this.db.tenant(
+      actor,
+      t,
+      "chat",
+      requestId,
+      async (tx) => ({
+        items: await tx.conversation.findMany({
+          where: { tenantId: t, ownerId: actor.id },
+          orderBy: { updatedAt: "desc" },
+          take: 100,
+        }),
+        provider: this.provider.mode,
       }),
-      provider: this.provider.mode,
-    }));
+    );
+    const mode = await this.ai.mode({
+      actor,
+      tenantId: t,
+      sessionId,
+      requestId,
+    });
+    return { ...result, provider: mode ?? this.provider.mode };
   }
   create(
     actor: Actor,
@@ -163,8 +179,34 @@ export class ChatService implements OnModuleInit, OnModuleDestroy {
     data: z.infer<typeof messageSchema>,
   ) {
     const actor = req.actor!;
-    if (this.provider.mode === "unavailable")
-      throw new AppError(503, "SERVICE_UNAVAILABLE");
+    const context = {
+      actor,
+      tenantId: t,
+      conversationId: id,
+      sessionId: req.sessionId!,
+      requestId: req.requestId,
+    };
+    const previous = await this.db.tenant(
+      actor,
+      t,
+      "chat",
+      req.requestId,
+      async (tx) => {
+        await this.own(tx, actor, t, id);
+        return tx.chatOperation.findFirst({
+          where: {
+            id: data.operationId,
+            tenantId: t,
+            userId: actor.id,
+            conversationId: id,
+          },
+        });
+      },
+    );
+    const aiMode = previous ? null : await this.ai.mode(context);
+    const providerMode = aiMode ?? this.provider.mode;
+    if (!previous && providerMode === "unavailable")
+      throw new AppError(503, "AI_NOT_CONFIGURED");
     const start = await this.db.tenant(
       actor,
       t,
@@ -283,7 +325,7 @@ export class ChatService implements OnModuleInit, OnModuleDestroy {
       operationId: start.op.id,
       userMessageId: start.op.userMessageId,
       messageId: start.message?.id,
-      provider: this.provider.mode,
+      provider: providerMode,
       existing: start.existing,
     });
     if (start.existing) {
@@ -329,14 +371,39 @@ export class ChatService implements OnModuleInit, OnModuleDestroy {
         });
     }, 2000);
     try {
-      for await (const chunk of this.provider.stream(
-        { content: data.content, locale: data.locale },
-        control.signal,
-      )) {
+      let history: AiContent[] = [];
+      if (providerMode === "gemini")
+        history = await this.db.tenant(
+          actor,
+          t,
+          "chat",
+          req.requestId,
+          async (tx) => {
+            const rows = await tx.message.findMany({
+              where: {
+                conversationId: id,
+                tenantId: t,
+                status: "completed",
+                role: { in: ["user", "assistant"] },
+              },
+              orderBy: { position: "asc" },
+            });
+            return rows.map((m) => ({
+              role: m.role === "user" ? ("user" as const) : ("model" as const),
+              parts: [{ text: m.content }],
+            }));
+          },
+        );
+      const stream =
+        providerMode === "gemini"
+          ? this.ai.chat(context, start.op.id, history, control.signal)
+          : this.provider.stream(
+              { content: data.content, locale: data.locale },
+              control.signal,
+            );
+      for await (const chunk of stream) {
         if (control.signal.aborted) throw new Error("cancelled");
         content += chunk;
-        if (content.length > this.config.CHAT_OUTPUT_MAX_CHARS)
-          throw new Error("output limit");
         await this.internal(t, async (tx) => {
           await tx.message.update({
             where: { id: start.message!.id },
@@ -345,8 +412,13 @@ export class ChatService implements OnModuleInit, OnModuleDestroy {
         });
         emit("delta", { text: chunk });
       }
-    } catch {
+    } catch (error) {
       status = control.signal.aborted ? "cancelled" : "failed";
+      if (error instanceof AppError)
+        emit("error", {
+          code: (error.getResponse() as { code: string }).code,
+          requestId: req.requestId,
+        });
     } finally {
       clearInterval(heartbeat);
       clearTimeout(timeout);

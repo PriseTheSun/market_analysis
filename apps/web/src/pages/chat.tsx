@@ -15,6 +15,7 @@ import type { Locale } from "@market/contracts";
 import { toast } from "sonner";
 import { api, request, errorText, queryClient } from "../lib/api";
 import { useScope } from "../components/shell";
+import { LocalizedLink as Link } from "../lib/navigation";
 import { Button } from "../components/ui/button";
 import { Loading, ErrorState } from "../components/ui/common";
 interface Conversation {
@@ -83,7 +84,10 @@ export function Chat() {
         undefined,
         signal,
       ),
+    refetchInterval: (q) =>
+      q.state.data?.provider === "unavailable" ? 15000 : false,
   });
+  const unavailable = list.data?.provider === "unavailable";
   const detail = useQuery({
     queryKey: [...s.key, "conversation", current],
     queryFn: ({ signal }) =>
@@ -133,9 +137,15 @@ export function Chat() {
     },
   ) {
     if (busy || !content.trim()) return;
+    // Completed operations can still be replayed after the credential expires.
+    if (unavailable && !replay) return;
     setBusy(true);
     setStream("");
     setFollowing(true);
+    // Clear only the submitted draft, before creating the conversation. Anything
+    // typed while that request is pending belongs to the next message.
+    setDraft("");
+    drafts.current.delete(current ?? "new");
     const control = new AbortController();
     abort.current = control;
     let id = replay?.conversationId ?? current;
@@ -148,14 +158,12 @@ export function Chat() {
           { title: content.slice(0, 80) },
         );
         id = c.id;
-        if (!alive.current) return;
+        if (!alive.current || control.signal.aborted) return;
         setCurrent(id);
       }
       operationId ??= crypto.randomUUID();
       operation.current = operationId;
       setTransportRetry(undefined);
-      setDraft("");
-      drafts.current.delete(id);
       const response = await request(
         `${s.prefix}/conversations/${id}/messages`,
         {
@@ -191,6 +199,10 @@ export function Chat() {
             });
           } else if (event === "delta") setStream((v) => v + data.text);
           else if (event === "snapshot") setStream(data.content);
+          else if (event === "error")
+            toast.error(
+              t("errors." + data.code, { defaultValue: t("common.error") }),
+            );
         }
       }
     } catch (e) {
@@ -203,7 +215,7 @@ export function Chat() {
             content,
             retryOf,
           });
-        else setDraft(content);
+        else setDraft((value) => value || content);
       }
     } finally {
       if (alive.current && abort.current === control) {
@@ -263,7 +275,9 @@ export function Chat() {
             {t(
               list.data?.provider === "unavailable"
                 ? "chat.unavailable"
-                : "chat.demoSub",
+                : list.data?.provider === "gemini"
+                  ? "ai.chatConnected"
+                  : "chat.demoSub",
             )}
           </span>
         </div>
@@ -314,7 +328,7 @@ export function Chat() {
                         <Button
                           variant="ghost"
                           size="small"
-                          disabled={busy}
+                          disabled={busy || unavailable}
                           onClick={() => {
                             const op = detail.data?.operations.find(
                               (o) => o.id === m.operationId,
@@ -378,6 +392,36 @@ export function Chat() {
             </Button>
           </div>
         )}
+        {unavailable && (
+          <div className="chat-connection" role="status" id="chat-connection">
+            <span>
+              {t(
+                s.user.platformRole === "GLOBAL"
+                  ? "chat.reconnectGlobal"
+                  : "chat.reconnectAdmin",
+              )}
+            </span>
+            {s.user.platformRole === "GLOBAL" && (
+              <Link
+                to="/platform/ai-settings"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t("chat.openSettings")}
+              </Link>
+            )}
+            <Button
+              type="button"
+              size="small"
+              variant="outline"
+              disabled={list.isFetching}
+              onClick={() => void list.refetch()}
+            >
+              <RefreshCw />
+              {t("chat.checkConnection")}
+            </Button>
+          </div>
+        )}
         <form
           className="composer"
           onSubmit={(e) => {
@@ -392,10 +436,9 @@ export function Chat() {
             id="chat-input"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            maxLength={8000}
             placeholder={t("chat.placeholder")}
             rows={2}
-            disabled={list.data?.provider === "unavailable"}
+            aria-describedby={unavailable ? "chat-connection" : undefined}
             onKeyDown={(e) => {
               if (
                 e.key === "Enter" &&
@@ -414,16 +457,19 @@ export function Chat() {
                 type="button"
                 size="icon"
                 aria-label={t("chat.cancel")}
-                onClick={cancel}
+                onClick={(e) => {
+                  // Aborting can replace this button with Submit before the
+                  // click's default action. Never submit the next draft here.
+                  e.preventDefault();
+                  cancel();
+                }}
               >
                 <Square />
               </Button>
             ) : (
               <Button
                 size="icon"
-                disabled={
-                  !draft.trim() || list.data?.provider === "unavailable"
-                }
+                disabled={!draft.trim() || unavailable}
                 aria-label={t("chat.send")}
               >
                 <Send />

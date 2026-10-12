@@ -139,7 +139,10 @@ test("manual theme, language persistence and independent tenant tabs", async ({
   await page
     .getByRole("menuitem", { name: "Preferências", exact: true })
     .click();
-  await page.getByRole("button", { name: "Escuro", exact: true }).click();
+  await page.getByRole("radio", { name: "Escuro", exact: true }).check();
+  await page
+    .getByRole("button", { name: "Salvar alterações", exact: true })
+    .click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page
     .getByRole("combobox", { name: "Idioma" })
@@ -158,7 +161,10 @@ test("manual theme, language persistence and independent tenant tabs", async ({
     .getByRole("combobox", { name: "Idioma" })
     .first()
     .selectOption("pt-BR");
-  await page.getByRole("button", { name: "Claro", exact: true }).click();
+  await page.getByRole("radio", { name: /^Claro/ }).check();
+  await page
+    .getByRole("button", { name: "Salvar alterações", exact: true })
+    .click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 test("public access form keeps values on error and confirms receipt", async ({

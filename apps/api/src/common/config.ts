@@ -18,6 +18,15 @@ const envSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
   PORT: z.coerce.number().default(3000),
+  APP_ENV: z
+    .enum(["local", "test", "staging", "production", "unknown"])
+    .default("unknown"),
+  BIND_HOST: z.string().optional(),
+  AI_GEMINI_ENABLED: z.enum(["true", "false"]).default("false"),
+  AI_LOCAL_TOKEN_ENABLED: z.enum(["true", "false"]).default("false"),
+  AI_GEMINI_SECRET_ID: z.string().max(2048).default(""),
+  AI_GEMINI_SECRET_REGION: z.string().max(80).default(""),
+  AI_GEMINI_SECRET_KEY_FIELD: z.string().min(1).max(80).default("apiKey"),
   DATABASE_URL: z.string().min(1),
   APP_ORIGIN: z.url(),
   ALLOWED_ORIGINS: z.string().min(1),
@@ -46,23 +55,21 @@ const envSchema = z.object({
   SMTP_USER: z.string().default(""),
   SMTP_PASSWORD: z.string().default(""),
   MAIL_FROM: z.string().min(1),
-  CHAT_PROVIDER: z.enum(["demo", "unavailable"]).default("unavailable"),
+  CHAT_PROVIDER: z
+    .enum(["demo", "unavailable", "gemini"])
+    .default("unavailable"),
   CHAT_TIMEOUT_MS: z.coerce
     .number()
     .int()
     .positive()
     .max(300000)
     .default(120000),
-  CHAT_OUTPUT_MAX_CHARS: z.coerce
-    .number()
-    .int()
-    .positive()
-    .max(100000)
-    .default(32000),
 });
 export type Config = z.infer<typeof envSchema>;
-export function loadConfig(): Config {
-  const result = envSchema.safeParse(process.env);
+export function loadConfig(
+  environment: NodeJS.ProcessEnv = process.env,
+): Config {
+  const result = envSchema.safeParse(environment);
   if (!result.success)
     throw new Error(
       "Invalid environment keys: " +
@@ -71,3 +78,11 @@ export function loadConfig(): Config {
   return result.data;
 }
 export const CONFIG = Symbol("CONFIG");
+export function localAiAllowed(config: Config) {
+  return (
+    config.APP_ENV === "local" &&
+    config.NODE_ENV !== "production" &&
+    config.AI_GEMINI_ENABLED === "true" &&
+    config.AI_LOCAL_TOKEN_ENABLED === "true"
+  );
+}

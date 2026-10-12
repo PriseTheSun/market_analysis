@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Context, Page, PublicUser } from "@market/contracts";
 import { canonicalAppPath } from "@market/contracts";
 import {
+  SlidersHorizontal,
   Bell,
   LayoutGrid,
   MessageSquare,
@@ -673,6 +674,11 @@ function ScopedShell({
               to: "/platform/requests",
               label: "shell.requests",
               icon: ClipboardList,
+            },
+            {
+              to: "/platform/ai-settings",
+              label: "ai.title",
+              icon: SlidersHorizontal,
             },
             {
               to: "/platform/notifications",

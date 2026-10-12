@@ -1,48 +1,36 @@
-# Workspace selector — visual QA
+# Configurações de IA — revisão visual
+
+- Source visual truth: `/Users/erik/Downloads/Configurações de IA simplificadas.png`.
+- Implementação: instância principal em `http://127.0.0.1:5173/plataforma/configuracoes-ia` (API real sem credencial). A revisão inicial usou a prévia em `http://localhost:5174/plataforma/configuracoes-ia` e testes controlados em `http://localhost:5175/plataforma/configuracoes-ia`.
+- Evidências: `docs/evidence/ai/desktop-connected-chromium.png`, `desktop-connected-webkit.png`, `1440-chromium.png`, `390-chromium.png`, `390-webkit.png`, `desktop-empty.png`.
+- Fonte: 1616 × 973 px. Viewport desktop de comparação: 1616 × 973 CSS px, escala 1. Captura full-page inclui a extensão vertical dos metadados operacionais (janela, imagens e cota); largura normalizada 1:1, sem esticar a fonte. Também verificados viewports 1440 e 390 px.
+- Estado comparado: PT-BR, claro, Global, token temporário conectado, modelos ainda não selecionados. A fixture visual usa 12.480/50.000, 9.600 de entrada e 2.880 de saída para corresponder à referência; esses números existem somente no teste. A página real usa exclusivamente a API e mostra zero/Não configurado sem credencial.
+
+## Histórico e correções
+
+1. Comparação inicial entre referência e captura sem chave identificou [P2] controles excessivamente altos: os mínimos globais de formulário aumentavam radios e selects, alongando cards. Foram aplicados mínimos locais de 19/38/23 px para radio/select/switch, mantendo labels e foco.
+2. A primeira comparação no estado conectado identificou [P2] painel lateral alto: label redundante do provedor, revogação em linha própria e espaçamento acumulado. O label ficou acessível sem ocupar linha; expiração/revogação compartilham linha no desktop; espaçamentos do painel foram compactados.
+3. Capturas posteriores foram abertas junto com a referência na mesma comparação. A composição mantém origem acima, proporção aproximadamente 62/38, cards de funcionalidades à esquerda, conexão/uso à direita e rodapé separado. Metadados adicionais de janela/limites explicam a extensão vertical; no mobile o painel de conexão antecede os modelos e não há overflow horizontal.
+4. O teste de duplo clique identificou [P1 funcional] troca imediata de “Testar” por “Cancelar” na mesma posição. Agora Testar permanece desabilitado enquanto Cancelar aparece separado, evitando cancelar no segundo clique. O teste confirma uma única geração.
+5. A conferência na instância principal identificou diferença de configuração em relação à prévia: o `.env` local existente não continha `APP_ENV`, `AI_GEMINI_ENABLED` e `AI_LOCAL_TOKEN_ENABLED`. As três opções foram configuradas explicitamente para o uso local solicitado, e a API foi reiniciada em loopback. Verificação no Chrome do usuário (1470 × 779 CSS px, DPR 2) confirmou ambiente local, token temporário e limite local; título permanece em 30px. Evidência real de página inteira: `docs/evidence/ai/desktop-local-5173.png`. A captura inteira inclui conteúdo abaixo da dobra; não representa tudo visível simultaneamente nesse viewport. Nenhuma chave foi cadastrada.
+
+## Superfícies verificadas
+
+- **Tipografia:** Montserrat existente, título 30px (25px mobile), subtítulos 14–16px e textos auxiliares 11–13px. Hierarquia e pesos preservados. Selects têm labels explícitos e opções longas permanecem acessíveis no menu nativo.
+- **Espaçamento:** bordas finas, raios 5–7px, padding de cards 15–21px, proporções de colunas e alinhamento do rodapé conferidos. 390px usa coluna única e botões quebram linha sem esconder controles.
+- **Cores:** tokens do shell existente, azul primário/seleção, fundo claro, badge verde de conectado, âmbar local e violeta de imagem. Sem cores novas aplicadas ao restante do produto.
+- **Assets:** logo vetorial oficial existente, ícones Lucide do produto. Não há imagens ou ilustrações novas a gerar. Avatar usa a identidade real da conta, sem reproduzir o avatar ilustrativo da referência.
+- **Conteúdo:** textos localizados em PT-BR/EN/ES; “Google Gemini” substitui o genérico “API de teste”. Fonte, expiração, uso e disponibilidade vêm do backend. Ações adicionais de revogar/cancelar e informação sobre limites são requisitos funcionais do módulo.
+
+As imagens desktop foram comparadas em resolução legível para os campos, títulos, badges e números; não foi necessário um recorte adicional para identificar esses detalhes. Mobile foi aberto separadamente para verificar quebras, labels e alcance dos controles. Não restam diferenças P0/P1/P2 na implementação da tela.
+
+## Interações e acessibilidade
+
+Conectar, apagar a chave do campo, substituir/cancelar, selecionar/salvar sem imagem, testes explícitos, duplo clique, navegação por teclado, origem gerenciada indisponível, troca de idioma e proteção do deep link exercitados no navegador. O teste captura erros de JavaScript e verifica ausência do token sentinela em storage e logs. Conflito de versão preserva o rascunho até recarregar. Radios, selects, switches e botões possuem nomes acessíveis; foco é visível pelo estilo existente.
+
+## Ajustes opcionais (P3)
+
+- A referência possui menos informações operacionais e cabe integralmente em 973px; a implementação admite pequena rolagem vertical para mostrar janela, limite de imagens e distinção entre cota externa e limite local.
+- Header, avatar e largura da sidebar seguem o shell real, incluindo seletor de idioma/tema, em vez de redesenhar elementos fora do módulo.
 
 final result: passed
-
-## Comparison
-
-- Source: `/Users/erik/Downloads/Dropdown de workspaces com badges compactos.png` (1374 × 1145).
-- Render: `output/design-qa/workspace-desktop.jpg` at 1374 × 1145 CSS pixels, device scale factor 1, Portuguese, light theme, Clients tab, Global selected and menu open.
-- Focused comparison: `output/design-qa/workspace-comparison.png`. Source dropdown normalized from 602 px to the application's 400 px dropdown width; implementation shown at native size.
-- Scope: workspace selector only. Existing sidebar, header branding and management table remain the product's existing layout.
-
-## Findings — pass 1
-
-- P2: At equal dropdown width, agency/client names, counts and avatars are smaller than the reference. Client rows are also tighter, reducing the hierarchy and readability. Increase row text from 14 to 16 px, badges from 11 to 12 px, avatars from 32 to 36 px and minimum row height from 48 to 54 px. Recapture and compare.
-
-## Pass 2 — resolved
-
-- Applied the P2 typography and sizing changes, including 24 px agency icons and 14 px search and group labels.
-- Recaptured `workspace-desktop.jpg` and regenerated `workspace-comparison.png` with source and implementation together. The normalized source panel is about 613 px tall; the implementation is 608 px. No remaining actionable P0/P1/P2 findings.
-- Recaptured `workspace-mobile.jpg` after the fix, at 390 × 844. The menu is 366 px wide, contains both agency groups, and stays within the viewport.
-- Also checked 320 × 568: the menu fits within 12 px side margins, with internal list scrolling (360 px visible / 504 px content). Selecting the last client successfully opens Cobalto.
-
-## Required fidelity surfaces
-
-- Fonts and typography: retained the app's Montserrat family, with 16 px title and row text, semibold agency/global names, regular client names and 12 px pills. Text is readable, aligned and wraps when necessary. Minor font-shape differences from the reference are accepted to preserve the existing product typography.
-- Spacing and layout: 400 px desktop panel, 16 px padding, 54 px rows, indented clients, separators, 12 px rounded container and existing elevation token. Width is deliberately adapted from the 602 px source to the scale of the existing header. Relative spacing now follows the normalized reference. The surrounding application is outside this request's scope.
-- Colors and tokens: existing blue primary/selection colors, white surface, muted group labels and neutral counts; pale purple client badges with a corresponding dark-theme style. Palette differences are intentional use of existing theme tokens. Dark mode styles were reviewed in code, not visually tested.
-- Image quality and assets: existing Lucide building, shield, search and check icons match the reference's outline style. Client initials remain selectable UI text within avatar components; no raster artwork or new imagery is required.
-- Copy and content: title, search placeholder, section label, agency names, client names and compact count/type badges follow the reference. Search, empty-results copy and count labels are translated into Portuguese, English and Spanish; Portuguese was verified in-browser.
-
-## Validation already completed
-
-- Search supports accented agency names, case-insensitive client matches and empty results.
-- Keyboard: text editing, ArrowDown navigation, Tab back to search, Escape and focus restoration.
-- Agency management and client navigation work. Vite dependency cache was refreshed and local API restarted after an unrelated local module-loading failure.
-- Mobile viewport 390 × 844: no horizontal overflow; current client has highlight and check.
-- TypeScript, ESLint, production build and 14 workspace unit tests pass.
-- No new browser console errors after restarting local services and retesting agency/client navigation.
-- Existing E2E selectors were updated for direct agency access and expanded client groups. The full E2E suite was not run; browser interaction verification used the Codex in-app browser.
-
-## Final checklist
-
-- [x] Visual comparison after the P2 fix.
-- [x] Search, keyboard navigation, agency and client selection.
-- [x] Mobile fit and scrolling to the last result.
-- [x] Typecheck, lint, unit tests and production build.
-- [x] Default viewport restored; preview kept open at the Clients management tab with dropdown open.
-- Final evidence: `output/design-qa/workspace-final.jpg`.

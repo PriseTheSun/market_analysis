@@ -3,6 +3,7 @@ import { Controller, Get, Inject, Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
+import { json } from "express";
 import helmet from "helmet";
 import { CoreModule } from "./common/core.module.js";
 import { CONFIG, type Config } from "./common/config.js";
@@ -15,6 +16,7 @@ import { AccessRequestsModule } from "./access-requests/access-requests.controll
 import { ChatModule } from "./chat/chat.controller.js";
 import { FilesModule } from "./files/files.controller.js";
 import { PersonalModule } from "./personal/personal.controller.js";
+import { AiModule } from "./ai/ai.module.js";
 @Controller("health")
 class HealthController {
   constructor(@Inject(DatabaseService) private db: DatabaseService) {}
@@ -32,6 +34,7 @@ class HealthController {
     PersonalModule,
     FilesModule,
     ChatModule,
+    AiModule,
   ],
   controllers: [HealthController],
 })
@@ -39,12 +42,19 @@ class AppModule {}
 const app = await NestFactory.create(AppModule, {
   logger: ["error", "warn"],
   rawBody: false,
+  bodyParser: false,
 });
 const config = app.get<Config>(CONFIG);
 app.setGlobalPrefix("api/v1");
 app.getHttpAdapter().getInstance().set("trust proxy", 1);
 app.use(helmet(), cookieParser());
 app.use(app.get(SecurityService).use.bind(app.get(SecurityService)));
+// Chat text is bounded by the selected provider, not the default JSON body cap.
+app.use(
+  "/api/v1/tenants/:tenantId/conversations/:id/messages",
+  json({ limit: Infinity }),
+);
+app.use(json());
 app.enableCors({
   origin: config.ALLOWED_ORIGINS.split(","),
   credentials: true,
@@ -67,7 +77,10 @@ if (config.NODE_ENV !== "production")
     ),
   );
 try {
-  await app.listen(config.PORT, "0.0.0.0");
+  await app.listen(
+    config.PORT,
+    config.BIND_HOST ?? (config.APP_ENV === "local" ? "127.0.0.1" : "0.0.0.0"),
+  );
 } catch {
   console.error(JSON.stringify({ event: "api.start.failed" }));
   await app.close();

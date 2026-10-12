@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { aiErrorCodes } from "./ai.js";
+export * from "./ai.js";
 export * from "./routes.js";
 export * from "./management.js";
 
@@ -116,7 +118,7 @@ export const conversationSchema = z.strictObject({
   title: z.string().trim().min(1).max(160).optional(),
 });
 export const messageSchema = z.strictObject({
-  content: z.string().trim().min(1).max(8000),
+  content: z.string().trim().min(1),
   operationId: idSchema,
   locale: localeSchema,
   retryOf: idSchema.optional(),
@@ -125,6 +127,7 @@ export const auditReadSchema = z.strictObject({
   reason: z.string().trim().min(5).max(1000),
 });
 export const errorCodes = [
+  ...aiErrorCodes,
   "VALIDATION_ERROR",
   "UNAUTHENTICATED",
   "FORBIDDEN",

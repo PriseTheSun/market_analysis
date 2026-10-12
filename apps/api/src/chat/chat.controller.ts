@@ -20,20 +20,22 @@ import {
 import { parse } from "../common/errors.js";
 import { SessionGuard } from "../auth/auth.service.js";
 import { AuthModule } from "../auth/auth.module.js";
-import { SecurityService } from "../common/security.service.js";
 import { ChatService } from "./chat.service.js";
+import { AiModule } from "../ai/ai.module.js";
 @Controller()
 @UseGuards(SessionGuard)
 export class ChatController {
-  constructor(
-    @Inject(ChatService) private chat: ChatService,
-    @Inject(SecurityService) private security: SecurityService,
-  ) {}
+  constructor(@Inject(ChatService) private chat: ChatService) {}
   @Get("tenants/:tenantId/conversations") list(
     @Req() r: Request,
     @Param("tenantId") t: string,
   ) {
-    return this.chat.list(r.actor!, parse(idSchema, t), r.requestId);
+    return this.chat.list(
+      r.actor!,
+      parse(idSchema, t),
+      r.requestId,
+      r.sessionId!,
+    );
   }
   @Post("tenants/:tenantId/conversations") create(
     @Req() r: Request,
@@ -66,7 +68,6 @@ export class ChatController {
     @Param("id") id: string,
     @Body() b: unknown,
   ) {
-    await this.security.limit(r, "chat", 30, 1);
     await this.chat.stream(
       r,
       response,
@@ -115,7 +116,7 @@ export class ChatController {
   }
 }
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, AiModule],
   controllers: [ChatController],
   providers: [ChatService],
 })

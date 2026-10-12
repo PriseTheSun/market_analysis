@@ -33,7 +33,7 @@ export class UnavailableProvider implements ChatProvider {
 }
 
 export function createProvider(
-  mode: "demo" | "unavailable",
+  mode: "demo" | "unavailable" | "gemini",
   environment: string,
 ): ChatProvider {
   return mode === "demo" && environment !== "production"

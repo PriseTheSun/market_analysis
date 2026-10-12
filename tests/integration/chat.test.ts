@@ -57,6 +57,31 @@ describe("SSE through nginx", () => {
       "Não consultei dados de mercado",
     );
   });
+  it("accepts input beyond the old JSON cap and replays more than thirty requests without throttling", async () => {
+    const c = (
+      await b.call(`/tenants/${tenant}/conversations`, "POST", {
+        title: "Uncapped input fixture",
+      })
+    ).data;
+    const data = {
+      operationId: randomUUID(),
+      content: "Large HTTP input " + "x".repeat(270000),
+      locale: "pt-BR",
+    };
+    const path = `/tenants/${tenant}/conversations/${c.id}/messages`;
+    const r = await b.raw(path, "POST", data);
+    expect(r.status).toBe(200);
+    expect(await r.text()).toContain('"status":"completed"');
+    for (let i = 0; i < 35; i++) {
+      const replay = await b.raw(path, "POST", data);
+      expect(replay.status).toBe(200);
+      expect(await replay.text()).toContain('"existing":true');
+    }
+    const detail = (await b.call(`/tenants/${tenant}/conversations/${c.id}`))
+      .data;
+    expect(detail.messages[0].content).toBe(data.content);
+    expect(detail.operations).toHaveLength(1);
+  });
   it("cancels and stores partial response, rejects competing operation", async () => {
     const c = (await b.call(`/tenants/${tenant}/conversations`, "POST", {}))
       .data;
