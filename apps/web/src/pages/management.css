@@ -1,9 +1,3 @@
-.management-page {
-  transition: padding-right 180ms ease;
-}
-.management-page.has-editor {
-  padding-right: 498px;
-}
 .management-tabs {
   display: flex;
   gap: 10px;
@@ -142,44 +136,50 @@
   margin: 0;
 }
 .management-overlay {
-  display: none;
-}
-.management-drawer {
   position: fixed;
-  z-index: 95;
-  top: 64px;
-  right: 0;
-  bottom: 0;
-  width: 474px;
-  max-width: 100%;
+  inset: 0;
+  z-index: 119;
+  background: #111d4b66;
+  animation: management-overlay-enter 180ms ease-out;
+}
+.management-modal {
+  position: fixed;
+  z-index: 120;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(640px, calc(100vw - 48px));
+  max-height: min(880px, calc(100dvh - 48px));
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  border-left: 1px solid var(--border);
-  box-shadow: -8px 0 24px #111d4b06;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 24px 80px #00000026;
   outline: 0;
   animation: management-enter 180ms ease-out;
 }
-.management-drawer-heading {
+.management-modal-heading {
   position: relative;
   flex-shrink: 0;
   padding: 26px 30px 20px;
 }
-.management-drawer-heading h2 {
+.management-modal-heading h2 {
   font-size: 25px;
   letter-spacing: -0.6px;
   font-weight: 700;
   margin: 0 36px 6px 0;
   line-height: 1.25;
 }
-.management-drawer-heading p {
+.management-modal-heading p {
   font-size: 14px;
   color: var(--muted);
   margin: 0;
   line-height: 1.6;
   padding-right: 16px;
 }
-.management-drawer-heading > button {
+.management-modal-heading > button {
   position: absolute;
   top: 20px;
   right: 20px;
@@ -209,22 +209,22 @@
   font-weight: 650;
   margin: 0 0 0;
 }
-.management-drawer .field {
+.management-modal .field {
   gap: 7px;
   margin: 0;
   font-size: 13px;
 }
-.management-drawer .field > span {
+.management-modal .field > span {
   color: var(--muted);
 }
-.management-drawer input,
-.management-drawer select {
+.management-modal input,
+.management-modal select {
   min-height: 43px;
   padding: 9px 12px;
   border-radius: 6px;
   font-size: 14px;
 }
-.management-drawer select:disabled {
+.management-modal select:disabled {
   opacity: 0.7;
 }
 .management-help {
@@ -315,29 +315,22 @@
 @keyframes management-enter {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translate(-50%, -48%) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
-@media (max-width: 1350px) {
-  .management-page.has-editor {
-    padding-right: 23px;
+@keyframes management-overlay-enter {
+  from {
+    opacity: 0;
   }
-  .management-overlay {
-    display: block;
-    position: fixed;
-    inset: 64px 0 0;
-    background: #111d4b26;
-    z-index: 94;
+  to {
+    opacity: 1;
   }
 }
 @media (max-width: 700px) {
-  .management-page.has-editor {
-    padding-right: 16px;
-  }
   .management-tabs {
     margin-top: 24px;
     gap: 0;
@@ -371,20 +364,18 @@
   .app-shell .table-scroll .management-table td {
     height: auto;
   }
-  .management-drawer {
-    top: 0;
-    width: 100%;
-    z-index: 120;
+  .management-modal {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
   }
-  .management-overlay {
-    inset: 0;
-    z-index: 119;
+  .management-modal-heading {
+    padding: 22px 20px 18px;
   }
-  .management-drawer-heading {
-    padding: 23px 22px 18px;
+  .management-modal-heading h2 {
+    font-size: 22px;
   }
   .management-editor-body {
-    padding: 0 22px 20px;
+    padding: 0 20px 20px;
   }
   .management-editor-footer {
     padding: 16px 20px max(16px, env(safe-area-inset-bottom));
@@ -396,10 +387,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .management-drawer {
+  .management-modal,
+  .management-overlay {
     animation: none;
-  }
-  .management-page {
-    transition: none;
   }
 }

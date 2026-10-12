@@ -267,7 +267,7 @@ export function Management() {
           ? ["admin.agency", "common.status"]
           : ["admin.client", "admin.agency", "common.status"];
   return (
-    <main className={`page management-page${edit ? " has-editor" : ""}`}>
+    <main className="page management-page">
       <PageHeading
         title={t("management.title")}
         description={t(
@@ -468,12 +468,12 @@ export function Management() {
         <Dialog.Portal>
           <Dialog.Overlay className="management-overlay" />
           <Dialog.Content
-            className="management-drawer"
+            className="management-modal"
             onPointerDownOutside={(e) => e.preventDefault()}
           >
             {edit && (
               <>
-                <div className="management-drawer-heading">
+                <div className="management-modal-heading">
                   <Dialog.Title>
                     {t(
                       archived(edit.item ?? ({} as RecordItem))
