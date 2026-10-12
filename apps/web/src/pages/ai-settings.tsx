@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
+  ChevronDown,
   Clock,
-  Info,
   KeyRound,
   LockKeyhole,
   MessageCircle,
@@ -196,10 +196,6 @@ function SettingsForm({
         </div>
         <p>{t("ai.description")}</p>
       </header>
-      <div className="ai-info">
-        <Info aria-hidden="true" />
-        <p>{t(local ? "ai.localScope" : "ai.managedScope")}</p>
-      </div>
       {!settings.enabled && (
         <div className="ai-notice" role="status">
           {t("ai.disabled")}
@@ -286,34 +282,37 @@ function SettingsForm({
                   <p>{t(`ai.featureHint.${feature}`)}</p>
                   <label className="field" htmlFor={`ai-model-${feature}`}>
                     <span>{t(`ai.modelLabel.${feature}`)}</span>
-                    <select
-                      id={`ai-model-${feature}`}
-                      aria-label={t(`ai.modelLabel.${feature}`)}
-                      value={models[feature] ?? ""}
-                      disabled={
-                        busy ||
-                        !catalog.data ||
-                        connection.status !== "connected"
-                      }
-                      onChange={(event) =>
-                        setModels({
-                          ...models,
-                          [feature]: event.target.value || null,
-                        })
-                      }
-                    >
-                      <option value="">{t(`ai.select.${feature}`)}</option>
-                      {models[feature] && !chosen && (
-                        <option value={models[feature]!} disabled>
-                          {t("ai.modelUnavailable")}
-                        </option>
-                      )}
-                      {available.map((model) => (
-                        <option key={model.id} value={model.id}>
-                          {model.label}
-                        </option>
-                      ))}
-                    </select>
+                    <span className="ai-select">
+                      <select
+                        id={`ai-model-${feature}`}
+                        aria-label={t(`ai.modelLabel.${feature}`)}
+                        value={models[feature] ?? ""}
+                        disabled={
+                          busy ||
+                          !catalog.data ||
+                          connection.status !== "connected"
+                        }
+                        onChange={(event) =>
+                          setModels({
+                            ...models,
+                            [feature]: event.target.value || null,
+                          })
+                        }
+                      >
+                        <option value="">{t(`ai.select.${feature}`)}</option>
+                        {models[feature] && !chosen && (
+                          <option value={models[feature]!} disabled>
+                            {t("ai.modelUnavailable")}
+                          </option>
+                        )}
+                        {available.map((model) => (
+                          <option key={model.id} value={model.id}>
+                            {model.label}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown aria-hidden="true" />
+                    </span>
                   </label>
                   {connection.status !== "connected" ? (
                     <small className="muted">{t("ai.connectFirst")}</small>
@@ -365,9 +364,12 @@ function SettingsForm({
           </div>
           <label className="field">
             <span className="sr-only">{t("ai.provider")}</span>
-            <select value="gemini" disabled>
-              <option value="gemini">Google Gemini</option>
-            </select>
+            <span className="ai-select">
+              <select value="gemini" disabled>
+                <option value="gemini">Google Gemini</option>
+              </select>
+              <ChevronDown aria-hidden="true" />
+            </span>
           </label>
           {source === "temporary" ? (
             <>

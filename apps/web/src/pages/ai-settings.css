@@ -66,18 +66,6 @@
   color: #7038ad;
   background: #efe2ff;
 }
-.ai-info {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  background: var(--soft);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 16px;
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 18px;
-}
 .ai-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -206,6 +194,28 @@
 }
 .ai-page select:disabled {
   color: var(--muted);
+  opacity: 0.8;
+}
+.ai-page .field > .ai-select {
+  display: block;
+  position: relative;
+  font-weight: 400;
+}
+.ai-select select {
+  appearance: none;
+  padding-right: 40px;
+}
+.ai-select > svg {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.ai-select select:disabled + svg {
   opacity: 0.8;
 }
 .ai-page input::placeholder {
