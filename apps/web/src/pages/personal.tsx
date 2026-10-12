@@ -16,10 +16,13 @@ import {
 export function Notifications() {
   const { t, i18n } = useTranslation();
   const [page, setPage] = useState(1);
+  const [reading, setReading] = useState(false);
   const s = useScope(),
     q = useNotifications(page);
   const { session } = useSession();
   const read = async (id?: string) => {
+    if (reading) return;
+    setReading(true);
     try {
       await s.call(
         s.prefix + "/notifications/" + (id ? id + "/read" : "read-all"),
@@ -29,8 +32,12 @@ export function Notifications() {
       await queryClient.invalidateQueries({
         queryKey: [...s.key, "notifications"],
       });
+      if (!id) setPage(1);
+      else if (q.data?.items.length === 1 && page > 1) setPage(page - 1);
     } catch (e) {
       toast.error(errorText(e));
+    } finally {
+      setReading(false);
     }
   };
   return (
@@ -38,7 +45,7 @@ export function Notifications() {
       <PageHeading title={t("shell.notifications")}>
         <Button
           variant="outline"
-          disabled={!q.data?.unread}
+          disabled={reading || !q.data?.unread}
           onClick={() => void read()}
         >
           {t("notifications.readAll")}
@@ -77,6 +84,7 @@ export function Notifications() {
                   variant="ghost"
                   size="icon"
                   aria-label={t("notifications.read")}
+                  disabled={reading}
                   onClick={() => void read(n.id)}
                 >
                   <Check />
@@ -86,7 +94,7 @@ export function Notifications() {
           ))}
         </ul>
       )}
-      {q.data && (
+      {q.data && q.data.total > 0 && (
         <Pagination
           page={page}
           total={q.data.total}

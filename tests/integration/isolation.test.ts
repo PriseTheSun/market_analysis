@@ -435,9 +435,16 @@ describe("restricted fixtures and access graph", () => {
     const another = new Browser();
     await another.login(email("mixed"));
     expect(
-      (await another.call(`/tenants/${ids.a1}/notifications`)).data.items.find(
+      (await another.call(`/tenants/${ids.a1}/notifications`)).data.items.some(
         (x: { id: string }) => x.id === notification.id,
-      ).readAt,
+      ),
+    ).toBe(false);
+    expect(
+      (
+        await owner.query('SELECT "readAt" FROM "Notification" WHERE id=$1', [
+          notification.id,
+        ])
+      ).rows[0].readAt,
     ).toBeTruthy();
     expect(
       (await runtime.query('SELECT id FROM "Notification"')).rowCount,

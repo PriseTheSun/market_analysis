@@ -169,8 +169,11 @@ export class PersonalController {
   ) {
     const p = parse(paginationSchema, q);
     return this.scope(r, t, async (tx) => {
-      const where = await this.notificationWhere(tx, r, t);
-      const [items, total, unread] = await Promise.all([
+      const where = {
+        ...(await this.notificationWhere(tx, r, t)),
+        readAt: null,
+      };
+      const [items, total] = await Promise.all([
         tx.notification.findMany({
           where,
           orderBy: { createdAt: "desc" },
@@ -178,9 +181,14 @@ export class PersonalController {
           take: p.pageSize,
         }),
         tx.notification.count({ where }),
-        tx.notification.count({ where: { ...where, readAt: null } }),
       ]);
-      return { items, total, unread, page: p.page, pageSize: p.pageSize };
+      return {
+        items,
+        total,
+        unread: total,
+        page: p.page,
+        pageSize: p.pageSize,
+      };
     });
   }
   @Post(["notifications/read-all", "tenants/:tenantId/notifications/read-all"])

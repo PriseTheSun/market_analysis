@@ -12,6 +12,8 @@ Sessão opaca em cookie HttpOnly com token hashed. CSRF, Origin, rate limits e s
 
 Bucket privado: upload temporário por policy curta, verificação/cópia para objeto final imutável e download com URL curta. Chat pessoal usa operação idempotente e streaming com checkpoints; provedor demonstrativo somente dev/test. Notificações persistentes usam destinatário/escopo e polling de 30 s. Tema é claro por padrão e escuro somente manual.
 
+A página de notificações e o menu do sino exibem somente registros não lidos. A API filtra por `readAt: null` antes de paginar, e `total`/`unread` representam as pendências do destinatário no contexto atual. Marcar uma ou todas como lidas preserva os registros no banco, retira-os das listagens e atualiza o contador. Marcar todas inclui as páginas não visíveis, retorna à primeira página e exibe “Tudo em dia” quando não restam pendências.
+
 Detalhes completos e razões das decisões: `openspec/changes/market-analysis-primeira-entrega/design.md`. Os resultados executados estão em `docs/validation.md`.
 
 ## Fluxos e fronteiras implementadas

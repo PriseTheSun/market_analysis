@@ -93,8 +93,19 @@ test("notification read state survives reload and Global audit has a separate re
   await expect(all).toBeVisible();
   if (await all.isEnabled()) await all.click();
   await expect(all).toBeDisabled();
+  await expect(page.locator(".notification-list li")).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Tudo em dia" }),
+  ).toBeVisible();
+  await expect(page.locator(".notification-count")).toHaveCount(0);
   await page.reload();
   await expect(all).toBeDisabled();
+  await expect(page.locator(".notification-list li")).toHaveCount(0);
+  await page.locator(".notification-bell").click();
+  await expect(page.locator(".notification-popover")).toContainText(
+    "Tudo em dia",
+  );
+  await page.keyboard.press("Escape");
   await page.locator(".sidebar .platform-account-trigger").click();
   await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
   await page
