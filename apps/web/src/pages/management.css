@@ -239,35 +239,30 @@
   padding: 6px 0;
   color: var(--primary);
 }
-.management-delete-section {
-  padding-top: 15px;
-  border-top: 1px solid var(--border);
+.management-modal.management-delete-dialog {
+  width: min(480px, calc(100vw - 24px));
+  overflow-y: auto;
 }
-.management-delete {
-  color: var(--danger);
-  padding-left: 0;
+.management-delete-dialog .management-modal-heading h2 {
+  margin-right: 0;
+  font-size: 22px;
 }
-.management-confirm {
-  background: var(--surface);
-  border: 1px solid var(--danger);
-  border-radius: 8px;
-  padding: 15px;
+.management-delete-dialog .management-delete-target {
+  color: var(--text);
+  font-weight: 600;
+  margin: 12px 0 8px;
+  overflow-wrap: anywhere;
 }
-.management-confirm h3 {
-  margin: 0 0 8px;
-  font-size: 16px;
+.management-delete-dialog .management-editor-footer {
+  flex-wrap: wrap;
 }
-.management-confirm p,
+.management-delete-dialog .field-error {
+  margin-top: 16px;
+}
 .management-restore p {
   font-size: 13px;
   line-height: 1.6;
   color: var(--muted);
-}
-.management-confirm > div {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
 }
 .management-editor-footer {
   padding: 16px 24px;

@@ -91,7 +91,10 @@ export function Management() {
   const [edit, setEdit] = useState<{
     kind: ManagementKind;
     item?: RecordItem;
-    remove?: boolean;
+  }>();
+  const [deletion, setDeletion] = useState<{
+    kind: ManagementKind;
+    item: RecordItem;
   }>();
   const options = useQuery({
     queryKey: [...scope.key, "management-options"],
@@ -134,6 +137,7 @@ export function Management() {
     setView("current");
     setPage(1);
     setEdit(undefined);
+    setDeletion(undefined);
   };
   function statusCell(
     item: ManagementUser | ManagementAgency | ManagementClient,
@@ -408,7 +412,11 @@ export function Management() {
             {list.data.items.map((item) => (
               <tr
                 key={item.id}
-                data-selected={edit?.item?.id === item.id || undefined}
+                data-selected={
+                  edit?.item?.id === item.id ||
+                  deletion?.item.id === item.id ||
+                  undefined
+                }
               >
                 {cells(item)}
                 <td data-label={t("common.actions")}>
@@ -430,9 +438,7 @@ export function Management() {
                         </Dropdown.Item>
                         <Dropdown.Item
                           className="danger"
-                          onSelect={() =>
-                            setEdit({ kind: tab, item, remove: true })
-                          }
+                          onSelect={() => setDeletion({ kind: tab, item })}
                         >
                           <Trash2 aria-hidden="true" />
                           {t("management.delete")}
@@ -511,7 +517,6 @@ export function Management() {
                     key={`${edit.kind}:${edit.item?.id ?? "new"}`}
                     kind={edit.kind}
                     item={edit.item}
-                    remove={edit.remove}
                     options={options.data}
                     onClose={() => setEdit(undefined)}
                     onSaved={async (removed) => {
@@ -527,21 +532,111 @@ export function Management() {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
+      {deletion && (
+        <ManagementDeleteDialog
+          kind={deletion.kind}
+          item={deletion.item}
+          onClose={() => setDeletion(undefined)}
+          onDeleted={async () => {
+            setDeletion(undefined);
+            await refresh();
+            if (list.data?.items.length === 1 && page > 1) setPage(page - 1);
+          }}
+        />
+      )}
     </main>
+  );
+}
+
+function ManagementDeleteDialog({
+  kind,
+  item,
+  onClose,
+  onDeleted,
+}: {
+  kind: ManagementKind;
+  item: RecordItem;
+  onClose: () => void;
+  onDeleted: () => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function confirm() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api(
+        `/platform/management/${kind}/${encodeURIComponent(item.id)}`,
+        "DELETE",
+      );
+      toast.success(t("common.saved"));
+      await onDeleted();
+    } catch (e) {
+      setError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Dialog.Root open onOpenChange={(open) => !open && !busy && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="management-overlay" />
+        <Dialog.Content
+          className="management-modal management-delete-dialog"
+          aria-busy={busy}
+          onPointerDownOutside={(event) => event.preventDefault()}
+        >
+          <div className="management-modal-heading">
+            <Dialog.Title>{t(`management.delete.${kind}`)}</Dialog.Title>
+            <p className="management-delete-target">{recordName(item)}</p>
+            <Dialog.Description>
+              {t(
+                kind === "permissions"
+                  ? "management.revokeHint"
+                  : `management.archiveHint.${kind}`,
+              )}
+            </Dialog.Description>
+            {error && (
+              <div className="field-error" role="alert">
+                {error}
+              </div>
+            )}
+          </div>
+          <footer className="management-editor-footer">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={onClose}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={busy}
+              onClick={() => void confirm()}
+            >
+              {t(busy ? "common.saving" : "management.confirmDelete")}
+            </Button>
+          </footer>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
 function ManagementEditor({
   kind,
   item,
-  remove,
   options,
   onClose,
   onSaved,
 }: {
   kind: ManagementKind;
   item?: RecordItem;
-  remove?: boolean;
   options: ManagementOptions;
   onClose: () => void;
   onSaved: (removed?: boolean) => Promise<void>;
@@ -581,7 +676,6 @@ function ManagementEditor({
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(!!remove);
   const isArchived = !!item && archived(item);
   const link = links[linkIndex];
   const clients = [
@@ -645,7 +739,11 @@ function ManagementEditor({
       ),
     );
   }
-  async function mutate(method: string, payload?: unknown, suffix = "") {
+  async function mutate(
+    method: "POST" | "PATCH",
+    payload?: unknown,
+    suffix = "",
+  ) {
     setError("");
     setBusy(true);
     try {
@@ -655,7 +753,7 @@ function ManagementEditor({
         payload,
       );
       toast.success(t("common.saved"));
-      await onSaved(method === "DELETE" || suffix === "/restore");
+      await onSaved(suffix === "/restore");
     } catch (e) {
       setError(errorText(e));
     } finally {
@@ -1020,50 +1118,6 @@ function ManagementEditor({
                 </p>
               </section>
             )}
-            {item && (
-              <section className="management-delete-section">
-                {confirmDelete ? (
-                  <div className="management-confirm" role="alert">
-                    <h3>{t(`management.delete.${kind}`)}</h3>
-                    <p>
-                      {t(
-                        kind === "permissions"
-                          ? "management.revokeHint"
-                          : `management.archiveHint.${kind}`,
-                      )}
-                    </p>
-                    <div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={busy}
-                        onClick={() => setConfirmDelete(false)}
-                      >
-                        {t("common.cancel")}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        disabled={busy}
-                        onClick={() => void mutate("DELETE")}
-                      >
-                        {t("management.confirmDelete")}
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="management-delete"
-                    onClick={() => setConfirmDelete(true)}
-                  >
-                    <Trash2 />
-                    {t(`management.delete.${kind}`)}
-                  </Button>
-                )}
-              </section>
-            )}
           </>
         )}
         {error && (
@@ -1091,7 +1145,7 @@ function ManagementEditor({
             {t("management.restore")}
           </Button>
         ) : (
-          <Button disabled={busy || confirmDelete}>
+          <Button disabled={busy}>
             {t(
               busy
                 ? "common.saving"
