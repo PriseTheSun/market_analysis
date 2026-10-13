@@ -1,3 +1,4 @@
+import { ExternalLink } from "lucide-react";
 import {
   RecordCollection,
   ViewToggle,
@@ -85,6 +86,7 @@ export function Audit() {
                           .catch(setError)
                       }
                     >
+                      <ExternalLink aria-hidden="true" />
                       {t("common.open")}
                     </Button>
                   </td>

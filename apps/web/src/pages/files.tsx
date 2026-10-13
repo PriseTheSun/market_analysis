@@ -8,7 +8,7 @@ import { PAGE_SIZE } from "../lib/pagination";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Upload, FileText, Download, Trash2, X } from "lucide-react";
+import { RefreshCw, Upload, FileText, Download, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import type { Page } from "@market/contracts";
 import { api, errorText, queryClient } from "../lib/api";
@@ -20,6 +20,8 @@ import {
   Empty,
   Badge,
   Modal,
+  ModalBody,
+  ModalFooter,
   Pagination,
 } from "../components/ui/common";
 interface StoredFile {
@@ -174,6 +176,7 @@ export function FilesPage() {
           onClick={() => input.current?.click()}
           disabled={progress !== null}
         >
+          <Upload aria-hidden="true" />
           {t("files.drop")}
         </button>
         <p>{t("files.limits")}</p>
@@ -198,6 +201,7 @@ export function FilesPage() {
       )}
       {failed && last && (
         <Button variant="outline" onClick={() => void upload(last)}>
+          <RefreshCw aria-hidden="true" />
           {t("common.retry")} · {last.name}
         </Button>
       )}
@@ -299,10 +303,14 @@ export function FilesPage() {
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(undefined)}
         title={t("common.delete")}
-        description={t("files.deleteConfirm", { name: deleting?.name })}
+        variant="confirmation"
       >
-        <div className="dialog-actions">
+        <ModalBody>
+          <p>{t("files.deleteConfirm", { name: deleting?.name })}</p>
+        </ModalBody>
+        <ModalFooter>
           <Button variant="outline" onClick={() => setDeleting(undefined)}>
+            <X aria-hidden="true" />
             {t("common.cancel")}
           </Button>
           <Button
@@ -322,9 +330,10 @@ export function FilesPage() {
                 .finally(() => setBusy(false));
             }}
           >
+            <Trash2 aria-hidden="true" />
             {t(busy ? "common.saving" : "common.delete")}
           </Button>
-        </div>
+        </ModalFooter>
       </Modal>
     </main>
   );

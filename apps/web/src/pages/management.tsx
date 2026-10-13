@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import {
+  Save,
   Building2,
   Users,
   ShieldCheck,
@@ -63,6 +64,7 @@ import {
   ErrorState,
   Empty,
   Pagination,
+  ModalBody,
   Badge,
   Password,
 } from "../components/ui/common";
@@ -608,12 +610,16 @@ export function Management() {
                   </Dialog.Close>
                 </div>
                 {options.isPending ? (
-                  <Loading />
+                  <ModalBody>
+                    <Loading />
+                  </ModalBody>
                 ) : options.isError ? (
-                  <ErrorState
-                    error={options.error}
-                    retry={() => void options.refetch()}
-                  />
+                  <ModalBody>
+                    <ErrorState
+                      error={options.error}
+                      retry={() => void options.refetch()}
+                    />
+                  </ModalBody>
                 ) : (
                   <ManagementEditor
                     key={`${tour?.guide.id ?? "edit"}:${edit.kind}:${edit.item?.id ?? "new"}`}
@@ -695,11 +701,14 @@ function ManagementDeleteDialog({
         <Dialog.Overlay className="management-overlay" />
         <Dialog.Content
           className="management-modal management-delete-dialog"
+          data-variant="confirmation"
           aria-busy={busy}
           onPointerDownOutside={(event) => event.preventDefault()}
         >
           <div className="management-modal-heading">
             <Dialog.Title>{t(`management.delete.${kind}`)}</Dialog.Title>
+          </div>
+          <ModalBody>
             <p className="management-delete-target">{recordName(item)}</p>
             <Dialog.Description>
               {t(
@@ -713,7 +722,7 @@ function ManagementDeleteDialog({
                 {error}
               </div>
             )}
-          </div>
+          </ModalBody>
           <footer className="management-editor-footer">
             <Button
               type="button"
@@ -721,6 +730,7 @@ function ManagementDeleteDialog({
               disabled={busy}
               onClick={onClose}
             >
+              <X aria-hidden="true" />
               {t("common.cancel")}
             </Button>
             <Button
@@ -729,6 +739,7 @@ function ManagementDeleteDialog({
               disabled={busy}
               onClick={() => void confirm()}
             >
+              <Trash2 aria-hidden="true" />
               {t(busy ? "common.saving" : "management.confirmDelete")}
             </Button>
           </footer>
@@ -1164,6 +1175,7 @@ function ManagementEditor({
                           aria-pressed={i === linkIndex}
                           onClick={() => setLinkIndex(i)}
                         >
+                          <Link2 aria-hidden="true" />
                           {clients.find((o) => o.id === c.tenantId)?.name ??
                             t("management.newLink")}
                         </button>
@@ -1416,6 +1428,7 @@ function ManagementEditor({
           disabled={busy}
           onClick={onClose}
         >
+          <X aria-hidden="true" />
           {t("common.cancel")}
         </Button>
         {isArchived ? (
@@ -1429,6 +1442,7 @@ function ManagementEditor({
           </Button>
         ) : (
           <Button disabled={busy}>
+            {item ? <Save aria-hidden="true" /> : <Plus aria-hidden="true" />}
             {t(
               busy
                 ? "common.saving"

@@ -1,4 +1,4 @@
-import { useState, type ReactNode, type ComponentProps } from "react";
+import { useId, useState, type ReactNode, type ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import {
   AlertCircle,
@@ -8,6 +8,9 @@ import {
   EyeOff,
   Inbox,
   X,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Button } from "./button";
@@ -35,6 +38,7 @@ export function ErrorState({
       <p>{errorText(error)}</p>
       {retry && (
         <Button variant="outline" onClick={retry}>
+          <RefreshCw aria-hidden="true" />
           {t("common.retry")}
         </Button>
       )}
@@ -116,42 +120,57 @@ export function Modal({
   onOpenChange,
   title,
   description,
+  variant = "default",
   children,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   title: string;
   description?: string;
+  variant?: "default" | "confirmation";
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+  const descriptionId = useId();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="dialog-overlay" />
         <Dialog.Content
           className="dialog-content"
-          aria-describedby={description ? "dialog-description" : undefined}
+          data-variant={variant}
+          aria-describedby={description ? descriptionId : undefined}
         >
-          <Dialog.Title>{title}</Dialog.Title>
-          {description && (
-            <Dialog.Description id="dialog-description">
-              {description}
-            </Dialog.Description>
-          )}
-          <Dialog.Close asChild>
-            <button
-              className="icon-button dialog-close"
-              aria-label={t("common.close")}
-            >
-              <X />
-            </button>
-          </Dialog.Close>
+          <header className="dialog-header">
+            <Dialog.Title>{title}</Dialog.Title>
+            {description && (
+              <Dialog.Description id={descriptionId}>
+                {description}
+              </Dialog.Description>
+            )}
+            <Dialog.Close asChild>
+              <button
+                className="icon-button dialog-close"
+                aria-label={t("common.close")}
+              >
+                <X />
+              </button>
+            </Dialog.Close>
+          </header>
           {children}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
   );
+}
+export function ModalBody({ className = "", ...props }: ComponentProps<"div">) {
+  return <div className={`dialog-body ${className}`} {...props} />;
+}
+export function ModalFooter({
+  className = "",
+  ...props
+}: ComponentProps<"footer">) {
+  return <footer className={`dialog-footer ${className}`} {...props} />;
 }
 export function Pagination({
   page,
@@ -175,6 +194,7 @@ export function Pagination({
         disabled={page === 1}
         onClick={() => onChange(page - 1)}
       >
+        <ChevronLeft aria-hidden="true" />
         {t("common.previous")}
       </Button>
       <Button
@@ -184,6 +204,7 @@ export function Pagination({
         onClick={() => onChange(page + 1)}
       >
         {t("common.next")}
+        <ChevronRight aria-hidden="true" />
       </Button>
     </div>
   );

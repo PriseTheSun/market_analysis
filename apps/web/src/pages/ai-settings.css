@@ -279,12 +279,19 @@
   margin-top: 8px;
 }
 .ai-revoke {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 0;
   background: transparent;
   color: var(--danger);
   font-size: 11px;
   padding: 4px 0;
   text-decoration: underline;
+}
+.ai-revoke svg {
+  width: 16px;
+  height: 16px;
 }
 .ai-token-form {
   margin-top: 10px;

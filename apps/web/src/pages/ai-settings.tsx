@@ -3,6 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
+  RefreshCw,
+  X,
+  Plug,
+  Unplug,
+  Save,
   ChevronDown,
   Clock,
   KeyRound,
@@ -256,6 +261,7 @@ function SettingsForm({
                 variant="outline"
                 onClick={() => void catalog.refetch()}
               >
+                <RefreshCw aria-hidden="true" />
                 {t("common.retry")}
               </Button>
             </div>
@@ -385,6 +391,7 @@ function SettingsForm({
                     disabled={busy}
                     onClick={() => setEditing(true)}
                   >
+                    <KeyRound aria-hidden="true" />
                     {t("ai.replace")}
                   </Button>
                 </div>
@@ -422,10 +429,12 @@ function SettingsForm({
                         onClick={clearToken}
                         disabled={busy}
                       >
+                        <X aria-hidden="true" />
                         {t("common.cancel")}
                       </Button>
                     )}
                     <Button type="submit" size="small" disabled={busy}>
+                      <Plug aria-hidden="true" />
                       {t(busy ? "common.loading" : "ai.connect")}
                     </Button>
                   </div>
@@ -460,6 +469,7 @@ function SettingsForm({
                     })
                   }
                 >
+                  <Unplug aria-hidden="true" />
                   {t("ai.revoke")}
                 </button>
               )}
@@ -502,6 +512,7 @@ function SettingsForm({
         <div className="ai-notice" role="alert">
           {error}
           <Button variant="outline" size="small" onClick={() => void refresh()}>
+            <RefreshCw aria-hidden="true" />
             {t("ai.reload")}
           </Button>
         </div>
@@ -521,9 +532,11 @@ function SettingsForm({
               setError(undefined);
             }}
           >
+            <X aria-hidden="true" />
             {t("common.cancel")}
           </Button>
           <Button disabled={!canSave} onClick={save}>
+            <Save aria-hidden="true" />
             {t(local ? "ai.saveLocal" : "ai.saveManaged")}
           </Button>
         </div>

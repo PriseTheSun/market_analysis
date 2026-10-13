@@ -975,38 +975,98 @@ td {
   width: calc(100vw - 40px);
   max-width: 520px;
   max-height: calc(100svh - 48px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--surface);
   color: var(--text);
   border-radius: 16px;
-  padding: 32px;
   box-shadow: var(--shadow);
   z-index: 100;
 }
-.dialog-content > h2 {
+.dialog-header {
+  position: relative;
+  flex-shrink: 0;
+  padding: 24px 32px;
+}
+.dialog-header,
+.management-modal-heading,
+.module-info-header {
+  border-bottom: 1px solid var(--border);
+}
+.dialog-header h2 {
   font-size: 16px;
   line-height: 1.5;
   letter-spacing: 0;
-  margin: 0 24px 8px 0;
+  margin: 0 24px 0 0;
 }
-.dialog-content > p {
+.dialog-header p {
   color: var(--muted);
-  margin-bottom: 24px;
+  margin: 8px 24px 0 0;
+  overflow-wrap: anywhere;
 }
-.dialog-content .form-stack {
-  margin-top: 24px;
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.dialog-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px 32px;
+}
+.dialog-body > p:first-child {
+  margin-top: 0;
+}
+.dialog-body > p:last-child {
+  margin-bottom: 0;
+}
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 16px 32px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+.dialog-footer .pagination {
+  flex: 1;
+  margin: 0;
+  flex-wrap: wrap;
+}
+.dialog-footer .pagination > span {
+  white-space: nowrap;
+}
+.dialog-content[data-variant="confirmation"],
+.management-modal[data-variant="confirmation"] {
+  border: 0;
+}
+[data-variant="confirmation"] :is(.dialog-header, .management-modal-heading) {
+  border-bottom: 0;
+}
+[data-variant="confirmation"] :is(.dialog-footer, .management-editor-footer) {
+  border-top: 0;
+}
+.dropzone .text-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 .dialog-close {
   position: absolute;
   right: 12px;
   top: 12px;
-}
-.dialog-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
 }
 .chat-page {
   display: grid;
@@ -1626,11 +1686,18 @@ td {
     min-width: 96px;
   }
   .dialog-content {
-    padding: 28px 24px;
     width: calc(100vw - 32px);
   }
-  .dialog-actions {
-    flex-wrap: wrap;
+  .dialog-header,
+  .dialog-body {
+    padding: 20px;
+  }
+  .dialog-footer {
+    padding: 16px 20px max(16px, env(safe-area-inset-bottom));
+    gap: 10px;
+  }
+  .dialog-footer .pagination {
+    flex-basis: 100%;
   }
   .dialog-content .form-stack {
     gap: 16px;

@@ -41,9 +41,6 @@
 .request-organization {
   overflow-wrap: anywhere;
 }
-.request-editor .dialog-actions {
-  margin-top: 8px;
-}
 .request-action-note {
   max-width: 250px;
   padding: 10px;

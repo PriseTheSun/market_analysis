@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Context, Page, PublicUser } from "@market/contracts";
 import { canonicalAppPath } from "@market/contracts";
 import {
+  RefreshCw,
   SlidersHorizontal,
   Bell,
   LayoutGrid,
@@ -140,6 +141,7 @@ export function WorkspaceEntry() {
               void Promise.allSettled([contexts.refetch(), agencies.refetch()])
             }
           >
+            <RefreshCw aria-hidden="true" />
             {t("common.retry")}
           </Button>
           <Logout />

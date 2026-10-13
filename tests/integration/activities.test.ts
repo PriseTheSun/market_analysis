@@ -1,5 +1,6 @@
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import pg from "pg";
 import { Browser } from "./helpers";
 import type { ActivityPage } from "@market/contracts";
@@ -415,6 +416,102 @@ describe("module activity history", () => {
     );
     const agencyView = await list(clients.other, "management");
     expect(agencyView.items.some((x) => x.id === moved.id)).toBe(false);
+  });
+  it("shows the responsible person's current photo only through an authorized activity", async () => {
+    const activityId = randomUUID();
+    const photo = await readFile(
+      new URL("../fixtures/avatars/photo.webp", import.meta.url),
+    );
+    await db.query(
+      'INSERT INTO "UserAvatar" ("userId", image) VALUES ($1,$2)',
+      [ids.admin, photo],
+    );
+    await db.query('UPDATE "User" SET "avatarVersion"=$1 WHERE id=$2', [
+      randomUUID(),
+      ids.admin,
+    ]);
+    await db.query(
+      'INSERT INTO "AuditLog" (id,"actorId",action,"tenantId","agencyId",result,"requestId") VALUES ($1,$2,\'membership.updated\',$3,$4,\'success\',$5)',
+      [activityId, ids.admin, ids.tenantA, ids.agencyA, randomUUID()],
+    );
+    const photoFor = async (
+      browser: Browser,
+      module: string,
+      params: Record<string, string> = {},
+    ) => {
+      const result = await list(browser, module, {
+        person: `${prefix} admin`,
+        ...params,
+      });
+      return result.items.find((item) => item.id === activityId)!.actor
+        .avatarUrl;
+    };
+    try {
+      const url = (await photoFor(clients.super, "management"))!;
+      expect(url).toContain(`/activities/${activityId}/avatar?`);
+      const path = url.replace(/^\/api\/v1/, "");
+      for (const browser of [clients.global, clients.super]) {
+        const response = await browser.raw(path);
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-type")).toContain("image/webp");
+        expect(response.headers.get("cache-control")).toBe("private, no-store");
+        expect(Buffer.from(await response.arrayBuffer())).toEqual(photo);
+      }
+      const tenantUrl = (await photoFor(clients.admin, "members", {
+        tenantId: ids.tenantA!,
+      }))!;
+      expect(tenantUrl).toContain(`tenantId=${ids.tenantA}`);
+      expect(
+        (await clients.admin.raw(tenantUrl.replace(/^\/api\/v1/, ""))).status,
+      ).toBe(200);
+      expect((await new Browser().raw(path)).status).toBe(401);
+      expect((await clients.user.raw(path)).status).toBe(403);
+      expect((await clients.other.raw(path)).status).toBe(404);
+      expect(
+        (
+          await clients.global.raw(
+            `/activities/${activityId}/avatar?module=preferences`,
+          )
+        ).status,
+      ).toBe(404);
+      expect(
+        (await clients.global.raw(`/activities/${activityId}/avatar?module=ai`))
+          .status,
+      ).toBe(404);
+      expect(
+        (
+          await clients.global.raw(
+            "/activities/not-a-uuid/avatar?module=management",
+          )
+        ).status,
+      ).toBe(400);
+      await db.query('UPDATE "AgencyMembership" SET active=false WHERE id=$1', [
+        ids.superGrant,
+      ]);
+      expect((await clients.super.raw(path)).status).toBe(403);
+      await db.query('UPDATE "AgencyMembership" SET active=true WHERE id=$1', [
+        ids.superGrant,
+      ]);
+      await db.query('UPDATE "User" SET "avatarVersion"=$1 WHERE id=$2', [
+        randomUUID(),
+        ids.admin,
+      ]);
+      expect(await photoFor(clients.super, "management")).not.toBe(url);
+      await db.query('DELETE FROM "UserAvatar" WHERE "userId"=$1', [ids.admin]);
+      await db.query('UPDATE "User" SET "avatarVersion"=null WHERE id=$1', [
+        ids.admin,
+      ]);
+      expect((await clients.super.raw(path)).status).toBe(404);
+      expect(await photoFor(clients.super, "management")).toBeNull();
+    } finally {
+      await db.query('UPDATE "AgencyMembership" SET active=true WHERE id=$1', [
+        ids.superGrant,
+      ]);
+      await db.query('DELETE FROM "UserAvatar" WHERE "userId"=$1', [ids.admin]);
+      await db.query('UPDATE "User" SET "avatarVersion"=null WHERE id=$1', [
+        ids.admin,
+      ]);
+    }
   });
   it("revalidates revoked permissions without relying on session role claims", async () => {
     await db.query('UPDATE "AgencyMembership" SET active=false WHERE id=$1', [

@@ -13,7 +13,7 @@ import { useState, type ComponentProps } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ChevronDown, Mail, Pencil, X } from "lucide-react";
+import { Save, Check, ChevronDown, Mail, Pencil, X } from "lucide-react";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import type {
   AccessRequestRecord,
@@ -30,6 +30,8 @@ import {
   Empty,
   Field,
   Modal,
+  ModalBody,
+  ModalFooter,
   Pagination,
 } from "../components/ui/common";
 import "./requests.css";
@@ -314,105 +316,108 @@ function RequestEditor({
       description={`${item.name} · ${item.email}`}
     >
       <form
-        className="form-stack request-editor"
+        className="dialog-form request-editor"
         onSubmit={(event) => {
           event.preventDefault();
           void save();
         }}
       >
-        <p className="request-organization">
-          {t("requests.reportedOrganization")}:{" "}
-          <strong>{item.organization}</strong>
-        </p>
-        {global && options.isPending ? (
-          <Loading />
-        ) : global && options.isError ? (
-          <ErrorState
-            error={options.error}
-            retry={() => void options.refetch()}
-          />
-        ) : (
-          <>
-            <Field label={t("admin.agency")}>
-              <RequestSelect
-                value={agencyId}
-                disabled={busy || !global}
-                required
-                onChange={(e) => {
-                  setAgencyId(e.target.value);
-                  setTenantId("");
-                }}
-              >
-                <option value="">{t("management.selectAgency")}</option>
-                {item.tenant &&
-                  !options.data?.agencies.some(
-                    (agency) => agency.id === item.tenant!.agencyId,
-                  ) && (
-                    <option value={item.tenant.agencyId} disabled={global}>
-                      {item.tenant.agency.name}
-                    </option>
-                  )}
-                {options.data?.agencies.map((agency) => (
-                  <option key={agency.id} value={agency.id}>
-                    {agency.name}
-                  </option>
-                ))}
-              </RequestSelect>
-            </Field>
-            <Field label={t("admin.client")}>
-              <RequestSelect
-                value={tenantId}
-                disabled={busy || !global || !agencyId}
-                required
-                onChange={(e) => setTenantId(e.target.value)}
-              >
-                <option value="">{t("management.selectClient")}</option>
-                {item.tenantId &&
-                  item.tenant &&
-                  item.tenant.agencyId === agencyId &&
-                  !clients.some((client) => client.id === item.tenantId) && (
-                    <option value={item.tenantId} disabled={global}>
-                      {item.tenant.name}
-                    </option>
-                  )}
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name}
-                  </option>
-                ))}
-              </RequestSelect>
-            </Field>
-            <Field label={t("common.role")}>
-              <RequestSelect
-                value={role}
-                disabled={busy}
-                onChange={(e) => setRole(e.target.value as TenantRole)}
-              >
-                <option value="USER">User</option>
-                <option value="ADMIN">Admin</option>
-              </RequestSelect>
-            </Field>
-            <p className="request-form-hint">
-              {t(
-                item.status === "approved"
-                  ? "requests.reassignHint"
-                  : "requests.roleHint",
-              )}
-            </p>
-          </>
-        )}
-        {error && (
-          <p className="field-error" role="alert">
-            {error}
+        <ModalBody className="form-stack">
+          <p className="request-organization">
+            {t("requests.reportedOrganization")}:{" "}
+            <strong>{item.organization}</strong>
           </p>
-        )}
-        <div className="dialog-actions wrap">
+          {global && options.isPending ? (
+            <Loading />
+          ) : global && options.isError ? (
+            <ErrorState
+              error={options.error}
+              retry={() => void options.refetch()}
+            />
+          ) : (
+            <>
+              <Field label={t("admin.agency")}>
+                <RequestSelect
+                  value={agencyId}
+                  disabled={busy || !global}
+                  required
+                  onChange={(e) => {
+                    setAgencyId(e.target.value);
+                    setTenantId("");
+                  }}
+                >
+                  <option value="">{t("management.selectAgency")}</option>
+                  {item.tenant &&
+                    !options.data?.agencies.some(
+                      (agency) => agency.id === item.tenant!.agencyId,
+                    ) && (
+                      <option value={item.tenant.agencyId} disabled={global}>
+                        {item.tenant.agency.name}
+                      </option>
+                    )}
+                  {options.data?.agencies.map((agency) => (
+                    <option key={agency.id} value={agency.id}>
+                      {agency.name}
+                    </option>
+                  ))}
+                </RequestSelect>
+              </Field>
+              <Field label={t("admin.client")}>
+                <RequestSelect
+                  value={tenantId}
+                  disabled={busy || !global || !agencyId}
+                  required
+                  onChange={(e) => setTenantId(e.target.value)}
+                >
+                  <option value="">{t("management.selectClient")}</option>
+                  {item.tenantId &&
+                    item.tenant &&
+                    item.tenant.agencyId === agencyId &&
+                    !clients.some((client) => client.id === item.tenantId) && (
+                      <option value={item.tenantId} disabled={global}>
+                        {item.tenant.name}
+                      </option>
+                    )}
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </RequestSelect>
+              </Field>
+              <Field label={t("common.role")}>
+                <RequestSelect
+                  value={role}
+                  disabled={busy}
+                  onChange={(e) => setRole(e.target.value as TenantRole)}
+                >
+                  <option value="USER">User</option>
+                  <option value="ADMIN">Admin</option>
+                </RequestSelect>
+              </Field>
+              <p className="request-form-hint">
+                {t(
+                  item.status === "approved"
+                    ? "requests.reassignHint"
+                    : "requests.roleHint",
+                )}
+              </p>
+            </>
+          )}
+          {error && (
+            <p className="field-error" role="alert">
+              {error}
+            </p>
+          )}
+        </ModalBody>
+        <ModalFooter>
           <Button
             type="button"
             variant="outline"
             disabled={busy}
             onClick={onClose}
           >
+            <X aria-hidden="true" />
             {t("common.cancel")}
           </Button>
           <Button
@@ -422,6 +427,11 @@ function RequestEditor({
               (global && (options.isPending || options.isError))
             }
           >
+            {item.status === "pending" ? (
+              <Check aria-hidden="true" />
+            ) : (
+              <Save aria-hidden="true" />
+            )}
             {t(
               busy
                 ? "common.saving"
@@ -430,7 +440,7 @@ function RequestEditor({
                   : "management.save",
             )}
           </Button>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );
@@ -473,42 +483,47 @@ function RequestRejection({
       open
       onOpenChange={(open) => !open && !busy && onClose()}
       title={t("requests.reject")}
+      variant="confirmation"
       description={`${item.name} · ${item.email}`}
     >
       <form
-        className="form-stack request-editor"
+        className="dialog-form request-editor"
         onSubmit={(event) => {
           event.preventDefault();
           void reject();
         }}
       >
-        <p className="request-form-hint">{t("requests.rejectHint")}</p>
-        <Field label={t("admin.reason")}>
-          <textarea
-            value={reason}
-            maxLength={1000}
-            disabled={busy}
-            onChange={(e) => setReason(e.target.value)}
-          />
-        </Field>
-        {error && (
-          <p className="field-error" role="alert">
-            {error}
-          </p>
-        )}
-        <div className="dialog-actions">
+        <ModalBody className="form-stack">
+          <p className="request-form-hint">{t("requests.rejectHint")}</p>
+          <Field label={t("admin.reason")}>
+            <textarea
+              value={reason}
+              maxLength={1000}
+              disabled={busy}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </Field>
+          {error && (
+            <p className="field-error" role="alert">
+              {error}
+            </p>
+          )}
+        </ModalBody>
+        <ModalFooter>
           <Button
             type="button"
             variant="outline"
             disabled={busy}
             onClick={onClose}
           >
+            <X aria-hidden="true" />
             {t("common.cancel")}
           </Button>
           <Button variant="destructive" disabled={busy}>
+            <X aria-hidden="true" />
             {t(busy ? "common.saving" : "requests.rejectAction")}
           </Button>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

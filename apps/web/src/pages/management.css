@@ -14,7 +14,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  padding: 4px 30px 28px;
+  padding: 24px 30px;
   overflow-y: auto;
   min-height: 0;
 }
@@ -286,6 +286,9 @@
   flex-direction: column;
   gap: 16px;
 }
+.management-form-section:first-child {
+  border-top: 0;
+}
 .management-form-section h3 {
   font-size: 17px;
   font-weight: 650;
@@ -390,7 +393,6 @@
 }
 .management-modal.management-delete-dialog {
   width: min(480px, calc(100vw - 24px));
-  overflow-y: auto;
 }
 .management-delete-dialog .management-modal-heading h2 {
   margin-right: 0;
@@ -399,7 +401,7 @@
 .management-delete-dialog .management-delete-target {
   color: var(--text);
   font-weight: 600;
-  margin: 12px 0 8px;
+  margin: 0 0 8px;
   overflow-wrap: anywhere;
 }
 .management-delete-dialog .management-editor-footer {
@@ -417,6 +419,7 @@
   padding: 16px 24px;
   border-top: 1px solid var(--border);
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 12px;
   background: var(--surface);
@@ -434,6 +437,9 @@
   flex-wrap: wrap;
 }
 .management-link-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--muted);
@@ -480,7 +486,7 @@
   }
   .management-guide-list {
     grid-template-columns: minmax(0, 1fr);
-    padding: 0 20px 20px;
+    padding: 20px;
   }
   .management-user-identity-fields {
     grid-template-columns: minmax(0, 1fr);

@@ -1,3 +1,4 @@
+import { Play, SkipForward } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { driver, type Driver } from "driver.js";
 import { useTranslation } from "react-i18next";
@@ -110,6 +111,7 @@ export function Tour() {
         <>
           <span>{t("preferences.tour")}</span>
           <Button size="small" variant="outline" onClick={start}>
+            <Play aria-hidden="true" />
             {t("tour.start")}
           </Button>
           <Button
@@ -117,6 +119,7 @@ export function Tour() {
             variant="ghost"
             onClick={() => void save("dismissed")}
           >
+            <SkipForward aria-hidden="true" />
             {t("tour.skip")}
           </Button>
         </>

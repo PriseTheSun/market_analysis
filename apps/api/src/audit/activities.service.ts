@@ -82,17 +82,27 @@ export class ActivitiesService {
         }),
         tx.auditLog.count({ where }),
       ]);
+      const actorIds = [
+        ...new Set(rows.flatMap((row) => (row.actorId ? [row.actorId] : []))),
+      ];
+      const actors = new Map(
+        (
+          await tx.user.findMany({
+            where: { id: { in: actorIds } },
+            select: { id: true, name: true, avatarVersion: true },
+          })
+        ).map((user) => [user.id, user]),
+      );
       const items = await Promise.all(
         rows.map(async (row): Promise<ActivityItem> => {
           const parsed = activityDisplaySchema.safeParse(row.display);
           const display = parsed.success ? parsed.data : null;
-          const legacyActor =
-            !display && row.actorId
-              ? await tx.user.findUnique({
-                  where: { id: row.actorId },
-                  select: { name: true },
-                })
-              : null;
+          const responsible = row.actorId ? actors.get(row.actorId) : undefined;
+          const avatarQuery = new URLSearchParams({ module: query.module });
+          if (query.tenantId) avatarQuery.set("tenantId", query.tenantId);
+          if (query.agencyId) avatarQuery.set("agencyId", query.agencyId);
+          if (responsible?.avatarVersion)
+            avatarQuery.set("v", responsible.avatarVersion);
           const definition = activityEvents[row.action]!;
           return {
             id: row.id,
@@ -100,8 +110,11 @@ export class ActivitiesService {
             action: definition.action,
             entity: definition.entity,
             actor: {
-              name: display?.actorName ?? legacyActor?.name ?? null,
+              name: display?.actorName ?? responsible?.name ?? null,
               system: !row.actorId,
+              avatarUrl: responsible?.avatarVersion
+                ? `/api/v1/activities/${row.id}/avatar?${avatarQuery}`
+                : null,
             },
             resourceName: display?.resourceName ?? null,
             agencyName: display?.agencyName ?? null,
@@ -121,6 +134,37 @@ export class ActivitiesService {
         pageSize: query.pageSize,
         scope,
       };
+    });
+  }
+  avatar(
+    actor: Actor,
+    activityId: string,
+    query: ActivityQuery,
+    requestId: string,
+  ) {
+    return this.db.personal(actor, async (tx, current) => {
+      const { where } = await this.scope(tx, current, query, requestId);
+      const actions = Object.entries(activityEvents)
+        .filter(([, definition]) => definition.modules.includes(query.module))
+        .map(([key]) => key);
+      const activity = await tx.auditLog.findFirst({
+        where: {
+          AND: [
+            where,
+            { id: activityId, result: "success", action: { in: actions } },
+          ],
+        },
+        select: { actorId: true },
+      });
+      if (!activity?.actorId) throw new AppError(404, "NOT_FOUND");
+      // Permit this single photo read only after rechecking the activity's live scope.
+      // The SELECT-only RLS context is transaction-local and does not change ownership.
+      await tx.$queryRaw`SELECT set_config('app.activity_actor_id', ${activity.actorId}, true)`;
+      const avatar = await tx.userAvatar.findUnique({
+        where: { userId: activity.actorId },
+      });
+      if (!avatar) throw new AppError(404, "NOT_FOUND");
+      return Buffer.from(avatar.image);
     });
   }
   private async scope(

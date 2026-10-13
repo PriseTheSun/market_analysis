@@ -1,8 +1,9 @@
-import { useId, useState, type ComponentProps } from "react";
+import { useId, useRef, useState, type ComponentProps } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
+  FilterX,
   Info,
   History,
   X,
@@ -27,7 +28,14 @@ import { useScope } from "../lib/scope";
 import { useSession } from "../lib/session";
 import { LocalizedLink } from "../lib/navigation";
 import { Button } from "./ui/button";
-import { Empty, ErrorState, Loading, Pagination } from "./ui/common";
+import { UserAvatar } from "./user-avatar";
+import {
+  Empty,
+  ErrorState,
+  Loading,
+  Pagination,
+  ModalFooter,
+} from "./ui/common";
 import "./module-info.css";
 
 export function routeActivityModule(
@@ -73,13 +81,14 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
   const isManagement = module === "management";
   const tabs: Array<"about" | "history"> = ["about", "history"];
   const [open, setOpen] = useState(false),
-    [tab, setTab] = useState<"about" | "history">("about");
+    [tab, setTab] = useState<"about" | "history">("history");
   const [period, setPeriod] = useState("30"),
     [action, setAction] = useState(""),
     [person, setPerson] = useState(""),
     [search, setSearch] = useState(""),
     [page, setPage] = useState(1);
   const id = useId();
+  const bodyRef = useRef<HTMLDivElement>(null);
   const query = new URLSearchParams({
     module,
     period: isManagement ? "all" : period,
@@ -186,6 +195,7 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
             </div>
           )}
           <div
+            ref={bodyRef}
             className="module-info-body"
             role={isManagement ? undefined : "tabpanel"}
             id={isManagement ? undefined : `${id}-${tab}`}
@@ -320,6 +330,7 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
                             setPage(1);
                           }}
                         >
+                          <FilterX aria-hidden="true" />
                           {t("activity.clear")}
                         </Button>
                         <Button
@@ -346,7 +357,10 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
                   />
                 ) : result.data.items.length ? (
                   <>
-                    <ol className="activity-timeline">
+                    <ol
+                      className="activity-timeline"
+                      aria-label={t("activity.history")}
+                    >
                       {result.data.items.map((item) => (
                         <ActivityRow
                           key={item.id}
@@ -355,12 +369,6 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
                         />
                       ))}
                     </ol>
-                    <Pagination
-                      page={page}
-                      total={result.data.total}
-                      pageSize={result.data.pageSize}
-                      onChange={setPage}
-                    />
                   </>
                 ) : (
                   <Empty
@@ -375,6 +383,23 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
               </>
             )}
           </div>
+          {(isManagement || tab === "history") &&
+            result.data &&
+            !result.isError &&
+            !result.isPending &&
+            result.data.items.length > 0 && (
+              <ModalFooter className="module-info-footer">
+                <Pagination
+                  page={page}
+                  total={result.data.total}
+                  pageSize={result.data.pageSize}
+                  onChange={(nextPage) => {
+                    setPage(nextPage);
+                    bodyRef.current?.scrollTo({ top: 0 });
+                  }}
+                />
+              </ModalFooter>
+            )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
@@ -396,7 +421,7 @@ function ActivityRow({
     timeZone = session?.preference.timeZone ?? "America/Sao_Paulo";
   const absolute = new Intl.DateTimeFormat(i18n.language, {
     dateStyle: "medium",
-    timeStyle: "short",
+    timeStyle: "medium",
     timeZone,
   }).format(date);
   const elapsed = (date.getTime() - Date.now()) / 1000;
@@ -445,25 +470,23 @@ function ActivityRow({
   };
   return (
     <li className="activity-item">
-      <span className="activity-avatar" aria-hidden="true">
-        {item.actor.system ? (
+      {item.actor.system ? (
+        <span className="activity-avatar" aria-hidden="true">
           <History />
-        ) : (
-          actor
-            .split(" ")
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((x) => x[0])
-            .join("")
-            .toUpperCase()
-        )}
-      </span>
+        </span>
+      ) : (
+        <UserAvatar
+          className="activity-avatar"
+          user={{ name: actor, avatarUrl: item.actor.avatarUrl ?? null }}
+        />
+      )}
       <div className="activity-item-body">
         <div className="activity-item-top">
           <strong>{actor}</strong>
-          <time dateTime={item.createdAt} title={`${absolute} · ${timeZone}`}>
-            {relative}
-          </time>
+          <div className="activity-time">
+            <time dateTime={item.createdAt}>{absolute}</time>
+            <span>{relative}</span>
+          </div>
         </div>
         <p className="activity-summary">
           <span className={`activity-action activity-${item.action}`}>
@@ -482,65 +505,58 @@ function ActivityRow({
             .filter(Boolean)
             .join(" · ")}
         </p>
-        <details className="activity-detail">
-          <summary>
-            {t("activity.details")}
-            <ChevronDown />
-          </summary>
-          <div>
-            <p className="activity-exact-time">
-              {absolute} · {timeZone}
-            </p>
-            {item.changes.length ? (
-              <div className="activity-changes">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>{t("activity.field")}</th>
-                      <th>{t("activity.before")}</th>
-                      <th>{t("activity.after")}</th>
+        <div className="activity-detail">
+          {item.changes.length ? (
+            <div className="activity-changes">
+              <table aria-label={t("activity.details")}>
+                <thead>
+                  <tr>
+                    <th scope="col">{t("activity.field")}</th>
+                    <th scope="col">{t("activity.before")}</th>
+                    <th scope="col">{t("activity.after")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {item.changes.map((change) => (
+                    <tr key={change.field}>
+                      <th scope="row">{t("activity.field." + change.field)}</th>
+                      <td data-label={t("activity.before")}>
+                        {value(change.before, change.field)}
+                      </td>
+                      <td data-label={t("activity.after")}>
+                        {value(change.after, change.field)}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {item.changes.map((change) => (
-                      <tr key={change.field}>
-                        <th scope="row">
-                          {t("activity.field." + change.field)}
-                        </th>
-                        <td>{value(change.before, change.field)}</td>
-                        <td>{value(change.after, change.field)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p>
-                {t(
-                  item.detailsRecorded
-                    ? "activity.noChanges"
-                    : "activity.noDetails",
-                )}
-              </p>
-            )}
-            {item.reason && (
-              <p className="activity-reason">
-                <strong>{t("activity.reason")}: </strong>
-                {item.reason}
-              </p>
-            )}
-            {item.href && (
-              <LocalizedLink
-                to={item.href}
-                className="activity-record-link"
-                onClick={close}
-              >
-                {t("activity.view")}
-                <ArrowUpRight />
-              </LocalizedLink>
-            )}
-          </div>
-        </details>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p>
+              {t(
+                item.detailsRecorded
+                  ? "activity.noChanges"
+                  : "activity.noDetails",
+              )}
+            </p>
+          )}
+          {item.reason && (
+            <p className="activity-reason">
+              <strong>{t("activity.reason")}: </strong>
+              {item.reason}
+            </p>
+          )}
+          {item.href && (
+            <LocalizedLink
+              to={item.href}
+              className="activity-record-link"
+              onClick={close}
+            >
+              {t("activity.view")}
+              <ArrowUpRight />
+            </LocalizedLink>
+          )}
+        </div>
       </div>
     </li>
   );

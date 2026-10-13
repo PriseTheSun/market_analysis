@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Camera, Crop, RotateCcw, Trash2, ZoomIn, ZoomOut } from "lucide-react";
+import {
+  X,
+  Camera,
+  Crop,
+  RotateCcw,
+  Trash2,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
 import Cropper, { type Area, type Point } from "react-easy-crop";
 import "react-easy-crop/react-easy-crop.css";
 import {
@@ -10,7 +18,7 @@ import {
 } from "@market/contracts";
 import { cropAvatar } from "../lib/avatar-crop";
 import { Button } from "./ui/button";
-import { Modal } from "./ui/common";
+import { Modal, ModalBody, ModalFooter } from "./ui/common";
 import { UserAvatar } from "./user-avatar";
 
 export type PhotoDraft =
@@ -190,79 +198,82 @@ export function ProfilePhoto({
       >
         {source && (
           <>
-            <div className="avatar-crop-stage" aria-busy={busy}>
-              <Cropper
-                image={source.url}
-                crop={crop}
-                zoom={zoom}
-                aspect={1}
-                cropShape="round"
-                minZoom={1}
-                maxZoom={3}
-                showGrid={false}
-                zoomWithScroll={false}
-                disableAutomaticStylesInjection
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropAreaChange={(_, pixels) => setArea(pixels)}
-                onMediaLoaded={(image) => {
-                  if (image.naturalWidth * image.naturalHeight > 20_000_000)
-                    setCropError(t("preferences.photoInvalid"));
-                }}
-                mediaProps={{
-                  alt: t("preferences.photo"),
-                  onError: () => setCropError(t("preferences.photoInvalid")),
-                }}
-                cropperProps={{
-                  role: "group",
-                  "aria-label": t("preferences.cropArea"),
-                }}
-              />
-            </div>
-            <div className="avatar-zoom-header">
-              <label htmlFor="avatar-zoom">{t("preferences.zoom")}</label>
-              <output htmlFor="avatar-zoom">{Math.round(zoom * 100)}%</output>
-            </div>
-            <div className="avatar-zoom-control">
-              <ZoomOut aria-hidden="true" />
-              <input
-                id="avatar-zoom"
-                type="range"
-                min={1}
-                max={3}
-                step={0.01}
-                value={zoom}
+            <ModalBody>
+              <div className="avatar-crop-stage" aria-busy={busy}>
+                <Cropper
+                  image={source.url}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  cropShape="round"
+                  minZoom={1}
+                  maxZoom={3}
+                  showGrid={false}
+                  zoomWithScroll={false}
+                  disableAutomaticStylesInjection
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onCropAreaChange={(_, pixels) => setArea(pixels)}
+                  onMediaLoaded={(image) => {
+                    if (image.naturalWidth * image.naturalHeight > 20_000_000)
+                      setCropError(t("preferences.photoInvalid"));
+                  }}
+                  mediaProps={{
+                    alt: t("preferences.photo"),
+                    onError: () => setCropError(t("preferences.photoInvalid")),
+                  }}
+                  cropperProps={{
+                    role: "group",
+                    "aria-label": t("preferences.cropArea"),
+                  }}
+                />
+              </div>
+              <div className="avatar-zoom-header">
+                <label htmlFor="avatar-zoom">{t("preferences.zoom")}</label>
+                <output htmlFor="avatar-zoom">{Math.round(zoom * 100)}%</output>
+              </div>
+              <div className="avatar-zoom-control">
+                <ZoomOut aria-hidden="true" />
+                <input
+                  id="avatar-zoom"
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.01}
+                  value={zoom}
+                  disabled={busy}
+                  aria-valuetext={`${Math.round(zoom * 100)}%`}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                />
+                <ZoomIn aria-hidden="true" />
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="small"
                 disabled={busy}
-                aria-valuetext={`${Math.round(zoom * 100)}%`}
-                onChange={(e) => setZoom(Number(e.target.value))}
-              />
-              <ZoomIn aria-hidden="true" />
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="small"
-              disabled={busy}
-              onClick={() => {
-                setCrop({ x: 0, y: 0 });
-                setZoom(1);
-              }}
-            >
-              <RotateCcw aria-hidden="true" />
-              {t("preferences.resetCrop")}
-            </Button>
-            {cropError && (
-              <p className="field-error" role="alert">
-                {cropError}
-              </p>
-            )}
-            <div className="dialog-actions">
+                onClick={() => {
+                  setCrop({ x: 0, y: 0 });
+                  setZoom(1);
+                }}
+              >
+                <RotateCcw aria-hidden="true" />
+                {t("preferences.resetCrop")}
+              </Button>
+              {cropError && (
+                <p className="field-error" role="alert">
+                  {cropError}
+                </p>
+              )}
+            </ModalBody>
+            <ModalFooter>
               <Button
                 type="button"
                 variant="outline"
                 disabled={busy}
                 onClick={closeEditor}
               >
+                <X aria-hidden="true" />
                 {t("common.cancel")}
               </Button>
               <Button
@@ -270,9 +281,10 @@ export function ProfilePhoto({
                 disabled={busy || !area || Boolean(cropError)}
                 onClick={() => void applyCrop()}
               >
+                <Crop aria-hidden="true" />
                 {t(busy ? "common.loading" : "preferences.applyCrop")}
               </Button>
-            </div>
+            </ModalFooter>
           </>
         )}
       </Modal>

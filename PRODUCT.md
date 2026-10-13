@@ -12,6 +12,6 @@ Excluir um usuário, agência ou cliente significa arquivar, bloquear acesso e p
 
 As listagens de Usuários, Agências e Clientes exibem Status e o filtro Não arquivados/Arquivados ao lado da busca. Arquivado é distinto de Inativo; a restauração fica no menu de reticências do registro arquivado.
 
-Preferências permite escolher, pré-visualizar, salvar, substituir e remover a foto da própria conta. JPG, PNG e WebP estáticos até 2 MB são recortados em formato quadrado. A imagem aparece no menu da conta, acompanha a pessoa entre workspaces e persiste entre sessões; sem foto, o avatar mantém as iniciais.
+Preferências permite escolher, pré-visualizar, salvar, substituir e remover a foto da própria conta. JPG, PNG e WebP estáticos até 2 MB são recortados em formato quadrado. A imagem aparece no menu da conta, acompanha a pessoa entre workspaces e persiste entre sessões; sem foto, o avatar mantém as iniciais. A foto de perfil atual também identifica o responsável nas atividades que o usuário tem autorização para consultar.
 
 Solicitações de acesso continuam em sua própria rota. Nome de agência ou cliente informado no formulário público não concede acesso. As URLs seguem o idioma da conta; rotas antigas redirecionam para a aba equivalente na central.

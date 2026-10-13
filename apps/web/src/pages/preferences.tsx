@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, Clock3, Globe2, Moon, Sun } from "lucide-react";
+import {
+  Undo2,
+  Save,
+  RotateCcw,
+  ChevronDown,
+  Clock3,
+  Globe2,
+  Moon,
+  Sun,
+} from "lucide-react";
 import { toast } from "sonner";
 import type {
   Locale,
@@ -230,9 +239,11 @@ export function Preferences() {
               setPhoto(null);
             }}
           >
+            <Undo2 aria-hidden="true" />
             {t("preferences.discard")}
           </Button>
           <Button disabled={!dirty || saving}>
+            <Save aria-hidden="true" />
             {t(saving ? "common.saving" : "common.save")}
           </Button>
         </div>
@@ -244,6 +255,7 @@ export function Preferences() {
             variant="outline"
             onClick={() => window.dispatchEvent(new Event("ma:tour"))}
           >
+            <RotateCcw aria-hidden="true" />
             {t("preferences.restart")}
           </Button>
         </section>

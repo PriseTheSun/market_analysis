@@ -88,7 +88,7 @@ export interface ActivityItem {
   action: ActivityAction;
   event: string;
   entity: string;
-  actor: { name: string | null; system: boolean };
+  actor: { name: string | null; system: boolean; avatarUrl: string | null };
   resourceName: string | null;
   agencyName: string | null;
   tenantName: string | null;

@@ -20,6 +20,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
+  Check,
+  UserMinus,
+  UserPlus,
   Plus,
   Pencil,
   ShieldCheck,
@@ -30,6 +33,7 @@ import {
   ChevronDown,
   UserCheck,
   UserX,
+  X,
 } from "lucide-react";
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import {
@@ -50,6 +54,8 @@ import {
   ErrorState,
   Empty,
   Modal,
+  ModalBody,
+  ModalFooter,
   Pagination,
   Badge,
 } from "../components/ui/common";
@@ -99,7 +105,11 @@ export function EditForm({
   fields,
   defaults,
   onSave,
+  modal = false,
+  onCancel,
 }: {
+  modal?: boolean;
+  onCancel?: () => void;
   schema: z.ZodType;
   fields: FormField[];
   defaults?: Record<string, unknown>;
@@ -113,9 +123,11 @@ export function EditForm({
     ),
     defaultValues: defaults,
   });
+  const Body = modal ? ModalBody : "div";
+  const Footer = modal ? ModalFooter : "div";
   return (
     <form
-      className="form-stack"
+      className={modal ? "dialog-form" : undefined}
       onSubmit={f.handleSubmit(async (data) => {
         setError("");
         try {
@@ -126,41 +138,57 @@ export function EditForm({
       })}
       noValidate
     >
-      {fields.map((field) => (
-        <Field
-          key={field.name}
-          label={field.label}
-          error={
-            f.formState.errors[field.name] ? t("common.required") : undefined
-          }
-        >
-          {field.options ? (
-            <select {...f.register(field.name)}>
-              {field.options.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          ) : field.type === "textarea" ? (
-            <textarea {...f.register(field.name)} rows={3} />
-          ) : (
-            <input
-              {...f.register(field.name)}
-              type={field.type ?? "text"}
-              aria-invalid={!!f.formState.errors[field.name]}
-            />
-          )}
-        </Field>
-      ))}
-      {error && (
-        <p className="field-error" role="alert">
-          {error}
-        </p>
-      )}
-      <Button disabled={f.formState.isSubmitting}>
-        {t(f.formState.isSubmitting ? "common.saving" : "common.confirm")}
-      </Button>
+      <Body className="form-stack">
+        {fields.map((field) => (
+          <Field
+            key={field.name}
+            label={field.label}
+            error={
+              f.formState.errors[field.name] ? t("common.required") : undefined
+            }
+          >
+            {field.options ? (
+              <select {...f.register(field.name)}>
+                {field.options.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            ) : field.type === "textarea" ? (
+              <textarea {...f.register(field.name)} rows={3} />
+            ) : (
+              <input
+                {...f.register(field.name)}
+                type={field.type ?? "text"}
+                aria-invalid={!!f.formState.errors[field.name]}
+              />
+            )}
+          </Field>
+        ))}
+        {error && (
+          <p className="field-error" role="alert">
+            {error}
+          </p>
+        )}
+      </Body>
+      <Footer className={modal ? undefined : "form-actions"}>
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={f.formState.isSubmitting}
+            onClick={onCancel}
+          >
+            <X aria-hidden="true" />
+            {t("common.cancel")}
+          </Button>
+        )}
+        <Button disabled={f.formState.isSubmitting}>
+          <Check aria-hidden="true" />
+          {t(f.formState.isSubmitting ? "common.saving" : "common.confirm")}
+        </Button>
+      </Footer>
     </form>
   );
 }
@@ -323,6 +351,11 @@ export function Members() {
                   setChange({ member: m, body: { active: !m.active } })
                 }
               >
+                {m.active ? (
+                  <UserX aria-hidden="true" />
+                ) : (
+                  <UserCheck aria-hidden="true" />
+                )}
                 {t(m.active ? "admin.deactivate" : "admin.activate")}
               </Button>
             </td>
@@ -414,6 +447,8 @@ export function Members() {
         description={s.tenant?.name}
       >
         <EditForm
+          modal
+          onCancel={() => setInvite(false)}
           schema={invitationSchema}
           fields={[
             { name: "email", label: t("common.email"), type: "email" },
@@ -439,33 +474,52 @@ export function Members() {
         open={!!change}
         onOpenChange={(v) => !v && setChange(undefined)}
         title={t("common.confirm")}
-        description={t(
-          change?.body.role ? "admin.roleConfirm" : "admin.deactivateConfirm",
-          { name: change?.member.user.name, scope: s.tenant?.name },
-        )}
+        variant="confirmation"
       >
-        <Button
-          disabled={pending}
-          onClick={() => {
-            if (!change) return;
-            setPending(true);
-            void s
-              .call(
-                `${s.prefix}/members/${change.member.id}`,
-                "PATCH",
-                change.body,
-              )
-              .then(() => {
-                setChange(undefined);
-                toast.success(t("common.saved"));
-                return refresh();
-              })
-              .catch((e) => toast.error(errorText(e)))
-              .finally(() => setPending(false));
-          }}
-        >
-          {t(pending ? "common.saving" : "common.confirm")}
-        </Button>
+        <ModalBody>
+          <p>
+            {t(
+              change?.body.role
+                ? "admin.roleConfirm"
+                : "admin.deactivateConfirm",
+              { name: change?.member.user.name, scope: s.tenant?.name },
+            )}
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={pending}
+            onClick={() => setChange(undefined)}
+          >
+            <X aria-hidden="true" />
+            {t("common.cancel")}
+          </Button>
+          <Button
+            disabled={pending}
+            onClick={() => {
+              if (!change) return;
+              setPending(true);
+              void s
+                .call(
+                  `${s.prefix}/members/${change.member.id}`,
+                  "PATCH",
+                  change.body,
+                )
+                .then(() => {
+                  setChange(undefined);
+                  toast.success(t("common.saved"));
+                  return refresh();
+                })
+                .catch((e) => toast.error(errorText(e)))
+                .finally(() => setPending(false));
+            }}
+          >
+            <Check aria-hidden="true" />
+            {t(pending ? "common.saving" : "common.confirm")}
+          </Button>
+        </ModalFooter>
       </Modal>
     </>
   );
@@ -602,6 +656,8 @@ export function Agencies() {
       >
         {edit && (
           <EditForm
+            modal
+            onCancel={() => setEdit(undefined)}
             key={typeof edit === "string" ? edit : edit.id}
             schema={agencySchema.extend(
               edit === "new"
@@ -656,7 +712,7 @@ export function Agencies() {
         title={t("admin.superAdmins")}
         description={manage?.name}
       >
-        {manage && <SuperAdmins agency={manage} />}
+        <ModalBody>{manage && <SuperAdmins agency={manage} />}</ModalBody>
       </Modal>
     </>
   );
@@ -699,6 +755,11 @@ function SuperAdmins({ agency }: { agency: Agency }) {
                 .catch((e) => toast.error(errorText(e)))
             }
           >
+            {m.active ? (
+              <UserMinus aria-hidden="true" />
+            ) : (
+              <UserPlus aria-hidden="true" />
+            )}
             {t(m.active ? "admin.removeSuperAdmin" : "admin.setSuperAdmin")}
           </Button>
         </div>
@@ -787,6 +848,8 @@ export function Clients() {
       >
         {edit && (
           <EditForm
+            modal
+            onCancel={() => setEdit(undefined)}
             key={typeof edit === "string" ? edit : edit.id}
             schema={
               edit === "new"
@@ -912,6 +975,8 @@ export function UsersPage() {
       >
         {action && (
           <EditForm
+            modal
+            onCancel={() => setAction(undefined)}
             schema={
               action.kind === "global-role"
                 ? platformRoleSchema

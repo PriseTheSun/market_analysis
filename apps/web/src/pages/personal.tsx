@@ -7,7 +7,7 @@ import { PAGE_SIZE } from "../lib/pagination";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
+import { CheckCheck, Check } from "lucide-react";
 import { useSession } from "../lib/session";
 import { errorText, queryClient } from "../lib/api";
 import { useScope, PageHeading, useNotifications } from "../components/shell";
@@ -54,6 +54,7 @@ export function Notifications() {
           disabled={reading || !q.data?.unread}
           onClick={() => void read()}
         >
+          <CheckCheck aria-hidden="true" />
           {t("notifications.readAll")}
         </Button>
       </PageHeading>

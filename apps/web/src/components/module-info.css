@@ -39,6 +39,7 @@
   align-items: center;
   gap: 14px;
   padding: 26px 28px 22px;
+  flex-shrink: 0;
 }
 .module-info-header h2 {
   font-size: 23px;
@@ -70,6 +71,7 @@
   gap: 24px;
   padding: 0 28px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .module-info-tabs button {
   display: flex;
@@ -96,7 +98,7 @@
   padding: 26px 28px;
   overflow: auto;
   overscroll-behavior: contain;
-  min-height: 300px;
+  min-height: 0;
 }
 .module-info-body h3 {
   font-size: 21px;
@@ -252,10 +254,23 @@
   padding: 0;
 }
 .activity-item {
-  display: flex;
-  gap: 14px;
-  padding: 20px 0;
-  border-top: 1px solid var(--border);
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 16px;
+  padding-bottom: 32px;
+}
+.activity-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 17px;
+  top: 40px;
+  bottom: 4px;
+  width: 1px;
+  background: var(--border);
+}
+.activity-item:last-child {
+  padding-bottom: 0;
 }
 .activity-avatar {
   display: grid;
@@ -282,14 +297,23 @@
   justify-content: space-between;
   gap: 14px;
   font-size: 14px;
+  line-height: 1.5;
 }
 .activity-item-top strong {
   overflow-wrap: anywhere;
 }
-.activity-item-top time {
+.activity-time {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
   font-size: 12px;
   color: var(--muted);
-  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.activity-time time {
+  color: var(--text);
 }
 .activity-summary {
   display: flex;
@@ -305,14 +329,13 @@
   padding: 3px 7px;
   background: var(--soft);
   color: var(--primary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  white-space: nowrap;
 }
 .activity-deleted,
 .activity-rejected {
-  background: #c7352514;
-  color: #c73525;
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+  color: var(--danger);
 }
 .activity-context {
   font-size: 12px;
@@ -321,44 +344,23 @@
   overflow-wrap: anywhere;
 }
 .activity-detail {
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 13px;
-}
-.activity-detail summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  color: var(--muted);
-  list-style: none;
-}
-.activity-detail summary::-webkit-details-marker {
-  display: none;
-}
-.activity-detail summary svg {
-  width: 14px;
-  height: 14px;
-  transition: transform 0.15s;
-}
-.activity-detail[open] summary svg {
-  transform: rotate(180deg);
-}
-.activity-detail > div {
-  padding: 12px 0 0;
+  overflow-wrap: anywhere;
 }
 .activity-detail p {
   color: var(--muted);
   line-height: 1.5;
   margin: 0 0 10px;
 }
-.activity-exact-time {
-  font-size: 12px;
+.activity-reason {
+  white-space: pre-wrap;
 }
 .activity-changes {
-  overflow: auto;
   border: 1px solid var(--border);
   border-radius: 8px;
-  margin: 10px 0;
+  overflow: hidden;
+  margin: 0 0 12px;
 }
 .activity-changes table {
   width: 100%;
@@ -371,10 +373,19 @@
   text-align: left;
   font-size: 12px;
   overflow-wrap: anywhere;
-  white-space: normal;
+  white-space: pre-wrap;
+  vertical-align: top;
 }
-.activity-changes thead {
-  background: var(--soft);
+.activity-changes thead th {
+  background: var(--bg);
+}
+.activity-changes tbody th {
+  background: transparent;
+  color: var(--text);
+}
+.activity-changes tr:last-child th,
+.activity-changes tr:last-child td {
+  border-bottom: 0;
 }
 .activity-record-link {
   display: inline-flex;
@@ -428,6 +439,47 @@
   .activity-item-top {
     flex-direction: column;
     gap: 3px;
+  }
+  .activity-time {
+    text-align: left;
+  }
+  .activity-changes thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .activity-changes table,
+  .activity-changes tbody {
+    display: block;
+  }
+  .activity-changes tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+    gap: 10px;
+  }
+  .activity-changes tbody tr + tr {
+    border-top: 1px solid var(--border);
+  }
+  .activity-changes th,
+  .activity-changes td {
+    padding: 0;
+    border: 0;
+  }
+  .activity-changes tbody th {
+    font-weight: 600;
+  }
+  .activity-changes td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 3px;
+    color: var(--muted);
+    font-weight: 500;
   }
   .activity-results-bar {
     flex-wrap: wrap;

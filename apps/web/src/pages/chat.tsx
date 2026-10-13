@@ -401,6 +401,7 @@ export function Chat() {
                 )
               }
             >
+              <RefreshCw aria-hidden="true" />
               {t("common.retry")}
             </Button>
           </div>

@@ -310,6 +310,8 @@ Controles usam o raio `control`; contêineres tabulares, listas e cartões de co
 
 Botões combinam rótulo em peso médio com canto de controle, gap de 8px e altura mínima de 42px. Primário, contorno, ghost e destrutivo são as quatro variantes implementadas. A variante pequena usa altura mínima de 36px, padding de 8px 12px e texto de 12px; a variante de ícone mede 42px por 42px. A ação principal do formulário de autenticação tem altura mínima de 50px.
 
+Botões de ação acompanham o rótulo com um ícone Lucide que representa a operação, como salvar, confirmar, cancelar, excluir ou avançar. O ícone decorativo usa `aria-hidden`; botões sem texto mantêm nome acessível.
+
 Primário troca para a cor de hover; contorno e ghost recebem fundo suave. As transições de fundo e texto duram 160ms. O foco global usa contorno de 2px na cor primária, afastado 4px. Controles desabilitados têm opacidade 0.55 e cursor de indisponível.
 
 ### Chips
@@ -318,7 +320,9 @@ Badges são rótulos de status, com texto de 12px em peso 500. O estado neutro u
 
 ### Cards / Containers
 
-A entrada respeita o perfil: Global acessa a administração global; os demais perfis acessam o último cliente autorizado ou a agência disponível. A troca de cliente e de área administrativa ocorre no seletor de contexto do cabeçalho, também acessível no mobile. O seletor lista as agências autorizadas e expande os clientes dentro da agência escolhida; o contexto atual recebe indicador e fundo suave. O menu tem largura máxima de 320px, limite à largura do viewport e rolagem interna. Tabelas e listas usam contornos e divisórias, sem empilhar sombras. Diálogos têm largura máxima de 520px, rolagem interna quando necessária e padding de 32px; no mobile, 28px 24px.
+A entrada respeita o perfil: Global acessa a administração global; os demais perfis acessam o último cliente autorizado ou a agência disponível. A troca de cliente e de área administrativa ocorre no seletor de contexto do cabeçalho, também acessível no mobile. O seletor lista as agências autorizadas e expande os clientes dentro da agência escolhida; o contexto atual recebe indicador e fundo suave. O menu tem largura máxima de 320px, limite à largura do viewport e rolagem interna. Tabelas e listas usam contornos e divisórias, sem empilhar sombras.
+
+O diálogo padrão tem largura máxima de 520px. Modais de conteúdo e edição separam cabeçalho e rodapé do conteúdo com `border-bottom` e `border-top` de 1px em `var(--border)`, respectivamente. Diálogos de confirmação usam a variante `confirmation`, sem contorno externo nem divisórias no cabeçalho e rodapé. Quando existe X no cabeçalho, não se repete a ação Fechar no rodapé; rodapés sem ações ou paginação são omitidos. Ações Cancelar e Confirmar permanecem nos fluxos de decisão. Cabeçalho e ações permanecem visíveis, com rolagem no corpo. O componente padrão usa padding de 24px 32px no cabeçalho e corpo e 16px 32px no rodapé; no mobile, 20px e 16px 20px, respeitando a área segura inferior.
 
 ### Inputs / Fields
 

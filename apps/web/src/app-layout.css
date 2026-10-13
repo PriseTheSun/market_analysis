@@ -47,6 +47,11 @@
   padding: 0;
   margin: 0;
 }
+.mobile-drawer .sidebar-brand-row {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
 .app-shell .sidebar-brand img,
 .mobile-drawer .sidebar-brand img {
   display: block;
