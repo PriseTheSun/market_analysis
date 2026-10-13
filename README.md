@@ -90,6 +90,7 @@ A chave é inserida somente na interface e fica em memória no backend. Não a c
 | A opção Token temporário não aparece | Confira as variáveis da seção acima e reinicie a API. `setup:local` não atualiza um `.env` existente. A conta precisa ser Global. |
 | A tela parece antiga depois de editar o código | Confira a URL: o desenvolvimento abre em 5173. A versão Docker em 8080 só incorpora alterações após reconstruir as imagens. |
 | Porta 5173 ou 3000 ocupada | Encerre a instância anterior de desenvolvimento antes de executar `pnpm dev` novamente. O Vite não troca de porta automaticamente. |
+| Login retorna 502 em `/auth/session` ou `/auth/csrf` na porta 5173 | O frontend não conseguiu alcançar a API da porta 3000. Confira a saída de `pnpm dev` e reinicie o comando após corrigir o erro. A geração do Prisma usa entrada não interativa para não suspender a API quando executada junto do Vite. |
 
 ## Alternativa: executar tudo no Docker
 
