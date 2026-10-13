@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { passwordSchema } from "./credentials.js";
 
 const id = z.uuid();
 const name = z.string().trim().min(2).max(160);
@@ -42,6 +43,48 @@ export const managementAgencySchema = z.strictObject({
   slug,
   active: z.boolean().default(true),
 });
+// Creation-only credentials must never be accepted by the user edit endpoint.
+export const managementUserCreateSchema = z.discriminatedUnion("directAccess", [
+  managementUserSchema.safeExtend({
+    directAccess: z.literal(false).default(false),
+  }),
+  managementUserSchema
+    .safeExtend({
+      directAccess: z.literal(true),
+      password: passwordSchema,
+      accessScope: z.enum(["GLOBAL", "AGENCY", "CLIENT"]).default("CLIENT"),
+      agencyId: id.optional(),
+    })
+    .superRefine((value, ctx) => {
+      if (value.accessScope === "AGENCY" && !value.agencyId)
+        ctx.addIssue({
+          code: "custom",
+          path: ["agencyId"],
+          message: "required",
+        });
+      if (value.accessScope !== "AGENCY" && value.agencyId)
+        ctx.addIssue({
+          code: "custom",
+          path: ["agencyId"],
+          message: "invalid scope",
+        });
+      if (value.accessScope !== "CLIENT" && value.clients.length)
+        ctx.addIssue({
+          code: "custom",
+          path: ["clients"],
+          message: "invalid scope",
+        });
+      if (!value.active)
+        ctx.addIssue({
+          code: "custom",
+          path: ["active"],
+          message: "direct access requires active user",
+        });
+    }),
+]);
+export type ManagementUserCreateInput = z.infer<
+  typeof managementUserCreateSchema
+>;
 export const managementClientSchema = z.strictObject({
   name,
   slug,
@@ -115,6 +158,7 @@ export interface ManagementUser {
   active: boolean;
   platformRole: "GLOBAL" | null;
   archivedAt: string | null;
+  agencies: { id: string; role: string; agency: ManagementAgency }[];
   tenants: { id: string; role: "ADMIN" | "USER"; tenant: ManagementClient }[];
 }
 export interface ManagementPermission {

@@ -3,6 +3,7 @@ import type {
   ManagementKind,
   ManagementListInput,
   ManagementUserInput,
+  ManagementUserCreateInput,
   ManagementAgencyInput,
   ManagementClientInput,
   PermissionInput,
@@ -21,6 +22,11 @@ const agencyInclude = { agency: true } as const;
 const userView = {
   ...userSelect,
   archivedAt: true,
+  agencies: {
+    where: { active: true, agency: { archivedAt: null } },
+    include: { agency: true },
+    orderBy: { createdAt: "asc" },
+  },
   tenants: {
     where: { active: true, tenant: { archivedAt: null } },
     include: { tenant: { include: agencyInclude } },
@@ -140,9 +146,25 @@ export class ManagementService {
           OR: [{ name: match }, { email: match }],
           ...(p.agencyId
             ? {
-                tenants: {
-                  some: { active: true, tenant: { agencyId: p.agencyId } },
-                },
+                AND: [
+                  {
+                    OR: [
+                      {
+                        tenants: {
+                          some: {
+                            active: true,
+                            tenant: { agencyId: p.agencyId },
+                          },
+                        },
+                      },
+                      {
+                        agencies: {
+                          some: { active: true, agencyId: p.agencyId },
+                        },
+                      },
+                    ],
+                  },
+                ],
               }
             : {}),
         };
@@ -312,17 +334,29 @@ export class ManagementService {
   async saveUser(
     actor: Actor,
     id: string | undefined,
-    data: ManagementUserInput,
+    data: ManagementUserInput | ManagementUserCreateInput,
     requestId: string,
   ) {
-    const passwordHash = id ? undefined : await hashPassword(randomToken());
     return this.db.global(
       actor,
       async (tx, current) => {
+        if (id && "directAccess" in data)
+          throw new AppError(400, "VALIDATION_ERROR");
+        const direct =
+          !id && "directAccess" in data && data.directAccess ? data : undefined;
         const existing = id
           ? await tx.user.findFirst({ where: { id, archivedAt: null } })
           : null;
         if (id && !existing) throw new AppError(404, "NOT_FOUND");
+        if (
+          direct?.accessScope === "AGENCY" &&
+          !(await tx.agency.findFirst({
+            where: { id: direct.agencyId!, active: true, archivedAt: null },
+          }))
+        )
+          throw new AppError(400, "VALIDATION_ERROR", {
+            agencyId: ["invalid_agency"],
+          });
         const user = id
           ? await tx.user.update({
               where: { id },
@@ -333,13 +367,25 @@ export class ManagementService {
                 name: data.name,
                 email: data.email,
                 active: data.active,
-                passwordHash: passwordHash!,
+                passwordHash: await hashPassword(
+                  direct?.password ?? randomToken(),
+                ),
+                platformRole:
+                  direct?.accessScope === "GLOBAL" ? "GLOBAL" : null,
                 preference: { create: { locale: "pt-BR", theme: "light" } },
               },
             });
         await this.syncClients(tx, user.id, data.clients);
+        if (direct?.accessScope === "AGENCY")
+          await tx.agencyMembership.create({
+            data: {
+              userId: user.id,
+              agencyId: direct.agencyId!,
+              role: "SUPER_ADMIN",
+            },
+          });
         await this.db.assertResponsibilities(tx);
-        if (!id) {
+        if (!id && !direct) {
           const token = randomToken(),
             expiresAt = new Date(Date.now() + 24 * 3600000);
           const reset = await tx.passwordReset.create({
@@ -353,7 +399,7 @@ export class ManagementService {
             token,
             expiresAt,
           );
-        } else if (!data.active || existing?.email !== data.email) {
+        } else if (id && (!data.active || existing?.email !== data.email)) {
           await tx.session.updateMany({
             where: { userId: id, revokedAt: null },
             data: { revokedAt: new Date() },
@@ -375,7 +421,7 @@ export class ManagementService {
         await this.audit.record(
           tx,
           current,
-          id ? "user.updated" : "user.created",
+          id ? "user.updated" : direct ? "user.created-direct" : "user.created",
           requestId,
           { resourceId: user.id },
         );

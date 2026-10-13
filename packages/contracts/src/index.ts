@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { aiErrorCodes } from "./ai.js";
+import { passwordSchema } from "./credentials.js";
+export { passwordSchema } from "./credentials.js";
 export * from "./ai.js";
 export * from "./routes.js";
 export * from "./management.js";
@@ -11,7 +13,6 @@ export type TenantRole = z.infer<typeof roleSchema>;
 export type Locale = z.infer<typeof localeSchema>;
 export const idSchema = z.uuid();
 export const emailSchema = z.string().trim().toLowerCase().email().max(254);
-export const passwordSchema = z.string().min(12).max(128);
 export const loginSchema = z.strictObject({
   email: emailSchema,
   password: z.string().min(1).max(128),

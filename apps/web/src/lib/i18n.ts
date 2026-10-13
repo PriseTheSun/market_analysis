@@ -205,14 +205,49 @@ const copy: Record<string, [string, string, string]> = {
     "El usuario seleccionado recibirá acceso Admin a este cliente.",
   ],
   "management.createUserHint": [
-    "Cadastre o usuário e defina seu acesso aos clientes.",
-    "Create the user and set their client access.",
-    "Crea el usuario y define su acceso a los clientes.",
+    "Cadastre o usuário e defina suas permissões de acesso.",
+    "Create the user and set their access permissions.",
+    "Crea el usuario y define sus permisos de acceso.",
   ],
   "management.setupEmail": [
     "O usuário receberá por e-mail um link para definir sua senha, válido por 24 horas.",
     "The user will receive an email link to set their password, valid for 24 hours.",
     "El usuario recibirá un enlace por correo para definir su contraseña, válido por 24 horas.",
+  ],
+  "management.directAccess": [
+    "Acesso direto",
+    "Direct access",
+    "Acceso directo",
+  ],
+  "management.directAccessHint": [
+    "Defina a senha para permitir acesso imediato, sem confirmação por e-mail.",
+    "Set a password to allow immediate access, without email confirmation.",
+    "Define la contraseña para permitir acceso inmediato, sin confirmación por correo.",
+  ],
+  "management.directPasswordHint": [
+    "Use de 12 a 128 caracteres. Compartilhe a senha com o usuário por um canal seguro.",
+    "Use 12 to 128 characters. Share the password with the user through a secure channel.",
+    "Usa de 12 a 128 caracteres. Comparte la contraseña por un canal seguro.",
+  ],
+  "management.permissionLevel": [
+    "Nível de permissão",
+    "Permission level",
+    "Nivel de permiso",
+  ],
+  "management.directRoleHint.ADMIN": [
+    "Admin gerencia membros e arquivos dos clientes vinculados.",
+    "Admin manages members and files of the linked clients.",
+    "Admin gestiona miembros y archivos de los clientes vinculados.",
+  ],
+  "management.directRoleHint.USER": [
+    "User utiliza as próprias conversas nos clientes vinculados.",
+    "User accesses their own conversations in the linked clients.",
+    "User utiliza sus propias conversaciones en los clientes vinculados.",
+  ],
+  "management.optionalLinks": [
+    "Os vínculos são opcionais. Sem um vínculo, o usuário poderá entrar, mas não terá acesso a clientes.",
+    "Links are optional. Without a link, the user can sign in but cannot access clients.",
+    "Los vínculos son opcionales. Sin vínculo, el usuario puede iniciar sesión, pero no acceder a clientes.",
   ],
   "management.scopeHint.GLOBAL": [
     "Global administra toda a plataforma e acessa todas as agências e clientes.",

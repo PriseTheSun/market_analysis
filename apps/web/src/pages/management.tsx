@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import {
   managementUserSchema,
+  managementUserCreateSchema,
   managementAgencySchema,
   managementClientSchema,
   canonicalManagementTab,
@@ -57,6 +58,7 @@ import {
   Empty,
   Pagination,
   Badge,
+  Password,
 } from "../components/ui/common";
 import "./management.css";
 
@@ -174,7 +176,10 @@ export function Management() {
           </td>
           <td data-label={t("management.agencies")}>
             <RecordChips
-              names={user.tenants.map((m) => m.tenant.agency.name)}
+              names={[
+                ...user.agencies.map((m) => m.agency.name),
+                ...user.tenants.map((m) => m.tenant.agency.name),
+              ]}
               tone="agency"
               empty={t("collection.noAgencies")}
             />
@@ -673,6 +678,20 @@ function ManagementEditor({
     })) ?? [],
   );
   const [linkIndex, setLinkIndex] = useState(0);
+  const canCreateDirect =
+    kind === "users" && !item && options.role === "GLOBAL";
+  const [directAccess, setDirectAccess] = useState(false);
+  const [password, setPassword] = useState("");
+  const [accessRole, setAccessRole] = useState<
+    "GLOBAL" | "SUPER_ADMIN" | "ADMIN" | "USER"
+  >("USER");
+  const accessScope =
+    accessRole === "GLOBAL"
+      ? "GLOBAL"
+      : accessRole === "SUPER_ADMIN"
+        ? "AGENCY"
+        : "CLIENT";
+  const [directAgencyId, setDirectAgencyId] = useState("");
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -762,9 +781,12 @@ function ManagementEditor({
   }
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (busy) return;
     const schema =
       kind === "users"
-        ? managementUserSchema
+        ? item
+          ? managementUserSchema
+          : managementUserCreateSchema
         : kind === "agencies"
           ? managementAgencySchema
           : kind === "clients"
@@ -776,7 +798,22 @@ function ManagementEditor({
             name: values.name,
             email: values.email,
             active: values.active,
-            clients: links,
+            clients:
+              canCreateDirect && directAccess
+                ? accessScope === "CLIENT"
+                  ? links.map((link) => ({ ...link, role: accessRole }))
+                  : []
+                : links,
+            ...(canCreateDirect && directAccess
+              ? {
+                  directAccess: true,
+                  password,
+                  accessScope,
+                  ...(accessScope === "AGENCY"
+                    ? { agencyId: directAgencyId }
+                    : {}),
+                }
+              : {}),
           }
         : kind === "agencies"
           ? { name: values.name, slug: values.slug, active: values.active }
@@ -864,7 +901,102 @@ function ManagementEditor({
                     />
                   </Field>
                 )}
-                {!item && kind === "users" && (
+                {canCreateDirect && (
+                  <div className="management-direct-access">
+                    <div>
+                      <strong id="direct-access-label">
+                        {t("management.directAccess")}
+                      </strong>
+                      <p id="direct-access-hint">
+                        {t("management.directAccessHint")}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      className="management-switch"
+                      aria-checked={directAccess}
+                      aria-labelledby="direct-access-label"
+                      aria-describedby="direct-access-hint"
+                      disabled={busy}
+                      onClick={() => {
+                        setDirectAccess(!directAccess);
+                        setPassword("");
+                        setErrors({});
+                      }}
+                    >
+                      <span />
+                    </button>
+                  </div>
+                )}
+                {canCreateDirect && directAccess && (
+                  <>
+                    <Field
+                      label={t("auth.password")}
+                      error={
+                        errors.password
+                          ? t("management.directPasswordHint")
+                          : undefined
+                      }
+                    >
+                      <Password
+                        autoComplete="new-password"
+                        value={password}
+                        minLength={12}
+                        maxLength={128}
+                        aria-invalid={!!errors.password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={busy}
+                      />
+                    </Field>
+                    <p className="management-help">
+                      {t("management.directPasswordHint")}
+                    </p>
+                    <Field label={t("management.permissionLevel")}>
+                      <select
+                        value={accessRole}
+                        onChange={(e) =>
+                          setAccessRole(e.target.value as typeof accessRole)
+                        }
+                        disabled={busy}
+                      >
+                        {(
+                          ["GLOBAL", "SUPER_ADMIN", "ADMIN", "USER"] as const
+                        ).map((role) => (
+                          <option key={role} value={role}>
+                            {t(`role.${role}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                    <p className="management-help">
+                      {t(
+                        accessScope === "CLIENT"
+                          ? `management.directRoleHint.${accessRole}`
+                          : `management.scopeHint.${accessScope}`,
+                      )}
+                    </p>
+                    {accessScope === "AGENCY" && (
+                      <Field
+                        label={t("admin.agency")}
+                        error={fieldError("agencyId")}
+                      >
+                        <select
+                          value={directAgencyId}
+                          onChange={(e) => setDirectAgencyId(e.target.value)}
+                          disabled={busy}
+                          aria-invalid={!!errors.agencyId}
+                        >
+                          <option value="">
+                            {t("management.selectAgency")}
+                          </option>
+                          {agencyOptions}
+                        </select>
+                      </Field>
+                    )}
+                  </>
+                )}
+                {!item && kind === "users" && !directAccess && (
                   <p className="management-help">
                     {t("management.setupEmail")}
                   </p>
@@ -882,98 +1014,112 @@ function ManagementEditor({
                 )}
               </section>
             )}
-            {kind === "users" && (
-              <section className="management-form-section">
-                <h3>{t("management.clientLink")}</h3>
-                {links.length > 1 && (
-                  <div className="management-link-tabs">
-                    {links.map((c, i) => (
-                      <button
-                        key={i}
+            {kind === "users" &&
+              (!directAccess || accessScope === "CLIENT") && (
+                <section className="management-form-section">
+                  <h3>{t("management.clientLink")}</h3>
+                  {directAccess && (
+                    <p className="management-help">
+                      {t("management.optionalLinks")}
+                    </p>
+                  )}
+                  {links.length > 1 && (
+                    <div className="management-link-tabs">
+                      {links.map((c, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          aria-pressed={i === linkIndex}
+                          onClick={() => setLinkIndex(i)}
+                        >
+                          {clients.find((o) => o.id === c.tenantId)?.name ??
+                            t("management.newLink")}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {link && (
+                    <>
+                      <Field
+                        label={t("admin.agency")}
+                        error={fieldError("clients")}
+                      >
+                        <select
+                          value={link.agencyId}
+                          onChange={(e) => setLink("agencyId", e.target.value)}
+                        >
+                          <option value="">
+                            {t("management.selectAgency")}
+                          </option>
+                          {agencyOptions}
+                        </select>
+                      </Field>
+                      <Field
+                        label={t("management.agencyClient")}
+                        error={fieldError("clients")}
+                      >
+                        <select
+                          value={link.tenantId}
+                          onChange={(e) => setLink("tenantId", e.target.value)}
+                          disabled={!link.agencyId}
+                        >
+                          <option value="">
+                            {t("management.selectClient")}
+                          </option>
+                          {clientOptions(link.agencyId)}
+                        </select>
+                      </Field>
+                      <p className="management-help">
+                        {t("management.clientHint")}
+                      </p>
+                      {!directAccess && (
+                        <>
+                          <Field label={t("management.accessRole")}>
+                            <select
+                              value={link.role}
+                              onChange={(e) => setLink("role", e.target.value)}
+                            >
+                              <option value="USER">User</option>
+                              <option value="ADMIN">Admin</option>
+                            </select>
+                          </Field>
+                          <p className="management-help">
+                            {t("management.roleHint")}
+                          </p>
+                        </>
+                      )}
+                      <Button
                         type="button"
-                        aria-pressed={i === linkIndex}
-                        onClick={() => setLinkIndex(i)}
+                        variant="ghost"
+                        className="management-unlink"
+                        onClick={() => {
+                          setLinks((items) =>
+                            items.filter((_, i) => i !== linkIndex),
+                          );
+                          setLinkIndex(0);
+                        }}
                       >
-                        {clients.find((o) => o.id === c.tenantId)?.name ??
-                          t("management.newLink")}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {link && (
-                  <>
-                    <Field
-                      label={t("admin.agency")}
-                      error={fieldError("clients")}
-                    >
-                      <select
-                        value={link.agencyId}
-                        onChange={(e) => setLink("agencyId", e.target.value)}
-                      >
-                        <option value="">{t("management.selectAgency")}</option>
-                        {agencyOptions}
-                      </select>
-                    </Field>
-                    <Field
-                      label={t("management.agencyClient")}
-                      error={fieldError("clients")}
-                    >
-                      <select
-                        value={link.tenantId}
-                        onChange={(e) => setLink("tenantId", e.target.value)}
-                        disabled={!link.agencyId}
-                      >
-                        <option value="">{t("management.selectClient")}</option>
-                        {clientOptions(link.agencyId)}
-                      </select>
-                    </Field>
-                    <p className="management-help">
-                      {t("management.clientHint")}
-                    </p>
-                    <Field label={t("management.accessRole")}>
-                      <select
-                        value={link.role}
-                        onChange={(e) => setLink("role", e.target.value)}
-                      >
-                        <option value="USER">User</option>
-                        <option value="ADMIN">Admin</option>
-                      </select>
-                    </Field>
-                    <p className="management-help">
-                      {t("management.roleHint")}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="management-unlink"
-                      onClick={() => {
-                        setLinks((items) =>
-                          items.filter((_, i) => i !== linkIndex),
-                        );
-                        setLinkIndex(0);
-                      }}
-                    >
-                      <Link2 />
-                      {t("management.removeLink")}
-                    </Button>
-                  </>
-                )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setLinks((items) => [
-                      ...items,
-                      { agencyId: "", tenantId: "", role: "USER" },
-                    ]);
-                    setLinkIndex(links.length);
-                  }}
-                >
-                  <Plus />
-                  {t("management.addLink")}
-                </Button>
-              </section>
-            )}
+                        <Link2 />
+                        {t("management.removeLink")}
+                      </Button>
+                    </>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setLinks((items) => [
+                        ...items,
+                        { agencyId: "", tenantId: "", role: "USER" },
+                      ]);
+                      setLinkIndex(links.length);
+                    }}
+                  >
+                    <Plus />
+                    {t("management.addLink")}
+                  </Button>
+                </section>
+              )}
             {kind === "clients" && (
               <section className="management-form-section">
                 <h3>{t("management.clientAgency")}</h3>

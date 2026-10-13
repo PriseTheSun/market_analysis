@@ -17,6 +17,7 @@ import {
   managementKindSchema,
   managementListSchema,
   managementUserSchema,
+  managementUserCreateSchema,
   managementAgencySchema,
   managementClientSchema,
   permissionSchema,
@@ -47,7 +48,7 @@ export class ManagementController {
     return this.service.saveUser(
       r.actor!,
       undefined,
-      parse(managementUserSchema, b),
+      parse(managementUserCreateSchema, b),
       r.requestId,
     );
   }

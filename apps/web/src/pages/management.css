@@ -227,11 +227,65 @@
 .management-modal select:disabled {
   opacity: 0.7;
 }
+.management-modal select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2365759b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
 .management-help {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.55;
   margin: -9px 0 2px;
+}
+.management-direct-access {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--soft);
+}
+.management-direct-access strong {
+  font-size: 14px;
+}
+.management-direct-access p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.management-switch {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 24px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--muted);
+  cursor: pointer;
+}
+.management-switch[aria-checked="true"] {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.management-switch span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+}
+.management-switch[aria-checked="true"] span {
+  transform: translateX(18px);
+}
+.management-switch:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 .management-form-section > .button {
   align-self: flex-start;
