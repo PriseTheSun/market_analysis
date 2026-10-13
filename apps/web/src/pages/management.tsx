@@ -21,6 +21,7 @@ import {
   RotateCcw,
   Archive,
   Link2,
+  CircleQuestionMark,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -45,6 +46,11 @@ import { api, errorText, queryClient } from "../lib/api";
 import { PAGE_SIZE } from "../lib/pagination";
 import { useScope, PageHeading } from "../components/shell";
 import { Button } from "../components/ui/button";
+import {
+  ManagementHelp,
+  ManagementTour,
+  type ManagementTourState,
+} from "../components/management-guides";
 import {
   RecordActions,
   RecordIdentity,
@@ -90,10 +96,17 @@ export function Management() {
   const [agency, setAgency] = useState("");
   const [view, setView] = useState<"current" | "archived">("current");
   const [page, setPage] = useState(1);
-  const [edit, setEdit] = useState<{
+  const [manualEdit, setEdit] = useState<{
     kind: ManagementKind;
     item?: RecordItem;
   }>();
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [tour, setTour] = useState<ManagementTourState>();
+  const edit = tour
+    ? tour.guide.steps[tour.step]?.form
+      ? { kind: tour.guide.kind!, item: undefined }
+      : undefined
+    : manualEdit;
   const [deletion, setDeletion] = useState<{
     kind: ManagementKind;
     item: RecordItem;
@@ -284,7 +297,48 @@ export function Management() {
             ? "management.description"
             : "management.permissionsDescription",
         )}
-      />
+      >
+        <div className="page-heading-actions">
+          <Dialog.Root open={helpOpen} onOpenChange={setHelpOpen}>
+            <Dialog.Trigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="management-help-trigger"
+                data-management-guide="help"
+                aria-label={t("managementGuide.help")}
+                title={t("managementGuide.help")}
+              >
+                <CircleQuestionMark aria-hidden="true" />
+              </Button>
+            </Dialog.Trigger>
+            <ManagementHelp
+              global={scope.user.platformRole === "GLOBAL"}
+              onStart={(guide) => {
+                if (guide.steps.some((step) => step.form) && !options.data) {
+                  toast.error(
+                    options.error
+                      ? errorText(options.error)
+                      : t("common.loading"),
+                  );
+                  return;
+                }
+                if (guide.kind) switchTab(guide.kind);
+                setEdit(undefined);
+                setHelpOpen(false);
+                setTour({ guide, step: 0 });
+              }}
+            />
+          </Dialog.Root>
+          <Button
+            data-management-guide="create"
+            onClick={() => setEdit({ kind: tab })}
+          >
+            <Plus aria-hidden="true" />
+            {t(`management.create.${tab}`)}
+          </Button>
+        </div>
+      </PageHeading>
       <div
         className="management-tabs"
         role="tablist"
@@ -380,11 +434,9 @@ export function Management() {
               </select>
             </label>
           )}
-          <ViewToggle {...display} />
-          <Button onClick={() => setEdit({ kind: tab })}>
-            <Plus aria-hidden="true" />
-            {t(`management.create.${tab}`)}
-          </Button>
+          <div data-management-guide="views">
+            <ViewToggle {...display} />
+          </div>
         </div>
         {list.isPending ? (
           <Loading />
@@ -474,13 +526,28 @@ export function Management() {
       </section>
       <Dialog.Root
         open={!!edit}
-        onOpenChange={(open) => !open && setEdit(undefined)}
+        modal={!tour}
+        onOpenChange={(open) => {
+          if (!open && !tour) setEdit(undefined);
+        }}
       >
         <Dialog.Portal>
           <Dialog.Overlay className="management-overlay" />
           <Dialog.Content
             className="management-modal"
             onPointerDownOutside={(e) => e.preventDefault()}
+            onInteractOutside={(e) => {
+              if (tour) e.preventDefault();
+            }}
+            onEscapeKeyDown={(e) => {
+              if (tour) e.preventDefault();
+            }}
+            onOpenAutoFocus={(e) => {
+              if (tour) e.preventDefault();
+            }}
+            onCloseAutoFocus={(e) => {
+              if (tour) e.preventDefault();
+            }}
           >
             {edit && (
               <>
@@ -496,9 +563,11 @@ export function Management() {
                   </Dialog.Title>
                   <Dialog.Description>
                     {t(
-                      !edit.item && edit.kind === "users"
-                        ? "management.createUserHint"
-                        : `management.hint.${edit.kind}`,
+                      tour
+                        ? "managementGuide.preview"
+                        : !edit.item && edit.kind === "users"
+                          ? "management.createUserHint"
+                          : `management.hint.${edit.kind}`,
                     )}
                   </Dialog.Description>
                   <Dialog.Close asChild>
@@ -519,9 +588,12 @@ export function Management() {
                   />
                 ) : (
                   <ManagementEditor
-                    key={`${edit.kind}:${edit.item?.id ?? "new"}`}
+                    key={`${tour?.guide.id ?? "edit"}:${edit.kind}:${edit.item?.id ?? "new"}`}
                     kind={edit.kind}
                     item={edit.item}
+                    tutorial={
+                      tour ? { direct: tour.guide.id === "direct" } : undefined
+                    }
                     options={options.data}
                     onClose={() => setEdit(undefined)}
                     onSaved={async (removed) => {
@@ -549,6 +621,11 @@ export function Management() {
           }}
         />
       )}
+      <ManagementTour
+        tour={tour}
+        ready={!tour?.guide.steps[tour.step]?.form || !!options.data}
+        onChange={setTour}
+      />
     </main>
   );
 }
@@ -639,12 +716,14 @@ function ManagementEditor({
   options,
   onClose,
   onSaved,
+  tutorial,
 }: {
   kind: ManagementKind;
   item?: RecordItem;
   options: ManagementOptions;
   onClose: () => void;
   onSaved: (removed?: boolean) => Promise<void>;
+  tutorial?: { direct: boolean };
 }) {
   const { t } = useTranslation();
   const user =
@@ -680,7 +759,7 @@ function ManagementEditor({
   const [linkIndex, setLinkIndex] = useState(0);
   const canCreateDirect =
     kind === "users" && !item && options.role === "GLOBAL";
-  const [directAccess, setDirectAccess] = useState(false);
+  const [directAccess, setDirectAccess] = useState(tutorial?.direct ?? false);
   const [password, setPassword] = useState("");
   const [accessRole, setAccessRole] = useState<
     "GLOBAL" | "SUPER_ADMIN" | "ADMIN" | "USER"
@@ -763,6 +842,7 @@ function ManagementEditor({
     payload?: unknown,
     suffix = "",
   ) {
+    if (tutorial) return;
     setError("");
     setBusy(true);
     try {
@@ -781,7 +861,7 @@ function ManagementEditor({
   }
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || tutorial) return;
     const schema =
       kind === "users"
         ? item
@@ -856,6 +936,7 @@ function ManagementEditor({
     <form
       className={`management-editor${canCreateDirect ? " management-user-editor" : ""}`}
       onSubmit={submit}
+      inert={!!tutorial}
       noValidate
     >
       <div className="management-editor-body">
@@ -872,7 +953,10 @@ function ManagementEditor({
               kind === "clients") && (
               <section className="management-form-section">
                 {canCreateDirect && (
-                  <div className="management-direct-access">
+                  <div
+                    className="management-direct-access"
+                    data-management-guide="direct"
+                  >
                     <div>
                       <strong id="direct-access-label">
                         {t("management.directAccess")}
@@ -901,6 +985,7 @@ function ManagementEditor({
                 )}
                 <h3>{t(`management.details.${kind}`)}</h3>
                 <div
+                  data-management-guide="identity"
                   className={
                     canCreateDirect
                       ? "management-user-identity-fields"
@@ -912,6 +997,7 @@ function ManagementEditor({
                     error={fieldError("name")}
                   >
                     <input
+                      data-management-guide="name"
                       value={values.name}
                       onChange={(e) => set("name", e.target.value)}
                       autoComplete="off"
@@ -934,6 +1020,7 @@ function ManagementEditor({
                   ) : (
                     <Field label={t("admin.slug")} error={fieldError("slug")}>
                       <input
+                        data-management-guide="slug"
                         value={values.slug}
                         onChange={(e) => set("slug", e.target.value)}
                         aria-invalid={!!errors.slug}
@@ -952,6 +1039,7 @@ function ManagementEditor({
                       }
                     >
                       <Password
+                        data-management-guide="password"
                         autoComplete="new-password"
                         value={password}
                         minLength={12}
@@ -966,6 +1054,7 @@ function ManagementEditor({
                     </p>
                     <Field label={t("management.permissionLevel")}>
                       <select
+                        data-management-guide="role"
                         value={accessRole}
                         onChange={(e) =>
                           setAccessRole(e.target.value as typeof accessRole)
@@ -1028,7 +1117,10 @@ function ManagementEditor({
             )}
             {kind === "users" &&
               (!directAccess || accessScope === "CLIENT") && (
-                <section className="management-form-section">
+                <section
+                  className="management-form-section"
+                  data-management-guide="links"
+                >
                   <h3>{t("management.clientLink")}</h3>
                   {directAccess && (
                     <p className="management-help">
@@ -1133,7 +1225,10 @@ function ManagementEditor({
                 </section>
               )}
             {kind === "clients" && (
-              <section className="management-form-section">
+              <section
+                className="management-form-section"
+                data-management-guide="clientAgency"
+              >
                 <h3>{t("management.clientAgency")}</h3>
                 <Field label={t("admin.agency")} error={fieldError("agencyId")}>
                   <select
@@ -1183,6 +1278,7 @@ function ManagementEditor({
                   error={fieldError("userId")}
                 >
                   <select
+                    data-management-guide="permissionUser"
                     value={values.userId}
                     onChange={(e) => set("userId", e.target.value)}
                   >
@@ -1204,6 +1300,7 @@ function ManagementEditor({
                 </Field>
                 <Field label={t("management.scope")}>
                   <select
+                    data-management-guide="scope"
                     value={values.scope}
                     onChange={(e) =>
                       setValues((v) => ({
@@ -1284,7 +1381,7 @@ function ManagementEditor({
           </p>
         )}
       </div>
-      <footer className="management-editor-footer">
+      <footer className="management-editor-footer" data-management-guide="save">
         <Button
           type="button"
           variant="outline"

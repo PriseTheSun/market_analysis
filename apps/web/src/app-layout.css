@@ -310,6 +310,22 @@
   width: 18px;
   height: 18px;
 }
+.page-heading-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 10px;
+}
+.app-shell .page .page-heading-actions > .button {
+  min-height: 42px;
+  margin: 0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.page-heading-actions > .button svg {
+  width: 18px;
+  height: 18px;
+}
 .agency-filters {
   display: flex;
   gap: 14px;

@@ -1,3 +1,85 @@
+.management-page .page-heading > :first-child {
+  min-width: 0;
+}
+.management-help-trigger {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  flex-shrink: 0;
+}
+.management-modal.management-help-dialog {
+  width: min(780px, calc(100vw - 48px));
+}
+.management-guide-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 4px 30px 28px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.management-guide-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.management-guide-card:hover {
+  border-color: var(--primary);
+  background: var(--soft);
+}
+.management-guide-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--soft);
+  color: var(--primary);
+}
+.management-guide-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.management-guide-copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 6px;
+}
+.management-guide-copy strong {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.management-guide-copy > span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.management-guide-copy small {
+  color: var(--primary);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.management-guide-card > svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+.management-guide-popover {
+  max-width: min(360px, calc(100vw - 24px));
+}
 .management-tabs {
   display: flex;
   gap: 10px;
@@ -393,6 +475,13 @@
   }
 }
 @media (max-width: 700px) {
+  .management-page .page-heading-actions {
+    align-self: flex-end;
+  }
+  .management-guide-list {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 20px 20px;
+  }
   .management-user-identity-fields {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -2,8 +2,10 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import type { Locale } from "@market/contracts";
 import { aiCopy } from "./ai-copy";
+import { managementGuideCopy } from "./management-guide-copy";
 const copy: Record<string, [string, string, string]> = {
   ...aiCopy,
+  ...managementGuideCopy,
   "collection.view": [
     "Visualização da listagem",
     "List view",
