@@ -37,7 +37,7 @@ export class AccessRequestsController {
     @Body() b: unknown,
   ) {
     await this.security.limit(r, "access.submit", 10);
-    return this.service.submit(parse(accessRequestSchema, b));
+    return this.service.submit(parse(accessRequestSchema, b), r.requestId);
   }
   @Get("platform/access-requests") @UseGuards(SessionGuard) list(
     @Req() r: Request,

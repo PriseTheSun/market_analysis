@@ -21,12 +21,15 @@ export class AccessRequestsService {
     @Inject(AuthService) private auth: AuthService,
     @Inject(MailService) private mail: MailService,
   ) {}
-  async submit(data: {
-    name: string;
-    email: string;
-    organization: string;
-    message?: string;
-  }) {
+  async submit(
+    data: {
+      name: string;
+      email: string;
+      organization: string;
+      message?: string;
+    },
+    requestId: string,
+  ) {
     await this.db.metadata.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${data.email}, 8721))::text`;
       if (
@@ -36,6 +39,9 @@ export class AccessRequestsService {
       )
         return;
       const item = await tx.accessRequest.create({ data });
+      await this.audit.record(tx, null, "access.submitted", requestId, {
+        resourceId: item.id,
+      });
       await this.events.notify(
         tx,
         await this.events.reviewers(tx, null),
@@ -145,6 +151,7 @@ export class AccessRequestsService {
         });
         if (!item || !tenant) throw new AppError(404, "NOT_FOUND");
         if (item.status !== "pending") throw new AppError(409, "CONFLICT");
+        const before = await this.audit.snapshot(tx, "access.classified", id);
         const value = await tx.accessRequest.update({
           where: { id },
           data: { tenantId, agencyId: tenant.agencyId },
@@ -152,6 +159,7 @@ export class AccessRequestsService {
         await this.audit.record(tx, current, "access.classified", requestId, {
           tenantId,
           resourceId: id,
+          before,
         });
         await this.events.notify(
           tx,
@@ -229,6 +237,7 @@ export class AccessRequestsService {
           return { id, status: item.status };
         }
         await this.db.setContext(tx, current, tenant.id);
+        const before = await this.audit.snapshot(tx, "access.updated", id);
         const approved = data.approve || item.status === "approved";
         let invitationId = item.invitationId;
         if (approved) {
@@ -261,7 +270,7 @@ export class AccessRequestsService {
               : "access.approved"
             : "access.classified",
           requestId,
-          { tenantId: tenant.id, resourceId: id },
+          { tenantId: tenant.id, resourceId: id, before },
         );
         await this.events.notify(
           tx,
@@ -373,6 +382,7 @@ export class AccessRequestsService {
           throw new AppError(409, "CONFLICT");
         return { id: item.id, status: item.status };
       }
+      const before = await this.audit.snapshot(tx, "access.updated", id);
       let invitationId: string | undefined;
       if (data.decision === "rejected" && item.invitationId)
         await this.revokeInvitation(tx, item.invitationId);
@@ -414,6 +424,7 @@ export class AccessRequestsService {
           tenantId: item.tenantId ?? undefined,
           resourceId: id,
           reason: data.reason,
+          before,
         },
       );
       await this.events.notify(

@@ -1,3 +1,4 @@
+import { ModuleInfo } from "./module-info";
 import { BlurFade } from "./magicui/blur-fade";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
@@ -975,7 +976,10 @@ export function PageHeading({
           <h1>{title}</h1>
           {description && <p>{description}</p>}
         </div>
-        {children}
+        <div className="page-heading-controls">
+          <ModuleInfo />
+          {children}
+        </div>
       </div>
     </>
   );

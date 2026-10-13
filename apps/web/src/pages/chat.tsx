@@ -1,3 +1,5 @@
+import { useLocation } from "react-router-dom";
+import { ModuleInfo } from "../components/module-info";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -59,7 +61,13 @@ export function Markdown({ children }: { children: string }) {
 export function Chat() {
   const s = useScope();
   const { t, i18n } = useTranslation();
-  const [current, setCurrent] = useState<string>(),
+  const location = useLocation();
+  const requestedConversation =
+    new URLSearchParams(location.search).get("conversation") ?? undefined;
+  const [routeSearch, setRouteSearch] = useState(location.search);
+  const [current, setCurrent] = useState<string | undefined>(
+      requestedConversation,
+    ),
     [draft, setDraft] = useState(""),
     [stream, setStream] = useState(""),
     [busy, setBusy] = useState(false),
@@ -70,6 +78,10 @@ export function Chat() {
       content: string;
       retryOf?: string;
     }>();
+  if (routeSearch !== location.search) {
+    setRouteSearch(location.search);
+    setCurrent(requestedConversation);
+  }
   const abort = useRef<AbortController | null>(null),
     operation = useRef<string | null>(null),
     alive = useRef(true),
@@ -280,6 +292,7 @@ export function Chat() {
                   : "chat.demoSub",
             )}
           </span>
+          <ModuleInfo />
         </div>
         <div
           className="chat-messages"

@@ -302,6 +302,8 @@ export class ManagementService {
     tx: Tx,
     userId: string,
     clients: ManagementUserInput["clients"],
+    actor: Actor,
+    requestId: string,
   ) {
     for (const c of clients) {
       const unchanged = await tx.tenantMembership.findFirst({
@@ -314,12 +316,35 @@ export class ManagementService {
         },
       });
       if (!unchanged) await this.client(tx, c.tenantId, c.agencyId);
-      await tx.tenantMembership.upsert({
+      const previous = await tx.tenantMembership.findUnique({
+        where: { tenantId_userId: { tenantId: c.tenantId, userId } },
+      });
+      const before = previous
+        ? await this.audit.snapshot(tx, "membership.updated", previous.id)
+        : null;
+      const membership = await tx.tenantMembership.upsert({
         where: { tenantId_userId: { tenantId: c.tenantId, userId } },
         create: { tenantId: c.tenantId, userId, role: c.role },
         update: { active: true, role: c.role },
       });
+      if (!unchanged)
+        await this.audit.record(tx, actor, "membership.updated", requestId, {
+          resourceId: membership.id,
+          tenantId: c.tenantId,
+          before,
+        });
     }
+    const removed = await tx.tenantMembership.findMany({
+      where: {
+        userId,
+        active: true,
+        tenantId: { notIn: clients.map((c) => c.tenantId) },
+        tenant: { archivedAt: null },
+      },
+    });
+    const snapshots = await Promise.all(
+      removed.map((x) => this.audit.snapshot(tx, "membership.updated", x.id)),
+    );
     // Only the edited user's direct client memberships are affected.
     await tx.tenantMembership.updateMany({
       where: {
@@ -330,6 +355,12 @@ export class ManagementService {
       },
       data: { active: false },
     });
+    for (const [i, membership] of removed.entries())
+      await this.audit.record(tx, actor, "membership.updated", requestId, {
+        resourceId: membership.id,
+        tenantId: membership.tenantId,
+        before: snapshots[i],
+      });
   }
   async saveUser(
     actor: Actor,
@@ -357,6 +388,7 @@ export class ManagementService {
           throw new AppError(400, "VALIDATION_ERROR", {
             agencyId: ["invalid_agency"],
           });
+        const before = await this.audit.snapshot(tx, "user.updated", id);
         const user = id
           ? await tx.user.update({
               where: { id },
@@ -375,15 +407,27 @@ export class ManagementService {
                 preference: { create: { locale: "pt-BR", theme: "light" } },
               },
             });
-        await this.syncClients(tx, user.id, data.clients);
-        if (direct?.accessScope === "AGENCY")
-          await tx.agencyMembership.create({
+        await this.syncClients(tx, user.id, data.clients, current, requestId);
+        if (direct?.accessScope === "AGENCY") {
+          const membership = await tx.agencyMembership.create({
             data: {
               userId: user.id,
               agencyId: direct.agencyId!,
               role: "SUPER_ADMIN",
             },
           });
+          await this.audit.record(
+            tx,
+            current,
+            "permission.created",
+            requestId,
+            {
+              resourceId: `agency:${membership.id}`,
+              agencyId: membership.agencyId,
+              before: null,
+            },
+          );
+        }
         await this.db.assertResponsibilities(tx);
         if (!id && !direct) {
           const token = randomToken(),
@@ -423,7 +467,7 @@ export class ManagementService {
           current,
           id ? "user.updated" : direct ? "user.created-direct" : "user.created",
           requestId,
-          { resourceId: user.id },
+          { resourceId: user.id, before },
         );
         return tx.user.findUniqueOrThrow({
           where: { id: user.id },
@@ -447,6 +491,7 @@ export class ManagementService {
           !(await tx.agency.findFirst({ where: { id, archivedAt: null } }))
         )
           throw new AppError(404, "NOT_FOUND");
+        const before = await this.audit.snapshot(tx, "agency.updated", id);
         const value = id
           ? await tx.agency.update({ where: { id }, data })
           : await tx.agency.create({ data });
@@ -455,7 +500,7 @@ export class ManagementService {
           current,
           id ? "agency.updated" : "agency.created",
           requestId,
-          { agencyId: value.id, resourceId: value.id },
+          { agencyId: value.id, resourceId: value.id, before },
         );
         return value;
       },
@@ -493,6 +538,7 @@ export class ManagementService {
           throw new AppError(400, "VALIDATION_ERROR", {
             adminId: ["required"],
           });
+        const before = await this.audit.snapshot(tx, "tenant.updated", id);
         const { adminId, ...fields } = data;
         const client = id
           ? await tx.tenant.update({ where: { id }, data: fields })
@@ -506,13 +552,33 @@ export class ManagementService {
             throw new AppError(400, "VALIDATION_ERROR", {
               adminId: ["invalid_admin"],
             });
-          await tx.tenantMembership.upsert({
+          const previous = await tx.tenantMembership.findUnique({
+            where: {
+              tenantId_userId: { tenantId: client.id, userId: adminId },
+            },
+          });
+          const membershipBefore = previous
+            ? await this.audit.snapshot(tx, "membership.updated", previous.id)
+            : null;
+          const membership = await tx.tenantMembership.upsert({
             where: {
               tenantId_userId: { tenantId: client.id, userId: adminId },
             },
             create: { tenantId: client.id, userId: adminId, role: "ADMIN" },
             update: { active: true, role: "ADMIN" },
           });
+          if (!previous?.active || previous.role !== "ADMIN")
+            await this.audit.record(
+              tx,
+              current,
+              "membership.updated",
+              requestId,
+              {
+                resourceId: membership.id,
+                tenantId: client.id,
+                before: membershipBefore,
+              },
+            );
         }
         await this.db.assertResponsibilities(tx);
         await this.audit.record(
@@ -524,6 +590,7 @@ export class ManagementService {
             tenantId: client.id,
             agencyId: client.agencyId,
             resourceId: client.id,
+            before,
           },
         );
         return client;
@@ -609,6 +676,38 @@ export class ManagementService {
           throw new AppError(400, "VALIDATION_ERROR", {
             userId: ["invalid_user"],
           });
+        let previousId = id;
+        if (!previousId) {
+          if (data.scope === "GLOBAL") previousId = `global:${data.userId}`;
+          else if (data.scope === "AGENCY") {
+            const previous = await tx.agencyMembership.findUnique({
+              where: {
+                agencyId_userId: {
+                  agencyId: data.agencyId!,
+                  userId: data.userId,
+                },
+              },
+              select: { id: true },
+            });
+            if (previous) previousId = `agency:${previous.id}`;
+          } else {
+            const previous = await tx.tenantMembership.findUnique({
+              where: {
+                tenantId_userId: {
+                  tenantId: data.tenantId!,
+                  userId: data.userId,
+                },
+              },
+              select: { id: true },
+            });
+            if (previous) previousId = `client:${previous.id}`;
+          }
+        }
+        const before = await this.audit.snapshot(
+          tx,
+          "permission.updated",
+          previousId,
+        );
         if (id) await this.revoke(tx, id, agencyIds);
         let resultId: string;
         if (data.scope === "GLOBAL") {
@@ -663,6 +762,7 @@ export class ManagementService {
           requestId,
           {
             resourceId: resultId,
+            before,
             agencyId: data.agencyId,
             tenantId: data.tenantId,
           },
@@ -676,10 +776,12 @@ export class ManagementService {
     return this.manage(
       actor,
       async (tx, current, agencyIds) => {
+        const before = await this.audit.snapshot(tx, "permission.removed", id);
         await this.revoke(tx, id, agencyIds);
         await this.db.assertResponsibilities(tx);
         await this.audit.record(tx, current, "permission.removed", requestId, {
           resourceId: id,
+          before,
         });
         return { ok: true };
       },
@@ -696,6 +798,7 @@ export class ManagementService {
     return this.db.global(
       actor,
       async (tx, current) => {
+        const before = await this.audit.snapshot(tx, `${kind}.archived`, id);
         const where = { id, archivedAt: restore ? { not: null } : null };
         const archivedAt = restore ? null : new Date();
         if (kind === "users") {
@@ -739,7 +842,7 @@ export class ManagementService {
           current,
           `${kind}.${restore ? "restored" : "archived"}`,
           requestId,
-          { resourceId: id },
+          { resourceId: id, before },
         );
         return { ok: true };
       },

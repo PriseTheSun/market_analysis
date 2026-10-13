@@ -290,9 +290,12 @@ model AuditLog {
   result String
   requestId String
   reason String?
+  display Json?
   createdAt DateTime @default(now()) @db.Timestamptz
   @@index([tenantId,createdAt])
   @@index([actorId,createdAt])
+  @@index([agencyId,createdAt])
+  @@index([action,createdAt])
 }
 model EmailDelivery {
   id String @id @default(uuid()) @db.Uuid

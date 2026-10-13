@@ -313,6 +313,7 @@ export class AiService implements OnModuleInit, OnModuleDestroy {
         });
         if ((previous?.version ?? 0) !== data.expectedVersion)
           throw new AppError(409, "CONFLICT");
+        const before = await this.audit.snapshot(tx, "ai.settings.saved", key);
         const values = {
           environment: this.environment,
           scope: data.scope,
@@ -337,7 +338,7 @@ export class AiService implements OnModuleInit, OnModuleDestroy {
           context.actor,
           "ai.settings.saved",
           context.requestId,
-          { resourceId: key },
+          { resourceId: key, before },
         );
       },
       true,

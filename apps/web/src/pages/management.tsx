@@ -4,7 +4,7 @@ import {
   useRecordView,
   RecordChips,
 } from "../components/ui/collection";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -92,16 +92,25 @@ export function Management() {
   const [params, setParams] = useSearchParams();
   const requestedTab = canonicalManagementTab(params.get("tab"));
   const tab = tabs.find((x) => x.key === requestedTab)?.key ?? tabs[0]!.key;
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(params.get("search") ?? "");
+  const [linkedSearch, setLinkedSearch] = useState(params.get("search"));
   const [agency, setAgency] = useState("");
   const [view, setView] = useState<"current" | "archived">("current");
   const [page, setPage] = useState(1);
+  if (linkedSearch !== params.get("search")) {
+    setLinkedSearch(params.get("search"));
+    setSearch(params.get("search") ?? "");
+    setPage(1);
+  }
+
   const [manualEdit, setEdit] = useState<{
     kind: ManagementKind;
     item?: RecordItem;
   }>();
   const [helpOpen, setHelpOpen] = useState(false);
   const [tour, setTour] = useState<ManagementTourState>();
+  const linkedRecord = params.get("record");
+  const [dismissedRecord, setDismissedRecord] = useState<string | null>(null);
   const edit = tour
     ? tour.guide.steps[tour.step]?.form
       ? { kind: tour.guide.kind!, item: undefined }
@@ -138,6 +147,23 @@ export function Management() {
         signal,
       ),
   });
+  if (!linkedRecord && dismissedRecord) setDismissedRecord(null);
+  const linkedItem = list.data?.items.find((item) => item.id === linkedRecord);
+  if (linkedItem && linkedRecord !== dismissedRecord && !manualEdit && !tour) {
+    setDismissedRecord(linkedRecord);
+    setEdit({ kind: tab, item: linkedItem });
+  }
+  useEffect(() => {
+    if (linkedRecord && dismissedRecord === linkedRecord) {
+      setParams(
+        (p) => {
+          p.delete("record");
+          return p;
+        },
+        { replace: true },
+      );
+    }
+  }, [linkedRecord, dismissedRecord, setParams]);
   async function refresh() {
     await queryClient.invalidateQueries({ queryKey: [scope.user.id] });
     await queryClient.invalidateQueries({ queryKey: ["session"] });
@@ -145,6 +171,8 @@ export function Management() {
   const switchTab = (next: ManagementKind) => {
     setParams((p) => {
       p.set("tab", localizedManagementTab(next, i18n.language));
+      p.delete("record");
+      p.delete("search");
       return p;
     });
     setSearch("");

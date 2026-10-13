@@ -159,11 +159,13 @@ export class AdministrationService {
       async (tx, current) => {
         if (!(await tx.agency.findFirst({ where: { id, archivedAt: null } })))
           throw new AppError(404, "NOT_FOUND");
+        const before = await this.audit.snapshot(tx, "agency.updated", id);
         const value = await tx.agency.update({ where: { id }, data });
         await this.db.assertResponsibilities(tx);
         await this.audit.record(tx, current, "agency.updated", requestId, {
           agencyId: id,
           resourceId: id,
+          before,
         });
         return value;
       },
@@ -256,12 +258,14 @@ export class AdministrationService {
         if (!t) throw new AppError(404, "NOT_FOUND");
         if (data.status === "active" && !t.agency.active)
           throw new AppError(409, "CONFLICT");
+        const before = await this.audit.snapshot(tx, "tenant.updated", id);
         const value = await tx.tenant.update({ where: { id }, data });
         await this.db.assertResponsibilities(tx);
         await this.audit.record(tx, current, "tenant.updated", requestId, {
           tenantId: id,
           agencyId: t.agencyId,
           resourceId: id,
+          before,
         });
         return value;
       },
@@ -284,6 +288,12 @@ export class AdministrationService {
           where: { email: data.email, active: true },
         });
         if (!agency || !user) throw new AppError(404, "NOT_FOUND");
+        const before = await this.audit.snapshot(
+          tx,
+          "agency.super-admin.updated",
+          user.id,
+          { agencyId: id },
+        );
         const value = await tx.agencyMembership.upsert({
           where: { agencyId_userId: { agencyId: id, userId: user.id } },
           create: { agencyId: id, userId: user.id, active: data.active },
@@ -294,7 +304,7 @@ export class AdministrationService {
           current,
           "agency.super-admin.updated",
           requestId,
-          { agencyId: id, resourceId: user.id },
+          { agencyId: id, resourceId: user.id, before },
         );
         return value;
       },
@@ -343,6 +353,7 @@ export class AdministrationService {
           where: { id, archivedAt: null },
         });
         if (!user) throw new AppError(404, "NOT_FOUND");
+        const before = await this.audit.snapshot(tx, "user.updated", id);
         const result = await tx.user.update({
           where: { id },
           data: {
@@ -365,7 +376,7 @@ export class AdministrationService {
             ? "user.global.updated"
             : "user.status.updated",
           requestId,
-          { resourceId: id, reason: data.reason },
+          { resourceId: id, reason: data.reason, before },
         );
         return publicUser(result);
       },
@@ -413,6 +424,7 @@ export class AdministrationService {
           include: { user: true },
         });
         if (!member) throw new AppError(404, "NOT_FOUND");
+        const before = await this.audit.snapshot(tx, "membership.updated", id);
         const value = await tx.tenantMembership.update({ where: { id }, data });
         await this.db.assertResponsibilities(tx);
         await this.audit.record(
@@ -420,7 +432,7 @@ export class AdministrationService {
           scope.actor,
           "membership.updated",
           requestId,
-          { tenantId, resourceId: id },
+          { tenantId, resourceId: id, before },
         );
         if (value.active && member.user.active)
           await this.events.notify(

@@ -416,9 +416,17 @@ export class FilesService implements OnModuleInit, OnModuleDestroy {
     );
     if (file.status === "deleted") return { ok: true };
     await this.deleteObjects(file);
-    await this.internal(t, (tx) =>
-      tx.storedFile.update({ where: { id }, data: { status: "deleted" } }),
-    );
+    await this.internal(t, async (tx) => {
+      const completed = await tx.storedFile.updateMany({
+        where: { id, status: { not: "deleted" } },
+        data: { status: "deleted" },
+      });
+      if (completed.count)
+        await this.audit.record(tx, actor, "file.deleted", requestId, {
+          tenantId: t,
+          resourceId: id,
+        });
+    });
     return { ok: true };
   }
   private internal<T>(
@@ -484,9 +492,9 @@ export class FilesService implements OnModuleInit, OnModuleDestroy {
             continue;
           }
           await this.deleteObjects(f);
-          await this.internal(t.id, (tx) =>
-            tx.storedFile.update({
-              where: { id: f.id },
+          await this.internal(t.id, async (tx) => {
+            const completed = await tx.storedFile.updateMany({
+              where: { id: f.id, status: f.status },
               data: {
                 cleanedAt: new Date(),
                 status: ["deleting", "deleted"].includes(f.status)
@@ -496,8 +504,13 @@ export class FilesService implements OnModuleInit, OnModuleDestroy {
                   ? "UPLOAD_INTERRUPTED"
                   : f.failureCode,
               },
-            }),
-          );
+            });
+            if (completed.count && f.status === "deleting")
+              await this.audit.record(tx, null, "file.deleted", randomUUID(), {
+                tenantId: t.id,
+                resourceId: f.id,
+              });
+          });
         }
       }
     } finally {

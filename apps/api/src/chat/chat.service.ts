@@ -89,11 +89,16 @@ export class ChatService implements OnModuleInit, OnModuleDestroy {
     title: string | undefined,
     requestId: string,
   ) {
-    return this.db.tenant(actor, t, "chat", requestId, (tx) =>
-      tx.conversation.create({
+    return this.db.tenant(actor, t, "chat", requestId, async (tx) => {
+      const conversation = await tx.conversation.create({
         data: { tenantId: t, ownerId: actor.id, title: title ?? "" },
-      }),
-    );
+      });
+      await this.audit.record(tx, actor, "conversation.created", requestId, {
+        tenantId: t,
+        resourceId: conversation.id,
+      });
+      return conversation;
+    });
   }
   read(actor: Actor, t: string, id: string, requestId: string) {
     return this.db.tenant(actor, t, "chat", requestId, async (tx) => {

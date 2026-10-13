@@ -17,6 +17,7 @@ import { ChatModule } from "./chat/chat.controller.js";
 import { FilesModule } from "./files/files.controller.js";
 import { PersonalModule } from "./personal/personal.controller.js";
 import { AiModule } from "./ai/ai.module.js";
+import { ActivitiesModule } from "./audit/activities.controller.js";
 @Controller("health")
 class HealthController {
   constructor(@Inject(DatabaseService) private db: DatabaseService) {}
@@ -35,6 +36,7 @@ class HealthController {
     FilesModule,
     ChatModule,
     AiModule,
+    ActivitiesModule,
   ],
   controllers: [HealthController],
 })

@@ -1,3 +1,4 @@
+import { ModuleInfo } from "../components/module-info";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -193,6 +194,7 @@ function SettingsForm({
       <header className="ai-heading">
         <div className="ai-title-row">
           <h1>{t("ai.title")}</h1>
+          <ModuleInfo />
         </div>
         <p>{t("ai.description")}</p>
       </header>

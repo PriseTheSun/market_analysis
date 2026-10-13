@@ -30,6 +30,7 @@ import { DatabaseService, type Tx } from "../database/database.service.js";
 import { AppError, parse } from "../common/errors.js";
 import type { Actor } from "../authorization/policy.js";
 import { AvatarService } from "./avatar.service.js";
+import { AuditService } from "../audit/audit.service.js";
 import { SecurityService } from "../common/security.service.js";
 @Controller()
 @UseGuards(SessionGuard)
@@ -38,6 +39,7 @@ export class PersonalController {
     @Inject(DatabaseService) private db: DatabaseService,
     @Inject(AvatarService) private avatars: AvatarService,
     @Inject(SecurityService) private security: SecurityService,
+    @Inject(AuditService) private audit: AuditService,
   ) {}
   @Post("preferences/avatar")
   @UseInterceptors(
@@ -76,13 +78,32 @@ export class PersonalController {
     @Body() b: unknown,
   ) {
     const data = parse(preferenceSchema, b);
-    return this.db.personal(r.actor!, (tx) =>
-      tx.userPreference.upsert({
-        where: { userId: r.actor!.id },
-        create: { userId: r.actor!.id, ...data },
+    return this.db.personal(r.actor!, async (tx, current) => {
+      const before = await this.audit.snapshot(
+        tx,
+        "preferences.updated",
+        current.id,
+      );
+      const value = await tx.userPreference.upsert({
+        where: { userId: current.id },
+        create: { userId: current.id, ...data },
         update: data,
-      }),
-    );
+      });
+      if (
+        Object.entries(data).some(
+          ([key, value]) =>
+            before?.fields[key as keyof typeof before.fields] !== value,
+        )
+      )
+        await this.audit.record(
+          tx,
+          current,
+          "preferences.updated",
+          r.requestId,
+          { resourceId: current.id, before },
+        );
+      return value;
+    });
   }
   @Get("tenants/:tenantId/tour") tour(
     @Req() r: Request,
@@ -193,12 +214,21 @@ export class PersonalController {
   }
   @Post(["notifications/read-all", "tenants/:tenantId/notifications/read-all"])
   readAll(@Req() r: Request, @Param("tenantId") t: string | undefined) {
-    return this.scope(r, t, async (tx) =>
-      tx.notification.updateMany({
+    return this.scope(r, t, async (tx, current) => {
+      const result = await tx.notification.updateMany({
         where: { ...(await this.notificationWhere(tx, r, t)), readAt: null },
         data: { readAt: new Date() },
-      }),
-    );
+      });
+      if (result.count)
+        await this.audit.record(
+          tx,
+          current,
+          "notifications.read-all",
+          r.requestId,
+          { tenantId: t },
+        );
+      return result;
+    });
   }
   @Post(["notifications/:id/read", "tenants/:tenantId/notifications/:id/read"])
   read(
@@ -213,6 +243,10 @@ export class PersonalController {
         data: { readAt: new Date() },
       });
       if (!n.count) throw new AppError(404, "NOT_FOUND");
+      await this.audit.record(tx, r.actor!, "notifications.read", r.requestId, {
+        tenantId: t,
+        resourceId: id,
+      });
       return { ok: true };
     });
   }
