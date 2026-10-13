@@ -2,30 +2,122 @@
 
 Primeira entrega local: acesso por convite, triagem de solicitações, administração de agências/clientes, arquivos privados, conversas pessoais, notificações e tour. Interface em português, inglês e espanhol; Montserrat local; temas claro e escuro manual.
 
-**O chat é demonstrativo.** Ele exercita streaming, histórico, cancelamento e isolamento com respostas determinísticas. Não consulta mercado nem analisa arquivos. Sem um adapter real autorizado, o backend de produção retorna indisponibilidade.
+**O projeto inicia com chat demonstrativo e Gemini desabilitado.** O modo demonstrativo usa respostas determinísticas, sem consultar mercado ou analisar arquivos. A integração Gemini já está implementada; para usá-la localmente, siga a seção [Ativar o token temporário de IA](#ativar-o-token-temporário-de-ia).
 
-## Executar localmente
+## Rodar em desenvolvimento — recomendado
 
-Requisitos: Docker com Compose v2, Node **24.16.0** e pnpm **12.10.1**. As portas 8080, 55432, 8333, 8025 e 1025 devem estar livres. O projeto Compose usa o nome `market-analysis-local`, com volumes próprios.
+Requisitos: Docker com Compose v2 em execução, Node **24.16.0** e pnpm **12.10.1**. Execute os comandos na raiz deste repositório. As portas 5173, 3000, 55432, 8333, 8025 e 1025 devem estar livres. O projeto Compose usa o nome `market-analysis-local`, com volumes próprios.
+
+### Primeira execução
+
+O Docker executa banco, armazenamento e e-mail; a API e o frontend rodam na sua máquina, com atualização automática ao editar o código.
 
 ```sh
 corepack enable
 pnpm install --frozen-lockfile
 pnpm setup:local
-pnpm db:generate
 docker compose up -d --wait db storage mailpit
-docker compose build api web
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
+pnpm dev
+```
+
+Abra **[http://localhost:5173](http://localhost:5173)** e entre com `global@marketanalysis.com`, senha inicial `MarketGlobal#2027`.
+
+- E-mails locais: [Mailpit](http://localhost:8025).
+- Saúde da API: [http://localhost:3000/api/v1/health](http://localhost:3000/api/v1/health), com resposta `{"status":"ok"}`.
+- Contrato da API: [Swagger](http://localhost:3000/api/docs), disponível fora de produção.
+
+`setup:local` gera `.env` e `infra/local/s3.json` com segredos locais aleatórios. Se `.env` já existir, o comando o preserva e **não acrescenta novas variáveis**: compare com `.env.example` e adicione as que faltarem, mantendo seus valores existentes. Não commite esses arquivos.
+
+O seed cria as contas de demonstração e preserva senhas, preferências e cadastros já existentes. Migrações e seed são etapas explícitas; `pnpm dev` não as executa.
+
+### Próximas execuções
+
+Com o Docker aberto, basta executar:
+
+```sh
+pnpm dev
+```
+
+Esse comando inicia DB/S3/Mailpit, compila `@market/contracts`, gera o cliente Prisma e inicia API e frontend. Use `Ctrl+C` para encerrar API e frontend; os serviços do Docker continuam ativos. Para pará-los sem apagar dados, use `docker compose stop`.
+
+Para executar os servidores separadamente, suba os serviços com `docker compose up -d --wait db storage mailpit`, depois rode `pnpm dev:api` e `pnpm dev:web` em terminais distintos. Ambos compilam os contratos, e a API regenera o cliente Prisma.
+
+O frontend também abre em `http://127.0.0.1:5173`. As duas origens devem constar em `ALLOWED_ORIGINS`. Os links de convite e recuperação usam `APP_ORIGIN`, cujo padrão é `http://localhost:8080`; para abri-los no servidor de desenvolvimento, altere para `http://localhost:5173` no `.env` e reinicie a API.
+
+### Depois de atualizar o código
+
+Encerre `pnpm dev` com `Ctrl+C` e execute:
+
+```sh
+pnpm install --frozen-lockfile
+docker compose up -d --wait db storage mailpit
+pnpm db:migrate
+pnpm dev
+```
+
+Isso aplica as migrações pendentes e recompila contratos e cliente Prisma. Não é necessário repetir o seed. Ao editar `packages/contracts/src` ou o schema Prisma durante o desenvolvimento, reinicie o comando para atualizar os arquivos gerados. Ao alterar `.env`, reinicie a API para que os novos valores sejam lidos.
+
+### Ativar o token temporário de IA
+
+Para exibir a opção **Token temporário** em Configurações de IA, adicione ou ajuste estas variáveis no `.env` local:
+
+```dotenv
+NODE_ENV=development
+APP_ENV=local
+AI_GEMINI_ENABLED=true
+AI_LOCAL_TOKEN_ENABLED=true
+BIND_HOST=127.0.0.1
+```
+
+Reinicie `pnpm dev` depois de salvar. Em seguida:
+
+1. Entre com a conta **Global** e abra **Configurações de IA**, em `/plataforma/configuracoes-ia`.
+2. Selecione **Token temporário**, insira a chave Gemini no campo protegido e clique em **Conectar**.
+3. Escolha o modelo de texto e, se necessário, o modelo de imagem; clique em **Salvar configuração**.
+4. Abra o Chat em um cliente usando a mesma sessão.
+
+A chave é inserida somente na interface e fica em memória no backend. Não a coloque no `.env`, em variáveis `VITE_*` ou no código. A conexão expira após 60 minutos e também termina ao sair, revogá-la ou reiniciar a API; nesses casos, conecte novamente. A opção temporária exige ambiente local e não aparece em produção. Detalhes em [Configurações de IA](docs/ai-settings.md).
+
+### Problemas comuns
+
+| Sintoma | Como resolver |
+| --- | --- |
+| `Cannot connect to the Docker daemon` | Abra o Docker Desktop e aguarde a inicialização. No macOS, use `open -a Docker`. |
+| Erro 500 ao abrir Configurações de IA após atualizar o código | Execute `pnpm db:migrate` e reinicie `pnpm dev`, que regenera o cliente Prisma. Confira as pendências com `pnpm --filter @market/api exec prisma migrate status`. |
+| A opção Token temporário não aparece | Confira as variáveis da seção acima e reinicie a API. `setup:local` não atualiza um `.env` existente. A conta precisa ser Global. |
+| A tela parece antiga depois de editar o código | Confira a URL: o desenvolvimento abre em 5173. A versão Docker em 8080 só incorpora alterações após reconstruir as imagens. |
+| Porta 5173 ou 3000 ocupada | Encerre a instância anterior de desenvolvimento antes de executar `pnpm dev` novamente. O Vite não troca de porta automaticamente. |
+
+## Alternativa: executar tudo no Docker
+
+Use este modo para abrir a versão compilada em **[http://localhost:8080](http://localhost:8080)**. Ele utiliza o mesmo banco e os mesmos volumes do modo de desenvolvimento. Execute na raiz, com os requisitos acima instalados e a porta 8080 livre:
+
+```sh
+corepack enable
+pnpm setup:local
+docker compose up -d --wait db storage mailpit
+docker compose build api web migrate
 docker compose run --rm migrate
 docker compose run --rm migrate pnpm --filter @market/api exec tsx prisma/seed.ts
 docker compose up -d --wait api web
 ```
 
-`setup:local` gera `.env` e `infra/local/s3.json` com segredos locais aleatórios, sem imprimi-los. Não substitui `.env` existente. Não commite esses arquivos. Migrations e seed são comandos explícitos; a API não recebe a credencial do migrator. O script de inicialização PostgreSQL é copiado para dentro do container antes de ser lido, evitando execução de bind mount no Docker para macOS.
+Após atualizar o código, reconstrua as imagens, aplique as migrações e recrie os serviços:
 
-- Aplicação: [localhost:8080](http://localhost:8080)
-- E-mails locais: [Mailpit](http://localhost:8025)
-- Saúde: [API health](http://localhost:8080/api/v1/health)
-- Contrato OpenAPI local: [Swagger](http://localhost:8080/api/docs) — desabilitado em produção.
+```sh
+docker compose build api web migrate
+docker compose run --rm migrate
+docker compose up -d --wait api web
+```
+
+Ao alterar as variáveis de IA no `.env`, use `docker compose up -d --force-recreate --wait api` para aplicá-las; apenas `docker compose restart` não atualiza as variáveis. O Compose define a interface de rede da API dentro do container e publica o frontend apenas em loopback.
+
+Neste modo, a saúde da API fica em [localhost:8080/api/v1/health](http://localhost:8080/api/v1/health) e o Swagger em [localhost:8080/api/docs](http://localhost:8080/api/docs). Para parar, use `docker compose stop`; para retomar os serviços já configurados, `docker compose up -d --wait`. `docker compose down -v` apaga os dados e não faz parte do setup ou da atualização.
+
+## Contas de demonstração e navegação
 
 | Perfil demo | E-mail | Escopo inicial |
 | --- | --- | --- |
@@ -44,27 +136,21 @@ A Central é acessível somente por **Global e Super Admin**. Global mantém tod
 
 **Excluir arquiva o registro**, bloqueando o acesso e mantendo o histórico e a auditoria. A opção “Mostrar arquivados” permite restaurá-lo. Vínculos são preservados para a restauração; permissões específicas podem ser revogadas e atribuídas novamente na aba Permissões. Não é possível remover o último Global ativo nem deixar um cliente ativo sem Admin. Restaurar um cliente exige uma agência ativa e um Admin ativo. A migração `202610100002_management_center` adiciona os campos de arquivamento sem apagar dados; aplique-a com `pnpm db:migrate` ao atualizar outro ambiente.
 
-Senha inicial de todas: **`MarketGlobal#2027`**. Agências Demo A/B; clientes Aurora, Horizonte, Atlas e Cobalto. O seed é idempotente: preserva senhas, preferências e alterações existentes, não envia e-mails e recusa execução em produção. Para restaurar **explicitamente só as senhas demo**:
+Senha inicial de todas: **`MarketGlobal#2027`**. Agências Demo A/B; clientes Aurora, Horizonte, Atlas e Cobalto. O seed é idempotente: preserva senhas, preferências e alterações existentes, não envia e-mails e recusa execução em produção. Para restaurar **explicitamente só as senhas demo** no modo de desenvolvimento:
+
+```sh
+pnpm db:seed --reset-demo-passwords
+```
+
+No modo Docker:
 
 ```sh
 docker compose run --rm migrate pnpm --filter @market/api exec tsx prisma/seed.ts --reset-demo-passwords
 ```
 
-Para interromper sem apagar dados: `docker compose stop`. Para retomar: `docker compose up -d --wait`. Não é necessário remover volumes. `docker compose down -v` apaga dados e não faz parte do setup ou da atualização.
+## Verificações
 
-## Desenvolvimento e verificações
-
-Após o setup inicial, com o Docker Desktop aberto, execute na raiz do projeto:
-
-```sh
-pnpm run dev
-```
-
-O comando inicia DB/S3/Mailpit no Compose, compila `@market/contracts`, gera o cliente Prisma e executa API e frontend juntos, com atualização automática. `pnpm dev` é um atalho equivalente. Use `Ctrl+C` para encerrar os servidores de desenvolvimento; os serviços do Compose continuam ativos. Para executar cada servidor separadamente, use `pnpm dev:api` e `pnpm dev:web` em terminais distintos; ambos também compilam os contratos antes de iniciar, e a API regenera o cliente Prisma. Ao alterar `packages/contracts/src`, reinicie o comando de desenvolvimento para recompilar o pacote compartilhado. Ao atualizar o schema do banco, aplique as migrações pendentes com `pnpm db:migrate` e reinicie a API; a inicialização não aplica migrações automaticamente.
-
-Se aparecer `Cannot connect to the Docker daemon`, abra o Docker Desktop e aguarde a inicialização antes de executar o comando novamente. No macOS, você pode abri-lo com `open -a Docker`.
-
-Vite: `http://localhost:5173` ou `http://127.0.0.1:5173`; API de desenvolvimento: `http://localhost:3000`. As duas origens locais estão em `ALLOWED_ORIGINS` no `.env.example`; ambientes criados anteriormente devem incluir ambas no `.env` e reiniciar a API. O Vite mantém a porta 5173 e avisa se ela estiver ocupada. Os convites enviados por padrão continuam apontando para 8080; ajuste `APP_ORIGIN` se quiser abri-los no Vite. Nunca exponha `DB_MIGRATION_PASSWORD`, `OUTBOX_KEY` ou chaves S3 ao Vite.
+Com dependências instaladas, contratos compilados e cliente Prisma gerado pelo setup de desenvolvimento:
 
 ```sh
 pnpm typecheck
@@ -89,4 +175,4 @@ Preferências (`/plataforma/preferencias`) inclui foto de perfil com prévia, en
 
 O S3 é privado e usa endpoints interno/público distintos. PDF/CSV/XLSX/TXT têm limite real de 25 MiB na policy, conteúdo validado antes de disponibilidade e quota padrão de 1 GiB por tenant. Links de download expiram em 60 s. SMTP local usa Mailpit; entregas falhadas permanecem na outbox cifrada para retry ou reenvio administrativo.
 
-Para ambiente externo, configure banco, SMTP, S3, origens, TLS/cookies e a CSP do proxy. O Compose e sua CSP são deliberadamente locais. Um provider de IA real deve implementar `ChatProvider` em `apps/api/src/chat/chat.provider.ts`, ser registrado pela factory e validado no backend. Apenas fornecer uma chave não ativa uma integração: nenhum provedor real foi configurado nesta entrega. Não houve publicação em produção.
+Para ambiente externo, configure banco, SMTP, S3, origens, TLS/cookies e a CSP do proxy. O Compose e sua CSP são deliberadamente locais. A integração Gemini utiliza `AiService`/`AiProvider`; a conexão gerenciada usa AWS Secrets Manager e a conexão temporária é exclusiva do ambiente local. Consulte [Configurações de IA](docs/ai-settings.md) para habilitação, credenciais e seleção de modelos. O modo demonstrativo não fica disponível em produção. Não houve publicação em produção.
