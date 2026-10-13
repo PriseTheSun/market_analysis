@@ -70,6 +70,8 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
   const { t } = useTranslation(),
     scope = useScope(),
     { agencyId } = useParams();
+  const isManagement = module === "management";
+  const tabs: Array<"about" | "history"> = ["about", "history"];
   const [open, setOpen] = useState(false),
     [tab, setTab] = useState<"about" | "history">("about");
   const [period, setPeriod] = useState("30"),
@@ -80,15 +82,17 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
   const id = useId();
   const query = new URLSearchParams({
     module,
-    period,
-    person,
-    search,
+    period: isManagement ? "all" : period,
     page: String(page),
-    pageSize: "15",
+    pageSize: isManagement ? "4" : "15",
   });
   if (scope.tenant) query.set("tenantId", scope.tenant.id);
   if (agencyId) query.set("agencyId", agencyId);
-  if (action) query.set("action", action);
+  if (!isManagement) {
+    if (action) query.set("action", action);
+    if (person) query.set("person", person);
+    if (search) query.set("search", search);
+  }
   const result = useQuery({
     queryKey: [...scope.key, "activities", query.toString()],
     queryFn: ({ signal }) =>
@@ -119,9 +123,11 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
         <Dialog.Overlay className="dialog-overlay" />
         <Dialog.Content className="module-info-dialog">
           <header className="module-info-header">
-            <span className="module-info-symbol">
-              <Info aria-hidden="true" />
-            </span>
+            {!isManagement && (
+              <span className="module-info-symbol">
+                <Info aria-hidden="true" />
+              </span>
+            )}
             <div>
               <Dialog.Title>{t("activity.title")}</Dialog.Title>
               <Dialog.Description>
@@ -138,51 +144,55 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
               </Button>
             </Dialog.Close>
           </header>
-          <div
-            className="module-info-tabs"
-            role="tablist"
-            aria-label={t("activity.title")}
-          >
-            {(["about", "history"] as const).map((key) => (
-              <button
-                key={key}
-                role="tab"
-                id={`${id}-${key}-tab`}
-                aria-selected={tab === key}
-                aria-controls={`${id}-${key}`}
-                tabIndex={tab === key ? 0 : -1}
-                onClick={() => setTab(key)}
-                onKeyDown={(e) => {
-                  if (
-                    ["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)
-                  ) {
-                    e.preventDefault();
-                    const next =
-                      e.key === "Home"
-                        ? "about"
-                        : e.key === "End"
-                          ? "history"
-                          : tab === "about"
-                            ? "history"
-                            : "about";
-                    setTab(next);
-                    document.getElementById(`${id}-${next}-tab`)?.focus();
-                  }
-                }}
-              >
-                {key === "about" ? <Info /> : <History />}
-                {t(`activity.${key}`)}
-              </button>
-            ))}
-          </div>
+          {!isManagement && (
+            <div
+              className="module-info-tabs"
+              role="tablist"
+              aria-label={t("activity.title")}
+            >
+              {tabs.map((key) => (
+                <button
+                  key={key}
+                  role="tab"
+                  id={`${id}-${key}-tab`}
+                  aria-selected={tab === key}
+                  aria-controls={`${id}-${key}`}
+                  tabIndex={tab === key ? 0 : -1}
+                  onClick={() => setTab(key)}
+                  onKeyDown={(e) => {
+                    if (
+                      ["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)
+                    ) {
+                      e.preventDefault();
+                      const index =
+                        e.key === "Home"
+                          ? 0
+                          : e.key === "End"
+                            ? tabs.length - 1
+                            : (tabs.indexOf(tab) +
+                                (e.key === "ArrowRight" ? 1 : -1) +
+                                tabs.length) %
+                              tabs.length;
+                      const next = tabs[index]!;
+                      setTab(next);
+                      document.getElementById(`${id}-${next}-tab`)?.focus();
+                    }
+                  }}
+                >
+                  {key === "about" ? <Info /> : <History />}
+                  {t(`activity.${key}`)}
+                </button>
+              ))}
+            </div>
+          )}
           <div
             className="module-info-body"
-            role="tabpanel"
-            id={`${id}-${tab}`}
-            aria-labelledby={`${id}-${tab}-tab`}
+            role={isManagement ? undefined : "tabpanel"}
+            id={isManagement ? undefined : `${id}-${tab}`}
+            aria-labelledby={isManagement ? undefined : `${id}-${tab}-tab`}
             tabIndex={0}
           >
-            {tab === "about" ? (
+            {!isManagement && tab === "about" ? (
               <>
                 <h3>{t("activity.module." + module)}</h3>
                 <p className="module-info-description">
@@ -239,88 +249,94 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
               </>
             ) : (
               <>
-                <form
-                  className="activity-filters"
-                  onSubmit={(e) => e.preventDefault()}
-                >
-                  <label>
-                    {t("activity.period")}
-                    <Select value={period} onChange={change(setPeriod)}>
-                      {["7", "30", "90"].map((days) => (
-                        <option key={days} value={days}>
-                          {t("activity.days", { count: Number(days) })}
-                        </option>
-                      ))}
-                      <option value="all">{t("activity.allTime")}</option>
-                    </Select>
-                  </label>
-                  <label>
-                    {t("activity.action")}
-                    <Select value={action} onChange={change(setAction)}>
-                      <option value="">{t("activity.allActions")}</option>
-                      {activityActionSchema.options.map((key) => (
-                        <option key={key} value={key}>
-                          {t("activity.action." + key)}
-                        </option>
-                      ))}
-                    </Select>
-                  </label>
-                  <label>
-                    {t("activity.person")}
-                    <span className="activity-input">
-                      <UserRound />
-                      <input
-                        value={person}
-                        onChange={change(setPerson)}
-                        placeholder={t("activity.personPlaceholder")}
-                        maxLength={160}
-                      />
-                    </span>
-                  </label>
-                  <label>
-                    {t("activity.record")}
-                    <span className="activity-input">
-                      <Search />
-                      <input
-                        value={search}
-                        onChange={change(setSearch)}
-                        placeholder={t("activity.recordPlaceholder")}
-                        maxLength={160}
-                      />
-                    </span>
-                  </label>
-                </form>
-                <div className="activity-results-bar">
-                  <span aria-live="polite">
-                    {result.data
-                      ? t("activity.count", { count: result.data.total })
-                      : t("common.loading")}
-                  </span>
-                  <div>
-                    <Button
-                      variant="ghost"
-                      size="small"
-                      onClick={() => {
-                        setPeriod("30");
-                        setAction("");
-                        setPerson("");
-                        setSearch("");
-                        setPage(1);
-                      }}
+                {!isManagement && (
+                  <>
+                    <form
+                      className="activity-filters"
+                      onSubmit={(e) => e.preventDefault()}
                     >
-                      {t("activity.clear")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={t("activity.refresh")}
-                      disabled={result.isFetching}
-                      onClick={() => void result.refetch()}
-                    >
-                      <RefreshCw className={result.isFetching ? "spin" : ""} />
-                    </Button>
-                  </div>
-                </div>
+                      <label>
+                        {t("activity.period")}
+                        <Select value={period} onChange={change(setPeriod)}>
+                          {["7", "30", "90"].map((days) => (
+                            <option key={days} value={days}>
+                              {t("activity.days", { count: Number(days) })}
+                            </option>
+                          ))}
+                          <option value="all">{t("activity.allTime")}</option>
+                        </Select>
+                      </label>
+                      <label>
+                        {t("activity.action")}
+                        <Select value={action} onChange={change(setAction)}>
+                          <option value="">{t("activity.allActions")}</option>
+                          {activityActionSchema.options.map((key) => (
+                            <option key={key} value={key}>
+                              {t("activity.action." + key)}
+                            </option>
+                          ))}
+                        </Select>
+                      </label>
+                      <label>
+                        {t("activity.person")}
+                        <span className="activity-input">
+                          <UserRound />
+                          <input
+                            value={person}
+                            onChange={change(setPerson)}
+                            placeholder={t("activity.personPlaceholder")}
+                            maxLength={160}
+                          />
+                        </span>
+                      </label>
+                      <label>
+                        {t("activity.record")}
+                        <span className="activity-input">
+                          <Search />
+                          <input
+                            value={search}
+                            onChange={change(setSearch)}
+                            placeholder={t("activity.recordPlaceholder")}
+                            maxLength={160}
+                          />
+                        </span>
+                      </label>
+                    </form>
+                    <div className="activity-results-bar">
+                      <span aria-live="polite">
+                        {result.data
+                          ? t("activity.count", { count: result.data.total })
+                          : t("common.loading")}
+                      </span>
+                      <div>
+                        <Button
+                          variant="ghost"
+                          size="small"
+                          onClick={() => {
+                            setPeriod("30");
+                            setAction("");
+                            setPerson("");
+                            setSearch("");
+                            setPage(1);
+                          }}
+                        >
+                          {t("activity.clear")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={t("activity.refresh")}
+                          disabled={result.isFetching}
+                          onClick={() => void result.refetch()}
+                        >
+                          <RefreshCw
+                            className={result.isFetching ? "spin" : ""}
+                          />
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
                 {result.isPending ? (
                   <Loading />
                 ) : result.isError ? (
@@ -349,7 +365,11 @@ function ModuleInfoDialog({ module }: { module: ActivityModule }) {
                 ) : (
                   <Empty
                     title={t("activity.empty")}
-                    description={t("activity.emptySub")}
+                    description={t(
+                      isManagement
+                        ? "activity.emptyHistory"
+                        : "activity.emptySub",
+                    )}
                   />
                 )}
               </>

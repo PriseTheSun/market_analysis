@@ -95,6 +95,11 @@ export const activityCopy: Record<string, [string, string, string]> = {
     "Changes in this module will appear here. Try another period or adjust the filters.",
     "Los cambios de este módulo aparecerán aquí. Prueba otro período o ajusta los filtros.",
   ],
+  "activity.emptyHistory": [
+    "As alterações deste módulo aparecerão aqui.",
+    "Changes in this module will appear here.",
+    "Los cambios de este módulo aparecerán aquí.",
+  ],
   "activity.system": ["Sistema", "System", "Sistema"],
   "activity.formerUser": [
     "Usuário indisponível",
