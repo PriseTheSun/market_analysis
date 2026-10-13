@@ -60,7 +60,9 @@ Após o setup inicial, com o Docker Desktop aberto, execute na raiz do projeto:
 pnpm run dev
 ```
 
-O comando inicia DB/S3/Mailpit no Compose e executa API e frontend juntos, com atualização automática. `pnpm dev` é um atalho equivalente. Use `Ctrl+C` para encerrar os servidores de desenvolvimento; os serviços do Compose continuam ativos. Para executar cada servidor separadamente, use `pnpm dev:api` e `pnpm dev:web` em terminais distintos.
+O comando inicia DB/S3/Mailpit no Compose, compila `@market/contracts` e executa API e frontend juntos, com atualização automática. `pnpm dev` é um atalho equivalente. Use `Ctrl+C` para encerrar os servidores de desenvolvimento; os serviços do Compose continuam ativos. Para executar cada servidor separadamente, use `pnpm dev:api` e `pnpm dev:web` em terminais distintos; ambos também compilam os contratos antes de iniciar. Ao alterar `packages/contracts/src`, reinicie o comando de desenvolvimento para recompilar o pacote compartilhado.
+
+Se aparecer `Cannot connect to the Docker daemon`, abra o Docker Desktop e aguarde a inicialização antes de executar o comando novamente. No macOS, você pode abri-lo com `open -a Docker`.
 
 Vite: `http://localhost:5173` ou `http://127.0.0.1:5173`; API de desenvolvimento: `http://localhost:3000`. As duas origens locais estão em `ALLOWED_ORIGINS` no `.env.example`; ambientes criados anteriormente devem incluir ambas no `.env` e reiniciar a API. O Vite mantém a porta 5173 e avisa se ela estiver ocupada. Os convites enviados por padrão continuam apontando para 8080; ajuste `APP_ORIGIN` se quiser abri-los no Vite. Nunca exponha `DB_MIGRATION_PASSWORD`, `OUTBOX_KEY` ou chaves S3 ao Vite.
 
