@@ -853,7 +853,11 @@ function ManagementEditor({
     await mutate(item ? "PATCH" : "POST", result.data);
   }
   return (
-    <form className="management-editor" onSubmit={submit} noValidate>
+    <form
+      className={`management-editor${canCreateDirect ? " management-user-editor" : ""}`}
+      onSubmit={submit}
+      noValidate
+    >
       <div className="management-editor-body">
         {isArchived ? (
           <div className="management-restore">
@@ -867,40 +871,6 @@ function ManagementEditor({
               kind === "agencies" ||
               kind === "clients") && (
               <section className="management-form-section">
-                <h3>{t(`management.details.${kind}`)}</h3>
-                <Field
-                  label={t(kind === "users" ? "auth.name" : "common.name")}
-                  error={fieldError("name")}
-                >
-                  <input
-                    value={values.name}
-                    onChange={(e) => set("name", e.target.value)}
-                    autoComplete="off"
-                    aria-invalid={!!errors.name}
-                  />
-                </Field>
-                {kind === "users" ? (
-                  <Field
-                    label={t("management.email")}
-                    error={fieldError("email")}
-                  >
-                    <input
-                      type="email"
-                      value={values.email}
-                      onChange={(e) => set("email", e.target.value)}
-                      autoComplete="off"
-                      aria-invalid={!!errors.email}
-                    />
-                  </Field>
-                ) : (
-                  <Field label={t("admin.slug")} error={fieldError("slug")}>
-                    <input
-                      value={values.slug}
-                      onChange={(e) => set("slug", e.target.value)}
-                      aria-invalid={!!errors.slug}
-                    />
-                  </Field>
-                )}
                 {canCreateDirect && (
                   <div className="management-direct-access">
                     <div>
@@ -929,6 +899,48 @@ function ManagementEditor({
                     </button>
                   </div>
                 )}
+                <h3>{t(`management.details.${kind}`)}</h3>
+                <div
+                  className={
+                    canCreateDirect
+                      ? "management-user-identity-fields"
+                      : "management-identity-fields"
+                  }
+                >
+                  <Field
+                    label={t(kind === "users" ? "auth.name" : "common.name")}
+                    error={fieldError("name")}
+                  >
+                    <input
+                      value={values.name}
+                      onChange={(e) => set("name", e.target.value)}
+                      autoComplete="off"
+                      aria-invalid={!!errors.name}
+                    />
+                  </Field>
+                  {kind === "users" ? (
+                    <Field
+                      label={t("management.email")}
+                      error={fieldError("email")}
+                    >
+                      <input
+                        type="email"
+                        value={values.email}
+                        onChange={(e) => set("email", e.target.value)}
+                        autoComplete="off"
+                        aria-invalid={!!errors.email}
+                      />
+                    </Field>
+                  ) : (
+                    <Field label={t("admin.slug")} error={fieldError("slug")}>
+                      <input
+                        value={values.slug}
+                        onChange={(e) => set("slug", e.target.value)}
+                        aria-invalid={!!errors.slug}
+                      />
+                    </Field>
+                  )}
+                </div>
                 {canCreateDirect && directAccess && (
                   <>
                     <Field

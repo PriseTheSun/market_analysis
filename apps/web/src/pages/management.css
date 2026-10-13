@@ -209,6 +209,19 @@
   font-weight: 650;
   margin: 0 0 0;
 }
+.management-user-editor .management-form-section {
+  padding-block: 16px;
+  gap: 14px;
+}
+.management-identity-fields {
+  display: contents;
+}
+.management-user-identity-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
 .management-modal .field {
   gap: 7px;
   margin: 0;
@@ -380,6 +393,9 @@
   }
 }
 @media (max-width: 700px) {
+  .management-user-identity-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .management-tabs {
     margin-top: 24px;
     gap: 0;
