@@ -60,7 +60,7 @@ Após o setup inicial, com o Docker Desktop aberto, execute na raiz do projeto:
 pnpm run dev
 ```
 
-O comando inicia DB/S3/Mailpit no Compose, compila `@market/contracts` e executa API e frontend juntos, com atualização automática. `pnpm dev` é um atalho equivalente. Use `Ctrl+C` para encerrar os servidores de desenvolvimento; os serviços do Compose continuam ativos. Para executar cada servidor separadamente, use `pnpm dev:api` e `pnpm dev:web` em terminais distintos; ambos também compilam os contratos antes de iniciar. Ao alterar `packages/contracts/src`, reinicie o comando de desenvolvimento para recompilar o pacote compartilhado.
+O comando inicia DB/S3/Mailpit no Compose, compila `@market/contracts`, gera o cliente Prisma e executa API e frontend juntos, com atualização automática. `pnpm dev` é um atalho equivalente. Use `Ctrl+C` para encerrar os servidores de desenvolvimento; os serviços do Compose continuam ativos. Para executar cada servidor separadamente, use `pnpm dev:api` e `pnpm dev:web` em terminais distintos; ambos também compilam os contratos antes de iniciar, e a API regenera o cliente Prisma. Ao alterar `packages/contracts/src`, reinicie o comando de desenvolvimento para recompilar o pacote compartilhado. Ao atualizar o schema do banco, aplique as migrações pendentes com `pnpm db:migrate` e reinicie a API; a inicialização não aplica migrações automaticamente.
 
 Se aparecer `Cannot connect to the Docker daemon`, abra o Docker Desktop e aguarde a inicialização antes de executar o comando novamente. No macOS, você pode abri-lo com `open -a Docker`.
 
